@@ -61,10 +61,11 @@ void Application<DerivedType>::run() noexcept {
         if (currentTime >= lastFrameTimeOutput + frameTimeOutputInterval) {
             const double framesPerSecond =
                     static_cast<double>(numFramesDuringOutputInterval) /
-                    std::chrono::duration<double, std::ratio<1, 1>>(frameTimeOutputInterval).count();
+                    std::chrono::duration<double, std::ratio<1, 1>>(currentTime - lastFrameTimeOutput).count();
             lastFrameTimeOutput = currentTime;
-            glfwSetWindowTitle(mWindowPtr,
-                               fmt::format("{} ms ({} fps)", 1000.0 / framesPerSecond, framesPerSecond).c_str());
+            glfwSetWindowTitle(
+                    mWindowPtr,
+                    fmt::format("{:.2f} ms ({:.2f} fps)", 1000.0 / framesPerSecond, framesPerSecond).c_str());
             numFramesDuringOutputInterval = 0UL;
         }
     }
