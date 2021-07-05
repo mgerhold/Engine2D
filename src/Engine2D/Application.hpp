@@ -7,9 +7,13 @@
 #include "WindowSize.hpp"
 #include "OpenGLVersion.hpp"
 #include "ScopedTimer.hpp"
+
 #include <spdlog/spdlog.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
+#include "Input.hpp"
+
 #include <chrono>
 #include <vector>
 #include <cmath>
@@ -38,6 +42,9 @@ protected:
     [[nodiscard]] inline GLFWwindow* getGLFWWindowPointer() const noexcept {
         return mWindowPtr;
     }
+
+protected:
+    Input mInput;
 
 private:
     static void handleOpenGLDebugOutput(GLenum source,

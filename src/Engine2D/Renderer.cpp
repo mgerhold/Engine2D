@@ -66,7 +66,7 @@ void Renderer::flushCommandBuffer() noexcept {
 
     {
         SCOPED_TIMER_NAMED("Sorting");
-        std::sort(std::execution::par, mCommandBuffer.begin(), mCommandBuffer.end(), [](const RenderCommand& lhs, const RenderCommand& rhs) {
+        std::sort(mCommandBuffer.begin(), mCommandBuffer.end(), [](const RenderCommand& lhs, const RenderCommand& rhs) {
             // TODO: sort differently for transparent shaders
             return (lhs.shaderName < rhs.shaderName) ||
                    (lhs.shaderName == rhs.shaderName && lhs.textureName < rhs.textureName);

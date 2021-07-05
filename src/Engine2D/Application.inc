@@ -18,6 +18,10 @@ Application<DerivedType>::Application(const std::string& title, WindowSize size,
     glfwMakeContextCurrent(mWindowPtr);
     glfwSetFramebufferSizeCallback(mWindowPtr,
                                    [](GLFWwindow*, int width, int height) { glViewport(0, 0, width, height); });
+    glfwSetWindowUserPointer(mWindowPtr, this);
+    glfwSetKeyCallback(mWindowPtr, [](GLFWwindow* window, int keyCode, int, int action, int mods) {
+        static_cast<Application*>(glfwGetWindowUserPointer(window))->mInput.keyCallback(keyCode, action, mods);
+    });
     spdlog::info("glfw window created");
     if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
         glfwTerminate();
@@ -53,6 +57,7 @@ void Application<DerivedType>::run() noexcept {
     while (!glfwWindowShouldClose(mWindowPtr)) {
         static_cast<DerivedType*>(this)->update();
         glfwSwapBuffers(mWindowPtr);
+        mInput.nextFrame();
         glfwPollEvents();
         ++numFramesDuringOutputInterval;
         const auto currentTime = std::chrono::high_resolution_clock::now();

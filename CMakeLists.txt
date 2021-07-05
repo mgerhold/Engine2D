@@ -20,7 +20,7 @@ set(TARGET_LIST
         Sandbox
         )
 
-add_library(Engine2D STATIC src/Engine2D/Application.hpp src/Engine2D/Application.inc src/Engine2D/strong_type/strong_type.hpp src/Engine2D/WindowSize.hpp src/Engine2D/OpenGLVersion.hpp src/Engine2D/GLDataUsagePattern.hpp src/Engine2D/ShaderProgram.cpp src/Engine2D/ShaderProgram.hpp src/Engine2D/VertexAttributeDefinition.hpp src/Engine2D/GlUtils.cpp src/Engine2D/GlUtils.hpp src/Engine2D/VertexBuffer.cpp src/Engine2D/VertexBuffer.hpp src/Engine2D/expected/expected.hpp src/Engine2D/hash/hash.hpp src/Engine2D/hash/hash.cpp src/Engine2D/stb_image/stb_image.h src/Engine2D/StbImageInclude.cpp src/Engine2D/Image.cpp src/Engine2D/Image.hpp src/Engine2D/Texture.cpp src/Engine2D/Texture.hpp src/Engine2D/Renderer.cpp src/Engine2D/Renderer.hpp src/Engine2D/ScopedTimer.cpp src/Engine2D/ScopedTimer.hpp)
+add_library(Engine2D STATIC src/Engine2D/Application.hpp src/Engine2D/Application.inc src/Engine2D/strong_type/strong_type.hpp src/Engine2D/WindowSize.hpp src/Engine2D/OpenGLVersion.hpp src/Engine2D/GLDataUsagePattern.hpp src/Engine2D/ShaderProgram.cpp src/Engine2D/ShaderProgram.hpp src/Engine2D/VertexAttributeDefinition.hpp src/Engine2D/GlUtils.cpp src/Engine2D/GlUtils.hpp src/Engine2D/VertexBuffer.cpp src/Engine2D/VertexBuffer.hpp src/Engine2D/expected/expected.hpp src/Engine2D/hash/hash.hpp src/Engine2D/hash/hash.cpp src/Engine2D/stb_image/stb_image.h src/Engine2D/StbImageInclude.cpp src/Engine2D/Image.cpp src/Engine2D/Image.hpp src/Engine2D/Texture.cpp src/Engine2D/Texture.hpp src/Engine2D/Renderer.cpp src/Engine2D/Renderer.hpp src/Engine2D/ScopedTimer.cpp src/Engine2D/ScopedTimer.hpp src/Engine2D/Input.cpp src/Engine2D/Input.hpp)
 add_executable(Sandbox src/Engine2D/main.cpp src/Sandbox/Sandbox.hpp src/Sandbox/Sandbox.cpp)
 target_include_directories(Sandbox PUBLIC ${PROJECT_SOURCE_DIR}/src/Engine2D)
 add_dependencies(Sandbox Engine2D)
@@ -35,7 +35,7 @@ foreach(target ${TARGET_LIST})
     if (MSVC)
         target_compile_options(${target} PUBLIC /W4 /permissive-)
     else()
-        target_compile_options(${target} PUBLIC -Wall -Wextra -pedantic -Wconversion -pthread)
+        target_compile_options(${target} PUBLIC -Wall -Wextra -pedantic -Wconversion -pthread -ltbb)
     endif()
 
     # define DEBUG_BUILD
@@ -71,4 +71,5 @@ target_link_libraries(Engine2D PRIVATE glm::glm)
 find_package(range-v3 CONFIG REQUIRED)
 target_link_libraries(Engine2D PRIVATE range-v3 range-v3-meta range-v3::meta range-v3-concepts)
 
+target_link_libraries(Sandbox PRIVATE spdlog::spdlog spdlog::spdlog_header_only)
 target_link_libraries(Sandbox PRIVATE Engine2D)
