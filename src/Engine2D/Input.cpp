@@ -26,6 +26,7 @@ bool Input::wasKeyReleased(Key key) const noexcept {
 }
 
 void Input::keyCallback(int glfwKeyCode, int glfwAction, int glfwModifier) noexcept {
+    // TODO: handle key modifiers
     if (glfwKeyCode < 0) {
         return;
     }
