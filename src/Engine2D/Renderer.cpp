@@ -10,14 +10,18 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <algorithm>
 #include <execution>
+#include <array>
 
 Renderer::Renderer()
     : mVertexBuffer(GLDataUsagePattern::DynamicDraw,
                     maxCommandsPerBatch * 4ULL * sizeof(VertexData),
                     maxCommandsPerBatch * 6ULL * sizeof(IndexData)) {
-    mCommandBuffer.reserve(maxCommandsPerBatch);
-    mVertexData.reserve(maxCommandsPerBatch * 4ULL);
-    mIndexData.reserve(maxCommandsPerBatch * 6ULL);
+    mCommandBuffer.resize(maxCommandsPerBatch);
+    mVertexData.resize(maxCommandsPerBatch * 4ULL);
+    mIndexData.resize(maxCommandsPerBatch * 6ULL);
+    mCommandIterator = mCommandBuffer.begin();
+    mVertexIterator = mVertexData.begin();
+    mIndexIterator = mIndexData.begin();
     mCurrentTextureNames.reserve(std::min(Texture::getTextureUnitCount(), 32));
     spdlog::info("GPU is capable of binding {} textures at a time.", mCurrentTextureNames.capacity());
     mVertexBuffer.setVertexAttributeLayout(
@@ -26,8 +30,8 @@ Renderer::Renderer()
 }
 
 void Renderer::beginFrame() noexcept {
-    mVertexData.clear();
-    mIndexData.clear();
+    mVertexIterator = mVertexData.begin();
+    mIndexIterator = mIndexData.begin();
     mRenderStats = RenderStats{};
 }
 
@@ -49,10 +53,13 @@ void Renderer::drawQuad(const glm::vec3& translation,
 
 template<typename T>
 void Renderer::drawQuad(T&& transform, const ShaderProgram& shader, const Texture& texture) noexcept {
-    if (mCommandBuffer.size() == mCommandBuffer.capacity()) {
+    if (mCommandIterator == mCommandBuffer.end()) {
         flushCommandBuffer();
     }
-    mCommandBuffer.emplace_back(transform, glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f }, shader.mName, texture.mName);
+    *mCommandIterator++ = RenderCommand{ .transform = transform,
+                                         .color = glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f },
+                                         .shaderName = shader.mName,
+                                         .textureName = texture.mName };
 }
 
 void Renderer::flushCommandBuffer() noexcept {
@@ -60,13 +67,12 @@ void Renderer::flushCommandBuffer() noexcept {
     if (mRenderStats.numBatches == 0ULL) {
         glClear(GL_COLOR_BUFFER_BIT);
     }
-    if (mCommandBuffer.empty()) {
+    if (mCommandIterator == mCommandBuffer.begin()) {
         return;
     }
-
     {
         SCOPED_TIMER_NAMED("Sorting");
-        std::sort(mCommandBuffer.begin(), mCommandBuffer.end(), [](const RenderCommand& lhs, const RenderCommand& rhs) {
+        std::sort(mCommandBuffer.begin(), mCommandIterator, [](const RenderCommand& lhs, const RenderCommand& rhs) {
             // TODO: sort differently for transparent shaders
             return (lhs.shaderName < rhs.shaderName) ||
                    (lhs.shaderName == rhs.shaderName && lhs.textureName < rhs.textureName);
@@ -74,12 +80,12 @@ void Renderer::flushCommandBuffer() noexcept {
     }
     auto currentStartIt = mCommandBuffer.begin();
     auto currentEndIt = std::upper_bound(
-            mCommandBuffer.begin(), mCommandBuffer.end(), mCommandBuffer.front(),
+            mCommandBuffer.begin(), mCommandIterator, mCommandBuffer.front(),
             [](const RenderCommand& lhs, const RenderCommand& rhs) { return lhs.shaderName < rhs.shaderName; });
 
-    while (currentStartIt != mCommandBuffer.end()) {// one iteration per shader
-        mVertexData.clear();
-        mIndexData.clear();
+    while (currentStartIt != mCommandIterator) {// one iteration per shader
+        mVertexIterator = mVertexData.begin();
+        mIndexIterator = mIndexData.begin();
         mCurrentTextureNames.clear();
         ShaderProgram::bind(currentStartIt->shaderName);
         {
@@ -92,32 +98,31 @@ void Renderer::flushCommandBuffer() noexcept {
         currentStartIt = currentEndIt;
         if (currentEndIt != mCommandBuffer.end()) {// there's at least one more shader to draw with
             currentEndIt = std::upper_bound(
-                    currentEndIt, mCommandBuffer.end(), *currentEndIt,
+                    currentEndIt, mCommandIterator, *currentEndIt,
                     [](const RenderCommand& lhs, const RenderCommand& rhs) { return lhs.shaderName < rhs.shaderName; });
         }
         flushVertexAndIndexData();
     }
-    mCommandBuffer.clear();
+    mCommandIterator = mCommandBuffer.begin();
 }
 
 void Renderer::flushVertexAndIndexData() noexcept {
-    if (mVertexData.empty()) {
+    if (mVertexIterator == mVertexData.begin()) {
         return;
     }
     // flush all buffers
     {
         SCOPED_TIMER_NAMED("submit data");
-        mVertexBuffer.submitVertexData(mVertexData);
-        mVertexBuffer.submitIndexData(mIndexData, GLDataUsagePattern::DynamicDraw);
+        mVertexBuffer.submitVertexData(mVertexData.begin(), mVertexIterator);
+        mVertexBuffer.submitIndexData(mIndexData.begin(), mIndexIterator);
     }
     mVertexBuffer.bind();
     for (std::size_t i = 0; i < mCurrentTextureNames.size(); ++i) {
         Texture::bind(mCurrentTextureNames[i], gsl::narrow_cast<GLint>(i));
     }
-
     glDrawElements(GL_TRIANGLES, gsl::narrow_cast<GLsizei>(mVertexBuffer.indicesCount()), GL_UNSIGNED_INT, nullptr);
-    mVertexData.clear();
-    mIndexData.clear();
+    mVertexIterator = mVertexData.begin();
+    mIndexIterator = mIndexData.begin();
     mCurrentTextureNames.clear();
     mNumTrianglesInCurrentBatch = 0ULL;
     mRenderStats.numBatches += 1ULL;
@@ -137,7 +142,7 @@ void Renderer::addVertexAndIndexDataFromRenderCommand(const Renderer::RenderComm
     }
 
     if ((!foundTexture && mCurrentTextureNames.size() == mCurrentTextureNames.capacity()) ||
-        (mNumTrianglesInCurrentBatch + 2ULL > mVertexData.capacity())) {
+        (mVertexData.end() - mVertexIterator) < 4) {
         flushVertexAndIndexData();
     }
     if (!foundTexture) {
@@ -145,18 +150,26 @@ void Renderer::addVertexAndIndexDataFromRenderCommand(const Renderer::RenderComm
         mCurrentTextureNames.push_back(renderCommand.textureName);
     }
 
-    const auto indexOffset = gsl::narrow_cast<GLuint>(mVertexData.size());
-    mVertexData.emplace_back(renderCommand.transform * glm::vec4{ -1.0f, -1.0f, 0.0f, 1.0f },
-                             glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f }, glm::vec2{ 0.0f, 0.0f }, textureIndex);
-    mVertexData.emplace_back(renderCommand.transform * glm::vec4{ 1.0f, -1.0f, 0.0f, 1.0f },
-                             glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f }, glm::vec2{ 1.0f, 0.0f }, textureIndex);
-    mVertexData.emplace_back(renderCommand.transform * glm::vec4{ 1.0f, 1.0f, 0.0f, 1.0f },
-                             glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f }, glm::vec2{ 1.0f, 1.0f }, textureIndex);
-    mVertexData.emplace_back(renderCommand.transform * glm::vec4{ -1.0f, 1.0f, 0.0f, 1.0f },
-                             glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f }, glm::vec2{ 0.0f, 1.0f }, textureIndex);
-    mIndexData.emplace_back(indexOffset + 0, indexOffset + 1, indexOffset + 2);
-    mIndexData.emplace_back(indexOffset + 0, indexOffset + 2, indexOffset + 3);
-
+    const auto indexOffset = gsl::narrow_cast<GLuint>(mVertexIterator - mVertexData.begin());
+    constexpr std::array<glm::vec4, 4> positions{ glm::vec4{ -1.0f, -1.0f, 0.0f, 1.0f },
+                                                  glm::vec4{ 1.0f, -1.0f, 0.0f, 1.0f },
+                                                  glm::vec4{ 1.0f, 1.0f, 0.0f, 1.0f },
+                                                  glm::vec4{ -1.0f, 1.0f, 0.0f, 1.0f } };
+    constexpr std::array<glm::vec2, 4> texCoords{ glm::vec2{ 0.0f, 0.0f }, glm::vec2{ 1.0f, 0.0f },
+                                                  glm::vec2{ 1.0f, 1.0f }, glm::vec2{ 0.0f, 1.0f } };
+    for (std::size_t i = 0; i < 4; ++i) {
+        mVertexIterator->position = renderCommand.transform * positions[i];
+        mVertexIterator->color = renderCommand.color;
+        mVertexIterator->texCoords = texCoords[i];
+        mVertexIterator->texIndex = textureIndex;
+        ++mVertexIterator;
+    }
+    for (GLuint i = 1; i <= 2; ++i) {
+        mIndexIterator->i0 = indexOffset;
+        mIndexIterator->i1 = indexOffset + i;
+        mIndexIterator->i2 = indexOffset + i + 1;
+        ++mIndexIterator;
+    }
     mNumTrianglesInCurrentBatch += 2ULL;
     mRenderStats.numVertices += 4ULL;
     mRenderStats.numTriangles += 2ULL;
