@@ -45,6 +45,7 @@ public:
         } else {
             glBufferSubData(GL_ARRAY_BUFFER, 0, size, data.data());
         }
+        spdlog::info("Submitting {} bytes of vertex data", size);
     }
 
     template<typename VertexData>
@@ -52,12 +53,17 @@ public:
         submitVertexData(std::span{ std::forward<VertexData>(data) });
     }
 
+    template<typename Iterator>
+    void submitVertexData(Iterator begin, Iterator end) noexcept {
+        submitVertexData(std::span{ begin, end });
+    }
+
     template<typename IndexData>
-    void submitIndexData(std::span<IndexData> data, GLDataUsagePattern dataUsagePattern) noexcept {
+    void submitIndexData(std::span<IndexData> data) noexcept {
         bindElementBufferObject();
         const GLsizeiptr size = data.size() * sizeof(typename decltype(data)::value_type);
         if (size > mCurrentIndexBufferSize) {
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data.data(), static_cast<GLenum>(dataUsagePattern));
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data.data(), static_cast<GLenum>(mDataUsagePattern));
             mCurrentIndexBufferSize = size;
         } else {
             glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, size, data.data());
@@ -65,11 +71,17 @@ public:
         // TODO: handle the possibility of varying data type for OpenGL indices
         static_assert(sizeof(IndexData::i0) == 4);
         mNumIndices = data.size() * sizeof(typename decltype(data)::value_type) / sizeof(IndexData::i0);
+        spdlog::info("Submitting {} bytes of index data ({} indices)", size, mNumIndices);
     }
 
     template<typename IndexData>
-    void submitIndexData(IndexData&& data, GLDataUsagePattern dataUsagePattern) noexcept {
-        submitIndexData(std::span{ std::forward<IndexData>(data) }, dataUsagePattern);
+    void submitIndexData(IndexData&& data) noexcept {
+        submitIndexData(std::span{ std::forward<IndexData>(data) });
+    }
+
+    template<typename Iterator>
+    void submitIndexData(Iterator begin, Iterator end) noexcept {
+        submitIndexData(std::span{ begin, end });
     }
 
 private:

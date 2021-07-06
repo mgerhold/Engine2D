@@ -72,6 +72,9 @@ private:
     std::vector<RenderCommand> mCommandBuffer;
     std::vector<VertexData> mVertexData;
     std::vector<IndexData> mIndexData;
+    decltype(mCommandBuffer)::iterator mCommandIterator;
+    decltype(mVertexData)::iterator mVertexIterator;
+    decltype(mIndexData)::iterator mIndexIterator;
     VertexBuffer mVertexBuffer;
     RenderStats mRenderStats;
     std::vector<GLuint> mCurrentTextureNames;
