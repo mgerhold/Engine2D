@@ -10,6 +10,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <algorithm>
 #include <execution>
+#include <array>
 
 Renderer::Renderer()
     : mVertexBuffer(GLDataUsagePattern::DynamicDraw,
@@ -69,8 +70,6 @@ void Renderer::flushCommandBuffer() noexcept {
     if (mCommandIterator == mCommandBuffer.begin()) {
         return;
     }
-    spdlog::info("Flushing {} commands", std::distance(mCommandBuffer.begin(), mCommandIterator));
-
     {
         SCOPED_TIMER_NAMED("Sorting");
         std::sort(mCommandBuffer.begin(), mCommandIterator, [](const RenderCommand& lhs, const RenderCommand& rhs) {
@@ -121,8 +120,6 @@ void Renderer::flushVertexAndIndexData() noexcept {
     for (std::size_t i = 0; i < mCurrentTextureNames.size(); ++i) {
         Texture::bind(mCurrentTextureNames[i], gsl::narrow_cast<GLint>(i));
     }
-
-    spdlog::info("Drawing {} elements ({} tris)", mVertexBuffer.indicesCount(), mVertexBuffer.indicesCount() / 3);
     glDrawElements(GL_TRIANGLES, gsl::narrow_cast<GLsizei>(mVertexBuffer.indicesCount()), GL_UNSIGNED_INT, nullptr);
     mVertexIterator = mVertexData.begin();
     mIndexIterator = mIndexData.begin();
@@ -145,9 +142,7 @@ void Renderer::addVertexAndIndexDataFromRenderCommand(const Renderer::RenderComm
     }
 
     if ((!foundTexture && mCurrentTextureNames.size() == mCurrentTextureNames.capacity()) ||
-        (std::distance(mVertexIterator, mVertexData.end()) < 4)) {
-        spdlog::info("iterator: {}, end: {}", std::distance(mVertexData.begin(), mVertexIterator),
-                     std::distance(mVertexData.begin(), mVertexData.end()));
+        (mVertexData.end() - mVertexIterator) < 4) {
         flushVertexAndIndexData();
     }
     if (!foundTexture) {
@@ -155,36 +150,26 @@ void Renderer::addVertexAndIndexDataFromRenderCommand(const Renderer::RenderComm
         mCurrentTextureNames.push_back(renderCommand.textureName);
     }
 
-    const auto indexOffset = gsl::narrow_cast<GLuint>(mVertexData.size());
-    *mVertexIterator++ = VertexData{ .position = renderCommand.transform * glm::vec4{ -1.0f, -1.0f, 0.0f, 1.0f },
-                                     .color = glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f },
-                                     .texCoords = glm::vec2{ 0.0f, 0.0f },
-                                     .texIndex = textureIndex };
-    *mVertexIterator++ = VertexData{ .position = renderCommand.transform * glm::vec4{ 1.0f, -1.0f, 0.0f, 1.0f },
-                                     .color = glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f },
-                                     .texCoords = glm::vec2{ 1.0f, 0.0f },
-                                     .texIndex = textureIndex };
-    *mVertexIterator++ = VertexData{ .position = renderCommand.transform * glm::vec4{ 1.0f, 1.0f, 0.0f, 1.0f },
-                                     .color = glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f },
-                                     .texCoords = glm::vec2{ 1.0f, 1.0f },
-                                     .texIndex = textureIndex };
-    *mVertexIterator++ = VertexData{ .position = renderCommand.transform * glm::vec4{ -1.0f, 1.0f, 0.0f, 1.0f },
-                                     .color = glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f },
-                                     .texCoords = glm::vec2{ 0.0f, 1.0f },
-                                     .texIndex = textureIndex };
-    *mIndexIterator++ = IndexData{ .i0 = indexOffset + 0, .i1 = indexOffset + 1, .i2 = indexOffset + 2 };
-    *mIndexIterator++ = IndexData{ .i0 = indexOffset + 0, .i1 = indexOffset + 2, .i2 = indexOffset + 3 };
-    /*mVertexData.emplace_back(renderCommand.transform * glm::vec4{ -1.0f, -1.0f, 0.0f, 1.0f },
-                             glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f }, glm::vec2{ 0.0f, 0.0f }, textureIndex);
-    mVertexData.emplace_back(renderCommand.transform * glm::vec4{ 1.0f, -1.0f, 0.0f, 1.0f },
-                             glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f }, glm::vec2{ 1.0f, 0.0f }, textureIndex);
-    mVertexData.emplace_back(renderCommand.transform * glm::vec4{ 1.0f, 1.0f, 0.0f, 1.0f },
-                             glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f }, glm::vec2{ 1.0f, 1.0f }, textureIndex);
-    mVertexData.emplace_back(renderCommand.transform * glm::vec4{ -1.0f, 1.0f, 0.0f, 1.0f },
-                             glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f }, glm::vec2{ 0.0f, 1.0f }, textureIndex);
-    mIndexData.emplace_back(indexOffset + 0, indexOffset + 1, indexOffset + 2);
-    mIndexData.emplace_back(indexOffset + 0, indexOffset + 2, indexOffset + 3);*/
-
+    const auto indexOffset = gsl::narrow_cast<GLuint>(mVertexIterator - mVertexData.begin());
+    constexpr std::array<glm::vec4, 4> positions{ glm::vec4{ -1.0f, -1.0f, 0.0f, 1.0f },
+                                                  glm::vec4{ 1.0f, -1.0f, 0.0f, 1.0f },
+                                                  glm::vec4{ 1.0f, 1.0f, 0.0f, 1.0f },
+                                                  glm::vec4{ -1.0f, 1.0f, 0.0f, 1.0f } };
+    constexpr std::array<glm::vec2, 4> texCoords{ glm::vec2{ 0.0f, 0.0f }, glm::vec2{ 1.0f, 0.0f },
+                                                  glm::vec2{ 1.0f, 1.0f }, glm::vec2{ 0.0f, 1.0f } };
+    for (std::size_t i = 0; i < 4; ++i) {
+        mVertexIterator->position = renderCommand.transform * positions[i];
+        mVertexIterator->color = renderCommand.color;
+        mVertexIterator->texCoords = texCoords[i];
+        mVertexIterator->texIndex = textureIndex;
+        ++mVertexIterator;
+    }
+    for (GLuint i = 1; i <= 2; ++i) {
+        mIndexIterator->i0 = indexOffset;
+        mIndexIterator->i1 = indexOffset + i;
+        mIndexIterator->i2 = indexOffset + i + 1;
+        ++mIndexIterator;
+    }
     mNumTrianglesInCurrentBatch += 2ULL;
     mRenderStats.numVertices += 4ULL;
     mRenderStats.numTriangles += 2ULL;

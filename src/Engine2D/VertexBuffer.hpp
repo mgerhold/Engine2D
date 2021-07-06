@@ -45,7 +45,6 @@ public:
         } else {
             glBufferSubData(GL_ARRAY_BUFFER, 0, size, data.data());
         }
-        spdlog::info("Submitting {} bytes of vertex data", size);
     }
 
     template<typename VertexData>
@@ -71,7 +70,6 @@ public:
         // TODO: handle the possibility of varying data type for OpenGL indices
         static_assert(sizeof(IndexData::i0) == 4);
         mNumIndices = data.size() * sizeof(typename decltype(data)::value_type) / sizeof(IndexData::i0);
-        spdlog::info("Submitting {} bytes of index data ({} indices)", size, mNumIndices);
     }
 
     template<typename IndexData>

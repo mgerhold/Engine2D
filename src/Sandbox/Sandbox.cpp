@@ -87,7 +87,7 @@ void Sandbox::render() noexcept {
     mRenderer.beginFrame();
     const auto offset = glm::vec3{ -gsl::narrow_cast<float>(getFramebufferSize().width) / 2.0f + 20.0f,
                                    -gsl::narrow_cast<float>(getFramebufferSize().height) / 2.0f + 20.0f, 0.0f };
-    constexpr int dimension = 1;
+    constexpr int dimension = 500;
     for (int x = 0; x < dimension; ++x) {
         for (int y = 0; y < dimension; ++y) {
             mRenderer.drawQuad(offset + glm::vec3{ static_cast<float>(x) * 40.0f, y * 40.0f, 0.0f }, 0.0f,
@@ -97,7 +97,7 @@ void Sandbox::render() noexcept {
     }
     mRenderer.endFrame();
     const RenderStats& stats = mRenderer.stats();
-    spdlog::info("Stats: {} tris, {} vertices ({} batches)", stats.numTriangles, stats.numVertices, stats.numBatches);
+    //spdlog::info("Stats: {} tris, {} vertices ({} batches)", stats.numTriangles, stats.numVertices, stats.numBatches);
 }
 
 void Sandbox::setupShaders() noexcept {
