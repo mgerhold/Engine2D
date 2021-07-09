@@ -66,6 +66,6 @@ void ScopedTimer::logResults() noexcept {
                      dataPoint.second.minDuration * 1000.0, dataPoint.second.maxDuration * 1000.0);
     }
 #else
-    spdlog::info("Unable to log time measurements. Please #define ENABLE_PROFILING 1 to activate measuring.");
+    spdlog::info("Unable to log time measurements. #define ENABLE_PROFILING 1 to activate measuring.");
 #endif
 }
