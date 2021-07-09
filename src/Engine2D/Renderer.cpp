@@ -110,13 +110,13 @@ void Renderer::flushVertexAndIndexData() noexcept {
     if (mVertexIterator == mVertexData.begin()) {
         return;
     }
+    mVertexBuffer.bind();
     // flush all buffers
     {
         SCOPED_TIMER_NAMED("submit data");
         mVertexBuffer.submitVertexData(mVertexData.begin(), mVertexIterator);
         mVertexBuffer.submitIndexData(mIndexData.begin(), mIndexIterator);
     }
-    mVertexBuffer.bind();
     for (std::size_t i = 0; i < mCurrentTextureNames.size(); ++i) {
         Texture::bind(mCurrentTextureNames[i], gsl::narrow_cast<GLint>(i));
     }

@@ -34,23 +34,6 @@ void Sandbox::setup() noexcept {
     }
 
     setupShaders();
-
-    const glm::vec4 v0{ -100.0f, -100.0f, 0.0f, 1.0f };
-    const glm::vec4 v1{ 100.0f, -100.0f, 0.0f, 1.0f };
-    const glm::vec4 v2{ 100.0f, 100.0f, 0.0f, 1.0f };
-    const glm::vec4 v3{ -100.0f, 100.0f, 0.0f, 1.0f };
-
-    const std::vector<GLfloat> vertices{
-        // position        // color             // UVs
-        v0.x, v0.y, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,// bottom left
-        v1.x, v1.y, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,// bottom right
-        v2.x, v2.y, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,// top right
-        v3.x, v3.y, 1.0f, 0.5f, 0.0f, 0.0f, 1.0f // top left
-    };
-    const std::vector<GLuint> indices{
-        0, 1, 2, 2, 3, 0,
-    };
-    mShaderPrograms.front().bind();
     glClearColor(73.f / 255.f, 54.f / 255.f, 87.f / 255.f, 1.f);
 }
 
@@ -87,7 +70,7 @@ void Sandbox::render() noexcept {
     mRenderer.beginFrame();
     const auto offset = glm::vec3{ -gsl::narrow_cast<float>(getFramebufferSize().width) / 2.0f + 20.0f,
                                    -gsl::narrow_cast<float>(getFramebufferSize().height) / 2.0f + 20.0f, 0.0f };
-    constexpr int dimension = 500;
+    constexpr int dimension = 200;
     for (int x = 0; x < dimension; ++x) {
         for (int y = 0; y < dimension; ++y) {
             mRenderer.drawQuad(offset + glm::vec3{ static_cast<float>(x) * 40.0f, y * 40.0f, 0.0f }, 0.0f,

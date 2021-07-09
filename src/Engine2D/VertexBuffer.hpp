@@ -37,13 +37,12 @@ public:
 
     template<typename VertexData>
     void submitVertexData(std::span<VertexData> data) noexcept {
-        bindVertexArrayObject();
         const GLsizeiptr size = data.size() * sizeof(typename decltype(data)::value_type);
         if (size > mCurrentVertexBufferSize) {
-            glBufferData(GL_ARRAY_BUFFER, size, data.data(), static_cast<GLenum>(mDataUsagePattern));
+            glNamedBufferData(mVertexBufferObjectName, size, data.data(), static_cast<GLenum>(mDataUsagePattern));
             mCurrentVertexBufferSize = size;
         } else {
-            glBufferSubData(GL_ARRAY_BUFFER, 0, size, data.data());
+            glNamedBufferSubData(mVertexBufferObjectName, 0, size, data.data());
         }
     }
 
@@ -59,13 +58,12 @@ public:
 
     template<typename IndexData>
     void submitIndexData(std::span<IndexData> data) noexcept {
-        bindElementBufferObject();
         const GLsizeiptr size = data.size() * sizeof(typename decltype(data)::value_type);
         if (size > mCurrentIndexBufferSize) {
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data.data(), static_cast<GLenum>(mDataUsagePattern));
+            glNamedBufferData(mElementBufferObjectName, size, data.data(), static_cast<GLenum>(mDataUsagePattern));
             mCurrentIndexBufferSize = size;
         } else {
-            glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, size, data.data());
+            glNamedBufferSubData(mElementBufferObjectName, 0, size, data.data());
         }
         // TODO: handle the possibility of varying data type for OpenGL indices
         static_assert(sizeof(IndexData::i0) == 4);
@@ -104,7 +102,6 @@ private:
 };
 
 void VertexBuffer::setVertexAttributeLayout(std::convertible_to<VertexAttributeDefinition> auto... args) const {
-    bind();
     const auto values = { args... };
     GLuint location{ 0U };
     std::uintptr_t offset{ 0U };
@@ -116,14 +113,17 @@ void VertexBuffer::setVertexAttributeLayout(std::convertible_to<VertexAttributeD
 
     // set vertex attributes
     std::for_each(values.begin(), values.end(),
-                  [&location, &offset, stride](const VertexAttributeDefinition& definition) {
+                  [this, &location, &offset, stride](const VertexAttributeDefinition& definition) {
+                      glEnableVertexArrayAttrib(mVertexArrayObjectName, location);
+                      glVertexArrayVertexBuffer(mVertexArrayObjectName, 0, mVertexBufferObjectName, 0, stride);
                       if (GLUtils::isIntegralType(definition.type)) {
-                          glVertexAttribIPointer(location, definition.count, definition.type, stride, (void*) offset);
+                          glVertexArrayAttribIFormat(mVertexArrayObjectName, location, definition.count,
+                                                     definition.type, gsl::narrow_cast<GLuint>(offset));
                       } else {
-                          glVertexAttribPointer(location, definition.count, definition.type, definition.normalized,
-                                                stride, (void*) offset);
+                          glVertexArrayAttribFormat(mVertexArrayObjectName, location, definition.count, definition.type,
+                                                    definition.normalized, gsl::narrow_cast<GLuint>(offset));
                       }
-                      glEnableVertexAttribArray(location);
+                      glVertexArrayAttribBinding(mVertexArrayObjectName, location, 0);
                       spdlog::info(
                               "Enabled vertex attribute {} (count {}, type {}, normalized {}, stride {}, "
                               "offset {})",
@@ -131,4 +131,6 @@ void VertexBuffer::setVertexAttributeLayout(std::convertible_to<VertexAttributeD
                       ++location;
                       offset += GLUtils::getSizeOfGLType(definition.type) * definition.count;
                   });
+    // attach index buffer to vertex array object
+    glVertexArrayElementBuffer(mVertexArrayObjectName, mElementBufferObjectName);
 }

@@ -8,17 +8,17 @@ VertexBuffer::VertexBuffer(GLDataUsagePattern usagePattern,
                            GLsizeiptr initialVertexBufferCapacityInBytes,
                            GLsizeiptr initialIndexBufferCapacityInBytes) noexcept
     : mDataUsagePattern{ usagePattern } {
-    glGenVertexArrays(1U, &mVertexArrayObjectName);
-    glGenBuffers(1U, &mVertexBufferObjectName);
-    glGenBuffers(1U, &mElementBufferObjectName);
-    bind();
+    glCreateVertexArrays(1U, &mVertexArrayObjectName);
+    glCreateBuffers(1U, &mVertexBufferObjectName);
+    glCreateBuffers(1U, &mElementBufferObjectName);
     if (initialVertexBufferCapacityInBytes > 0LL) {
-        glBufferData(GL_ARRAY_BUFFER, initialVertexBufferCapacityInBytes, nullptr, static_cast<GLenum>(usagePattern));
+        glNamedBufferData(mVertexBufferObjectName, initialVertexBufferCapacityInBytes, nullptr,
+                          static_cast<GLenum>(usagePattern));
         mCurrentVertexBufferSize = initialVertexBufferCapacityInBytes;
     }
     if (initialIndexBufferCapacityInBytes > 0LL) {
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, initialIndexBufferCapacityInBytes, nullptr,
-                     static_cast<GLenum>(usagePattern));
+        glNamedBufferData(mElementBufferObjectName, initialIndexBufferCapacityInBytes, nullptr,
+                          static_cast<GLenum>(usagePattern));
         mCurrentIndexBufferSize = initialIndexBufferCapacityInBytes;
     }
 }
