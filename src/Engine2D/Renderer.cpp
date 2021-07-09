@@ -13,7 +13,7 @@
 #include <array>
 
 Renderer::Renderer()
-    : mVertexBuffer(GLDataUsagePattern::DynamicDraw,
+    : mVertexBuffer(GLDataUsagePattern::StreamDraw,
                     maxCommandsPerBatch * 4ULL * sizeof(VertexData),
                     maxCommandsPerBatch * 6ULL * sizeof(IndexData)) {
     mCommandBuffer.resize(maxCommandsPerBatch);
