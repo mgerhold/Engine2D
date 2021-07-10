@@ -47,6 +47,7 @@ void Sandbox::processInput() noexcept {
         spdlog::info("A pressed");
     }
     if (mInput.isKeyDown(Key::A)) {// is currently held down?
+        spdlog::info("A is currently held down");
     }
     if (mInput.wasKeyReleased(Key::A)) {// released since last frame
         spdlog::info("A released");
@@ -70,7 +71,7 @@ void Sandbox::render() noexcept {
     mRenderer.beginFrame();
     const auto offset = glm::vec3{ -gsl::narrow_cast<float>(getFramebufferSize().width) / 2.0f + 20.0f,
                                    -gsl::narrow_cast<float>(getFramebufferSize().height) / 2.0f + 20.0f, 0.0f };
-    constexpr int dimension = 200;
+    constexpr int dimension = 20;
     for (int x = 0; x < dimension; ++x) {
         for (int y = 0; y < dimension; ++y) {
             mRenderer.drawQuad(offset + glm::vec3{ static_cast<float>(x) * 40.0f, static_cast<float>(y) * 40.0f, 0.0f },

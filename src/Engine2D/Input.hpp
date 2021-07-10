@@ -7,6 +7,7 @@
 #include <GLFW/glfw3.h>
 #include <vector>
 #include <array>
+#include <cstdint>
 
 enum class Key : std::size_t {
     // Unknown = GLFW_KEY_UNKNOWN,
@@ -136,20 +137,25 @@ static_assert(static_cast<int>(Key::LastKey) >= 0);
 
 class Input {
 public:
+    Input() noexcept;
+
     bool isKeyDown(Key key) const noexcept;
     bool wasKeyPressed(Key key) const noexcept;
     bool wasKeyRepeated(Key key) const noexcept;
     bool wasKeyReleased(Key key) const noexcept;
 
 private:
-    enum class KeyState { Down, Up, Pressed, Released, Repeated };
+    enum class KeyState : uint8_t { Down, Up, Pressed, Released, Repeated };
 
 private:
     void keyCallback(int glfwKeyCode, int glfwAction, int glfwModifier) noexcept;
     void nextFrame() noexcept;
 
 private:
-    std::vector<KeyState> mKeyBuffer{ static_cast<std::size_t>(Key::LastKey), KeyState::Up };
+    std::array<bool, static_cast<std::size_t>(Key::LastKey)> mKeyBuffer;
+    std::vector<Key> mPressedThisFrame;
+    std::vector<Key> mRepeatedThisFrame;
+    std::vector<Key> mReleasedThisFrame;
 
     template<typename T>
     friend class Application;

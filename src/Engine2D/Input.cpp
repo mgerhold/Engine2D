@@ -3,26 +3,31 @@
 //
 
 #include "Input.hpp"
+#include <range/v3/all.hpp>
 #include <algorithm>
 #include <cassert>
 
+Input::Input() noexcept {
+    std::fill(mKeyBuffer.begin(), mKeyBuffer.end(), false);
+    mPressedThisFrame.reserve(20);
+    mRepeatedThisFrame.reserve(20);
+    mReleasedThisFrame.reserve(20);
+}
+
 bool Input::isKeyDown(Key key) const noexcept {
-    const KeyState keyState = mKeyBuffer[static_cast<std::size_t>(key)];
-    return keyState == KeyState::Down ||
-           keyState == KeyState::Repeated ||
-           keyState == KeyState::Pressed;
+    return mKeyBuffer[static_cast<std::size_t>(key)];
 }
 
 bool Input::wasKeyPressed(Key key) const noexcept {
-    return mKeyBuffer[static_cast<std::size_t>(key)] == KeyState::Pressed;
+    return ranges::contains(mPressedThisFrame, key);
 }
 
 bool Input::wasKeyRepeated(Key key) const noexcept {
-    return mKeyBuffer[static_cast<std::size_t>(key)] == KeyState::Repeated;
+    return ranges::contains(mRepeatedThisFrame, key);
 }
 
 bool Input::wasKeyReleased(Key key) const noexcept {
-    return mKeyBuffer[static_cast<std::size_t>(key)] == KeyState::Released;
+    return ranges::contains(mReleasedThisFrame, key);
 }
 
 void Input::keyCallback(int glfwKeyCode, int glfwAction, int glfwModifier) noexcept {
@@ -32,13 +37,18 @@ void Input::keyCallback(int glfwKeyCode, int glfwAction, int glfwModifier) noexc
     }
     switch (glfwAction) {
         case GLFW_PRESS:
-            mKeyBuffer[static_cast<std::size_t>(glfwKeyCode)] = KeyState::Pressed;
-            break;
-        case GLFW_REPEAT:
-            mKeyBuffer[static_cast<std::size_t>(glfwKeyCode)] = KeyState::Repeated;
+            assert(!mKeyBuffer[static_cast<std::size_t>(glfwKeyCode)]);
+            mKeyBuffer[static_cast<std::size_t>(glfwKeyCode)] = true;
+            mPressedThisFrame.push_back(static_cast<Key>(glfwKeyCode));
             break;
         case GLFW_RELEASE:
-            mKeyBuffer[static_cast<std::size_t>(glfwKeyCode)] = KeyState::Released;
+            assert(mKeyBuffer[static_cast<std::size_t>(glfwKeyCode)]);
+            mKeyBuffer[static_cast<std::size_t>(glfwKeyCode)] = false;
+            mReleasedThisFrame.push_back(static_cast<Key>(glfwKeyCode));
+            break;
+        case GLFW_REPEAT:
+            assert(mKeyBuffer[static_cast<std::size_t>(glfwKeyCode)]);
+            mRepeatedThisFrame.push_back(static_cast<Key>(glfwKeyCode));
             break;
         default:
             break;
@@ -46,21 +56,7 @@ void Input::keyCallback(int glfwKeyCode, int glfwAction, int glfwModifier) noexc
 }
 
 void Input::nextFrame() noexcept {
-    for (auto& keyState : mKeyBuffer) {
-        switch (keyState) {
-            case KeyState::Released:
-                keyState = KeyState::Up;
-                continue;
-            case KeyState::Pressed:
-            case KeyState::Repeated:
-                keyState = KeyState::Down;
-                continue;
-            case KeyState::Down:
-            case KeyState::Up:
-                break;
-            default:
-                assert(false && "Invalid key state");
-                break;
-        }
-    }
+    mPressedThisFrame.clear();
+    mRepeatedThisFrame.clear();
+    mReleasedThisFrame.clear();
 }
