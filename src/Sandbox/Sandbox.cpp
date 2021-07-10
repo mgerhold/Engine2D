@@ -43,12 +43,12 @@ void Sandbox::update() noexcept {
 }
 
 void Sandbox::processInput() noexcept {
-    if (mInput.wasKeyPressed(Key::A)) { // pressed since last frame
+    if (mInput.wasKeyPressed(Key::A)) {// pressed since last frame
         spdlog::info("A pressed");
     }
-    if (mInput.isKeyDown(Key::A)) { // is currently held down?
+    if (mInput.isKeyDown(Key::A)) {// is currently held down?
     }
-    if (mInput.wasKeyReleased(Key::A)) { // released since last frame
+    if (mInput.wasKeyReleased(Key::A)) {// released since last frame
         spdlog::info("A released");
     }
 
@@ -73,8 +73,8 @@ void Sandbox::render() noexcept {
     constexpr int dimension = 200;
     for (int x = 0; x < dimension; ++x) {
         for (int y = 0; y < dimension; ++y) {
-            mRenderer.drawQuad(offset + glm::vec3{ static_cast<float>(x) * 40.0f, y * 40.0f, 0.0f }, 0.0f,
-                               glm::vec3{ 20.0f }, mShaderPrograms[y % mShaderPrograms.size()],
+            mRenderer.drawQuad(offset + glm::vec3{ static_cast<float>(x) * 40.0f, static_cast<float>(y) * 40.0f, 0.0f },
+                               0.0f, glm::vec3{ 20.0f }, mShaderPrograms[y % mShaderPrograms.size()],
                                mTextures[x % mTextures.size()]);
         }
     }

@@ -13,8 +13,8 @@
 #include <cmath>
 
 ScopedTimer::ScopedTimer(const char* name, std::source_location sourceLocation) noexcept
-    : mSourceLocation{ sourceLocation },
-      mName(name),
+    : mName(name),
+      mSourceLocation{ sourceLocation },
       startTime{ std::chrono::high_resolution_clock::now() } {
     ++sCurrentDepth;
 }

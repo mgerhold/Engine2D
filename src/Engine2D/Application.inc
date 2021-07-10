@@ -61,7 +61,6 @@ void Application<DerivedType>::run() noexcept {
         glfwPollEvents();
         ++numFramesDuringOutputInterval;
         const auto currentTime = std::chrono::high_resolution_clock::now();
-        const auto duration = std::chrono::duration<double>(currentTime - lastTime).count();
         lastTime = currentTime;
         if (currentTime >= lastFrameTimeOutput + frameTimeOutputInterval) {
             const double framesPerSecond =
