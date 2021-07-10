@@ -5,4 +5,4 @@
 #define STB_IMAGE_IMPLEMENTATION
 // TODO: Choose defines based on debug/release build
 #define STBI_FAILURE_USERMSG
-#include "stb_image/stb_image.h"
+#include <stb_image.h>

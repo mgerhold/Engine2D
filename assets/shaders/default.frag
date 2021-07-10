@@ -11,6 +11,7 @@ layout (binding = 0) uniform sampler2D uTextures[32];
 
 void main() {
     vec4 color = texture(uTextures[texIndex], texCoords) * fragmentColor;
+    //vec4 color = vec4(fragmentPosition.zzz, 1.0);
     /*vec4 color;
     if (texIndex == 0) {
         color = vec4(1.0, 0.0, 0.0, 1.0);

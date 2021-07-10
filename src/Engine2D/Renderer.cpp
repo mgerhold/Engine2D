@@ -65,7 +65,7 @@ void Renderer::drawQuad(T&& transform, const ShaderProgram& shader, const Textur
 void Renderer::flushCommandBuffer() noexcept {
     SCOPED_TIMER();
     if (mRenderStats.numBatches == 0ULL) {
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
     if (mCommandIterator == mCommandBuffer.begin()) {
         return;

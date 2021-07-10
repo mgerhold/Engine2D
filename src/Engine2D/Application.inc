@@ -1,5 +1,6 @@
 template<typename DerivedType>
-Application<DerivedType>::Application(const std::string& title, WindowSize size, OpenGLVersion version) noexcept {
+Application<DerivedType>::Application(const std::string& title, WindowSize size, OpenGLVersion version) noexcept
+    : mFrameBufferSize{ size } {
     glfwInit();
     spdlog::info("glfw initialized");
 #ifdef __APPLE__
@@ -16,12 +17,31 @@ Application<DerivedType>::Application(const std::string& title, WindowSize size,
         return;
     }
     glfwMakeContextCurrent(mWindowPtr);
-    glfwSetFramebufferSizeCallback(mWindowPtr,
-                                   [](GLFWwindow*, int width, int height) { glViewport(0, 0, width, height); });
     glfwSetWindowUserPointer(mWindowPtr, this);
-    glfwSetKeyCallback(mWindowPtr, [](GLFWwindow* window, int keyCode, int, int action, int mods) {
-        static_cast<Application*>(glfwGetWindowUserPointer(window))->mInput.keyCallback(keyCode, action, mods);
+    glfwSetFramebufferSizeCallback(mWindowPtr, [](GLFWwindow* window, int width, int height) {
+        auto& self = *static_cast<Application*>(glfwGetWindowUserPointer(window));
+        self.mFrameBufferSize.width = width;
+        self.mFrameBufferSize.height = height;
+        glViewport(0, 0, width, height);
     });
+    glfwSetKeyCallback(mWindowPtr, [](GLFWwindow* window, int keyCode, int, int action, int) {
+        static_cast<Application*>(glfwGetWindowUserPointer(window))->mInput.keyCallback(keyCode, action);
+    });
+    glfwSetCursorPosCallback(mWindowPtr, [](GLFWwindow* window, double mouseX, double mouseY) {
+        auto& self = *static_cast<Application*>(glfwGetWindowUserPointer(window));
+        mouseY = self.mFrameBufferSize.height - mouseY - 1;
+        mouseX -= self.mFrameBufferSize.width / 2.0f;
+        mouseY -= self.mFrameBufferSize.height / 2.0f;
+        self.mInput.mouseCallback(mouseX, mouseY);
+    });
+    glfwSetCursorEnterCallback(mWindowPtr, [](GLFWwindow* window, int entered) {
+        static_cast<Application*>(glfwGetWindowUserPointer(window))
+                ->mInput.mouseEnterOrLeaveCallback(static_cast<bool>(entered));
+    });
+    glfwSetMouseButtonCallback(mWindowPtr, [](GLFWwindow* window, int button, int action, int) {
+        static_cast<Application*>(glfwGetWindowUserPointer(window))->mInput.mouseButtonCallback(button, action);
+    });
+    mInput.mouseEnterOrLeaveCallback(static_cast<bool>(glfwGetWindowAttrib(mWindowPtr, GLFW_HOVERED)));
     spdlog::info("glfw window created");
     if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
         glfwTerminate();
@@ -42,6 +62,7 @@ Application<DerivedType>::Application(const std::string& title, WindowSize size,
         mError = true;
         return;
     }
+    glEnable(GL_DEPTH_TEST);
 }
 
 template<typename DerivedType>
@@ -175,7 +196,5 @@ void Application<DerivedType>::handleOpenGLDebugOutput(GLenum source,
 
 template<typename DerivedType>
 WindowSize Application<DerivedType>::getFramebufferSize() const {
-    WindowSize result;
-    glfwGetFramebufferSize(mWindowPtr, &result.width, &result.height);
-    return result;
+    return mFrameBufferSize;
 }

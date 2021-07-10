@@ -13,9 +13,10 @@ flat out uint texIndex;
 uniform mat4 projectionMatrix;
 
 void main() {
-   gl_Position = projectionMatrix * vec4(aPos.x, aPos.y, 0.0, 1.0);
-   fragmentPosition = aPos;
+   vec4 position = projectionMatrix * vec4(aPos.xyz, 1.0);
+   fragmentPosition = position.xyz;
    fragmentColor = aColor;
    texCoords = aTexCoords;
    texIndex = aTexIndex;
+   gl_Position = position;
 }

@@ -4,33 +4,50 @@
 
 #include "Input.hpp"
 #include <range/v3/all.hpp>
-#include <algorithm>
+#include <gsl/gsl>
 #include <cassert>
 
 Input::Input() noexcept {
-    std::fill(mKeyBuffer.begin(), mKeyBuffer.end(), false);
+    ranges::fill(mKeyBuffer, false);
     mPressedThisFrame.reserve(20);
     mRepeatedThisFrame.reserve(20);
     mReleasedThisFrame.reserve(20);
+    ranges::fill(mMouseButtonBuffer, false);
 }
 
-bool Input::isKeyDown(Key key) const noexcept {
+bool Input::keyDown(Key key) const noexcept {
     return mKeyBuffer[static_cast<std::size_t>(key)];
 }
 
-bool Input::wasKeyPressed(Key key) const noexcept {
+bool Input::keyPressed(Key key) const noexcept {
     return ranges::contains(mPressedThisFrame, key);
 }
 
-bool Input::wasKeyRepeated(Key key) const noexcept {
+bool Input::keyRepeated(Key key) const noexcept {
     return ranges::contains(mRepeatedThisFrame, key);
 }
 
-bool Input::wasKeyReleased(Key key) const noexcept {
+bool Input::keyReleased(Key key) const noexcept {
     return ranges::contains(mReleasedThisFrame, key);
 }
 
-void Input::keyCallback(int glfwKeyCode, int glfwAction, int glfwModifier) noexcept {
+bool Input::mouseInsideWindow() const noexcept {
+    return mMouseInsideWindow;
+}
+
+bool Input::mouseDown(MouseButton button) const noexcept {
+    return mMouseButtonBuffer[static_cast<std::size_t>(button)];
+}
+
+bool Input::mousePressed(MouseButton button) const noexcept {
+    return ranges::contains(mMouseButtonsPressedThisFrame, button);
+}
+
+bool Input::mouseReleased(MouseButton button) const noexcept {
+    return ranges::contains(mMouseButtonsReleasedThisFrame, button);
+}
+
+void Input::keyCallback(int glfwKeyCode, int glfwAction) noexcept {
     // TODO: handle key modifiers
     if (glfwKeyCode < 0) {
         return;
@@ -51,6 +68,29 @@ void Input::keyCallback(int glfwKeyCode, int glfwAction, int glfwModifier) noexc
             mRepeatedThisFrame.push_back(static_cast<Key>(glfwKeyCode));
             break;
         default:
+            assert(false && "invalid glfw action");
+            break;
+    }
+}
+
+void Input::mouseCallback(double mouseX, double mouseY) noexcept {
+    mMousePosition = glm::vec2{ gsl::narrow_cast<float>(mouseX), gsl::narrow_cast<float>(mouseY) };
+}
+
+void Input::mouseButtonCallback(int glfwButton, int glfwAction) noexcept {
+    switch (glfwAction) {
+        case GLFW_PRESS:
+            assert(!mMouseButtonBuffer[glfwButton]);
+            mMouseButtonBuffer[glfwButton] = true;
+            mMouseButtonsPressedThisFrame.push_back(static_cast<MouseButton>(glfwButton));
+            break;
+        case GLFW_RELEASE:
+            assert(mMouseButtonBuffer[glfwButton]);
+            mMouseButtonBuffer[glfwButton] = false;
+            mMouseButtonsReleasedThisFrame.push_back(static_cast<MouseButton>(glfwButton));
+            break;
+        default:
+            assert(false && "invalid glfw action");
             break;
     }
 }
@@ -59,4 +99,6 @@ void Input::nextFrame() noexcept {
     mPressedThisFrame.clear();
     mRepeatedThisFrame.clear();
     mReleasedThisFrame.clear();
+    mMouseButtonsPressedThisFrame.clear();
+    mMouseButtonsReleasedThisFrame.clear();
 }

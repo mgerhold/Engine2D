@@ -5,6 +5,8 @@
 #pragma once
 
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <spdlog/spdlog.h>
 #include <vector>
 #include <array>
 #include <cstdint>
@@ -135,20 +137,48 @@ enum class Key : std::size_t {
 };
 static_assert(static_cast<int>(Key::LastKey) >= 0);
 
+enum class MouseButton : std::size_t {
+    Left = 0,
+    Right = 1,
+    Middle = 2,
+    Button0 = 0,
+    Button1 = 1,
+    Button2 = 2,
+    Button3 = 3,
+    Button4 = 4,
+    Button5 = 5,
+    Button6 = 6,
+    Button7 = 7,
+    Button8 = 8,
+    LastButton = Button8,
+};
+
 class Input {
 public:
     Input() noexcept;
 
-    bool isKeyDown(Key key) const noexcept;
-    bool wasKeyPressed(Key key) const noexcept;
-    bool wasKeyRepeated(Key key) const noexcept;
-    bool wasKeyReleased(Key key) const noexcept;
+    [[nodiscard]] bool keyDown(Key key) const noexcept;
+    [[nodiscard]] bool keyPressed(Key key) const noexcept;
+    [[nodiscard]] bool keyRepeated(Key key) const noexcept;
+    [[nodiscard]] bool keyReleased(Key key) const noexcept;
+    [[nodiscard]] glm::vec2 mousePosition() const noexcept {
+        return mMousePosition;
+    }
+    [[nodiscard]] bool mouseInsideWindow() const noexcept;
+    [[nodiscard]] bool mouseDown(MouseButton button) const noexcept;
+    [[nodiscard]] bool mousePressed(MouseButton button) const noexcept;
+    [[nodiscard]] bool mouseReleased(MouseButton button) const noexcept;
 
 private:
     enum class KeyState : uint8_t { Down, Up, Pressed, Released, Repeated };
 
 private:
-    void keyCallback(int glfwKeyCode, int glfwAction, int glfwModifier) noexcept;
+    void keyCallback(int glfwKeyCode, int glfwAction) noexcept;
+    void mouseCallback(double mouseX, double mouseY) noexcept;
+    void mouseEnterOrLeaveCallback(bool entered) noexcept {
+        mMouseInsideWindow = entered;
+    }
+    void mouseButtonCallback(int glfwButton, int glfwAction) noexcept;
     void nextFrame() noexcept;
 
 private:
@@ -156,6 +186,12 @@ private:
     std::vector<Key> mPressedThisFrame;
     std::vector<Key> mRepeatedThisFrame;
     std::vector<Key> mReleasedThisFrame;
+
+    std::array<bool, static_cast<std::size_t>(MouseButton::LastButton)> mMouseButtonBuffer;
+    std::vector<MouseButton> mMouseButtonsPressedThisFrame;
+    std::vector<MouseButton> mMouseButtonsReleasedThisFrame;
+    glm::vec2 mMousePosition{ 0.0f };
+    bool mMouseInsideWindow{ false };
 
     template<typename T>
     friend class Application;

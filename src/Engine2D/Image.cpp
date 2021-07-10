@@ -3,7 +3,6 @@
 //
 
 #include "Image.hpp"
-#include "stb_image/stb_image.h"
 #include <spdlog/spdlog.h>
 
 tl::expected<Image, std::string> Image::LoadFromFile(const std::filesystem::path& filename, int numChannels) noexcept {

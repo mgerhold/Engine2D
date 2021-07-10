@@ -43,14 +43,24 @@ void Sandbox::update() noexcept {
 }
 
 void Sandbox::processInput() noexcept {
-    if (mInput.wasKeyPressed(Key::A)) {// pressed since last frame
+    if (mInput.keyPressed(Key::A)) {// pressed since last frame
         spdlog::info("A pressed");
     }
-    if (mInput.isKeyDown(Key::A)) {// is currently held down?
+    if (mInput.keyDown(Key::A)) {// is currently held down?
         spdlog::info("A is currently held down");
     }
-    if (mInput.wasKeyReleased(Key::A)) {// released since last frame
+    if (mInput.keyReleased(Key::A)) {// released since last frame
         spdlog::info("A released");
+    }
+    if (mInput.mousePressed(MouseButton::Button0)) {
+        spdlog::info("Left mouse button pressed");
+    }
+    if (mInput.mousePressed(MouseButton::Button1)) {
+        spdlog::info("Right mouse button pressed");
+    }
+    if (mInput.mouseDown(MouseButton::Button0)) {
+        const auto mousePosition = mInput.mousePosition();
+        spdlog::info("Mouse position: ({},{})", mousePosition.x, mousePosition.y);
     }
 
     if (glfwGetKey(getGLFWWindowPointer(), GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -61,9 +71,10 @@ void Sandbox::processInput() noexcept {
 void Sandbox::render() noexcept {
     SCOPED_TIMER();
     const auto framebufferSize = getFramebufferSize();
-    const auto projectionMatrix = glm::ortho<float>(
-            gsl::narrow_cast<float>(-framebufferSize.width / 2), gsl::narrow_cast<float>(framebufferSize.width / 2),
-            gsl::narrow_cast<float>(-framebufferSize.height / 2), gsl::narrow_cast<float>(framebufferSize.height / 2));
+    const auto projectionMatrix = glm::ortho<float>(gsl::narrow_cast<float>(-framebufferSize.width / 2),
+                                                    gsl::narrow_cast<float>(framebufferSize.width / 2),
+                                                    gsl::narrow_cast<float>(-framebufferSize.height / 2),
+                                                    gsl::narrow_cast<float>(framebufferSize.height / 2), -2.0f, 2.0f);
     for (auto& shaderProgram : mShaderPrograms) {
         shaderProgram.setUniform(Hash::staticHashString("projectionMatrix"), projectionMatrix);
     }
@@ -71,7 +82,7 @@ void Sandbox::render() noexcept {
     mRenderer.beginFrame();
     const auto offset = glm::vec3{ -gsl::narrow_cast<float>(getFramebufferSize().width) / 2.0f + 20.0f,
                                    -gsl::narrow_cast<float>(getFramebufferSize().height) / 2.0f + 20.0f, 0.0f };
-    constexpr int dimension = 20;
+    constexpr int dimension = 500;
     for (int x = 0; x < dimension; ++x) {
         for (int y = 0; y < dimension; ++y) {
             mRenderer.drawQuad(offset + glm::vec3{ static_cast<float>(x) * 40.0f, static_cast<float>(y) * 40.0f, 0.0f },
@@ -79,6 +90,10 @@ void Sandbox::render() noexcept {
                                mTextures[x % mTextures.size()]);
         }
     }
+    const auto mousePosition = mInput.mousePosition();
+    mRenderer.drawQuad(
+            glm::vec3{ mousePosition.x, mousePosition.y, mInput.mouseDown(MouseButton::Button0) ? -0.5f : 0.5f }, 0.0f,
+            glm::vec3{ 100.0f }, mShaderPrograms.front(), mTextures[mTextures.size() - 2]);
     mRenderer.endFrame();
     const RenderStats& stats = mRenderer.stats();
     //spdlog::info("Stats: {} tris, {} vertices ({} batches)", stats.numTriangles, stats.numVertices, stats.numBatches);

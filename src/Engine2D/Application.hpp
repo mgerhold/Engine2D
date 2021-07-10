@@ -58,6 +58,7 @@ private:
 private:
     GLFWwindow* mWindowPtr;
     bool mError{ false };
+    WindowSize mFrameBufferSize;
 };
 
 #include "Application.inc"
