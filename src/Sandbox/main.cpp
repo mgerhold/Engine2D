@@ -1,27 +1,57 @@
 #include "Sandbox.hpp"
-#include <SparseArray.hpp>
+#include "SparseSet.hpp"
 #include <cstdlib>
 #include <string>
 
-int main() {
-    // sparse array test code
-    SparseArray<std::string> sparseArray{ 100 };
-    sparseArray[42] = "The answer";
-    spdlog::info("'{}'", sparseArray[42]);
-    spdlog::info("'{}'", sparseArray[10]);
+struct Position {
+    float x, y;
+};
 
-    for (auto& str : sparseArray) {
-        str += " - concat";
+int main() {
+    constexpr uint32_t entity = 100;
+    SparseSet<Position, uint32_t> positions{ 1000, 100 };
+    assert(!positions.hasComponent(entity));
+    positions.addComponent(entity, Position{ .x = 1.0f, .y = 2.0f });
+    assert(positions.hasComponent(100));
+    const auto& position = positions.getComponent(entity);
+    spdlog::info("({}, {})", position.x, position.y);
+    positions.getComponentMutable(entity).x += 4.0f;
+    spdlog::info("({}, {})", position.x, position.y);
+    for (int i = 0; i < 10; ++i) {
+        positions.addComponent(entity + 10 + i, Position{ .x = 42.0f + i, .y = 42.0f });
     }
-    for (const auto& str : sparseArray) {
-        spdlog::info("'{}'", str);
+    positions.deleteComponent(entity + 10 + 3);
+    positions.deleteComponent(entity + 10 + 5);
+    assert(positions.hasComponent(entity + 10 + 0));
+    assert(positions.hasComponent(entity + 10 + 1));
+    assert(positions.hasComponent(entity + 10 + 2));
+    assert(!positions.hasComponent(entity + 10 + 3));
+    assert(positions.hasComponent(entity + 10 + 4));
+    assert(!positions.hasComponent(entity + 10 + 5));
+    assert(positions.hasComponent(entity + 10 + 6));
+    assert(positions.hasComponent(entity + 10 + 7));
+    assert(positions.hasComponent(entity + 10 + 8));
+    assert(positions.hasComponent(entity + 10 + 9));
+
+    assert(positions.componentCount() == 9);
+
+    for (const auto& [entity, position] : positions.zipView()) {
+        spdlog::info("Entity {} has position.x == {}", entity, position.x);
     }
+
+    positions.forEachComponent([] (Position& pos) {
+        pos.x += 100.0f;
+    });
+    positions.forEachPair([] (auto entity, Position& pos) {
+        pos.x += 10.0f;
+        spdlog::info("Entity {} has position.x == {}", entity, pos.x);
+    });
 
     // sandbox application
-    Sandbox sandbox{ "OpenGL application", WindowSize{ .width{ 800 }, .height{ 600 } },
+    /*Sandbox sandbox{ "OpenGL application", WindowSize{ .width{ 800 }, .height{ 600 } },
                      OpenGLVersion{ .major{ 4 }, .minor{ 5 } } };
     if (sandbox.hasError()) {
         return EXIT_FAILURE;
     }
-    sandbox.run();
+    sandbox.run();*/
 }
