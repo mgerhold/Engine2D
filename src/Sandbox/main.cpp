@@ -35,16 +35,16 @@ int main() {
 
     assert(positions.componentCount() == 9);
 
-    for (const auto& [entity, position] : positions.zipView()) {
-        spdlog::info("Entity {} has position.x == {}", entity, position.x);
+    for (const auto& [ent, pos] : positions.zipView()) {
+        spdlog::info("Entity {} has position.x == {}", ent, pos.x);
     }
 
     positions.forEachComponent([] (Position& pos) {
         pos.x += 100.0f;
     });
-    positions.forEachPair([] (auto entity, Position& pos) {
+    positions.forEachPair([] (auto ent, Position& pos) {
         pos.x += 10.0f;
-        spdlog::info("Entity {} has position.x == {}", entity, pos.x);
+        spdlog::info("Entity {} has position.x == {}", ent, pos.x);
     });
 
     // sandbox application
