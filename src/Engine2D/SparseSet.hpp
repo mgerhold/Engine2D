@@ -11,10 +11,9 @@
 #include <type_traits>
 #include <concepts>
 
-template<typename Component, typename Entity>
-class SparseSet {
+template<typename Component, std::unsigned_integral Entity>
+class SparseSet final {
 public:
-    static_assert(std::is_unsigned<Entity>::value, "Entity type must be an unsigned integer type.");
     using value_type = Component;
 
 public:
@@ -53,21 +52,21 @@ private:
     std::vector<Component> mComponentVector;
 };
 
-template<typename Component, typename Entity>
+template<typename Component, std::unsigned_integral Entity>
 SparseSet<Component, Entity>::SparseSet(Entity initialSetSize, Entity initialComponentCapacity) noexcept
     : mSparseVector(initialSetSize, InvalidEntity) {
     mDenseVector.reserve(initialComponentCapacity);
     mComponentVector.reserve(initialComponentCapacity);
 }
 
-template<typename Component, typename Entity>
+template<typename Component, std::unsigned_integral Entity>
 bool SparseSet<Component, Entity>::hasComponent(Entity entity) const noexcept {
     assert(entity < mSparseVector.size() && "Invalid entity id.");
     const auto denseIndex = mSparseVector[entity];
     return denseIndex < mDenseVector.size();
 }
 
-template<typename Component, typename Entity>
+template<typename Component, std::unsigned_integral Entity>
 template<typename T>
 void SparseSet<Component, Entity>::addComponent(Entity entity, T&& component) noexcept {
     assert(entity < mSparseVector.size() && "Invalid entity id.");
@@ -76,19 +75,19 @@ void SparseSet<Component, Entity>::addComponent(Entity entity, T&& component) no
     mComponentVector.push_back(std::forward<T>(component));
 }
 
-template<typename Component, typename Entity>
+template<typename Component, std::unsigned_integral Entity>
 const Component& SparseSet<Component, Entity>::getComponent(Entity entity) const noexcept {
     assert(hasComponent(entity) && "The given entity doesn't have an instance of this component.");
     return mComponentVector[mSparseVector[entity]];
 }
 
-template<typename Component, typename Entity>
+template<typename Component, std::unsigned_integral Entity>
 Component& SparseSet<Component, Entity>::getComponentMutable(Entity entity) noexcept {
     assert(hasComponent(entity) && "The given entity doesn't have an instance of this component.");
     return mComponentVector[mSparseVector[entity]];
 }
 
-template<typename Component, typename Entity>
+template<typename Component, std::unsigned_integral Entity>
 void SparseSet<Component, Entity>::deleteComponent(Entity entity) noexcept {
     using std::swap;
     assert(hasComponent(entity) && "The given entity doesn't have an instance of this component.");
@@ -102,16 +101,16 @@ void SparseSet<Component, Entity>::deleteComponent(Entity entity) noexcept {
     assert(mDenseVector.size() == mComponentVector.size());
 }
 
-template<typename Component, typename Entity>
+template<typename Component, std::unsigned_integral Entity>
 auto SparseSet<Component, Entity>::entityView() const noexcept {
     return mDenseVector | ranges::views::all;
 }
-template<typename Component, typename Entity>
+template<typename Component, std::unsigned_integral Entity>
 auto SparseSet<Component, Entity>::componentView() const noexcept {
     return mComponentVector | ranges::views::all;
 }
 
-template<typename Component, typename Entity>
+template<typename Component, std::unsigned_integral Entity>
 template<typename Callable>
 void SparseSet<Component, Entity>::forEachComponent(Callable callable) noexcept {
     for (auto& component : mComponentVector) {
@@ -119,12 +118,12 @@ void SparseSet<Component, Entity>::forEachComponent(Callable callable) noexcept 
     }
 }
 
-template<typename Component, typename Entity>
+template<typename Component, std::unsigned_integral Entity>
 auto SparseSet<Component, Entity>::zipView() const noexcept {
     return ranges::views::zip(mDenseVector, mComponentVector);
 }
 
-template<typename Component, typename Entity>
+template<typename Component, std::unsigned_integral Entity>
 template<typename Callable>
 void SparseSet<Component, Entity>::forEachPair(Callable callable) noexcept {
     assert(mDenseVector.size() == mComponentVector.size());

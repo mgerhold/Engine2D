@@ -1,15 +1,21 @@
 #include "Sandbox.hpp"
 #include "SparseSet.hpp"
+#include "ComponentHolder.hpp"
 #include <cstdlib>
 #include <string>
+
+using Entity = uint32_t;
 
 struct Position {
     float x, y;
 };
 
 int main() {
-    constexpr uint32_t entity = 100;
-    SparseSet<Position, uint32_t> positions{ 1000, 100 };
+    ComponentHolder<Entity> components{ 1000 };
+    auto& positions = components.getMutable<Position>();
+
+    constexpr Entity entity = 100;
+    //SparseSet<Position, uint32_t> positions{ 1000, 100 };
     assert(!positions.hasComponent(entity));
     positions.addComponent(entity, Position{ .x = 1.0f, .y = 2.0f });
     assert(positions.hasComponent(100));
