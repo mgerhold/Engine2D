@@ -77,4 +77,5 @@ target_include_directories(Engine2D PRIVATE ${STB_INCLUDE_DIRS})
 target_link_libraries(Sandbox PRIVATE spdlog::spdlog spdlog::spdlog_header_only)
 target_link_libraries(Sandbox PRIVATE Engine2D)
 
-
+enable_testing()
+add_subdirectory(tests)
