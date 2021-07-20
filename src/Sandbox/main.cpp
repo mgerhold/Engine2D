@@ -15,7 +15,6 @@ int main() {
     auto& positions = components.getMutable<Position>();
 
     constexpr Entity entity = 100;
-    //SparseSet<Position, uint32_t> positions{ 1000, 100 };
     assert(!positions.hasComponent(entity));
     positions.addComponent(entity, Position{ .x = 1.0f, .y = 2.0f });
     assert(positions.hasComponent(100));
