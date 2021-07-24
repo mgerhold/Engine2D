@@ -36,7 +36,7 @@ public:
     template<typename Component>
     [[nodiscard]] const SparseSet<Component, Entity>& getComponent() const noexcept;
 
-    template<typename... Components>
+    template<typename FirstComponent, typename... Components>
     [[nodiscard]] auto getComponents() noexcept;
 
 private:
@@ -73,14 +73,14 @@ const SparseSet<Component, Entity>& ComponentHolder<Entity>::getComponent() cons
 }
 
 template<std::unsigned_integral Entity>
-template<typename... Components>
+template<typename FirstComponent, typename... Components>
 [[nodiscard]] auto ComponentHolder<Entity>::getComponents() noexcept {
-    const auto entityViews = { getComponent<Components>().entityView()... };
-    const auto minView = *std::min_element(entityViews.begin(), entityViews.end(), [](auto& lhs, auto& rhs) {
-        return lhs.size() < rhs.size();
-    }) | ranges::views::all;
-    return minView |
-           ranges::views::filter([this](auto entity) { return (hasComponent<Components>(entity) && ...); });
+    return getComponentMutable<FirstComponent>().mutableZipView() |
+           ranges::views::filter([this](auto tuple) { return (hasComponent<Components>(std::get<0>(tuple)) && ...); }) |
+           ranges::views::transform([this](auto tuple) {
+               return std::make_tuple(std::get<0>(tuple), std::get<1>(tuple),
+                                      getComponentMutable<Components>().getComponentMutable(std::get<0>(tuple))...);
+           });
 }
 
 template<std::unsigned_integral Entity>
