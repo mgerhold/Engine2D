@@ -10,6 +10,7 @@
 #include <concepts>
 #include <vector>
 #include <cassert>
+#include <functional>
 
 template<std::unsigned_integral Entity>
 class ComponentHolder final {
@@ -24,10 +25,19 @@ public:
     void create() noexcept;
 
     template<typename Component>
-    [[nodiscard]] SparseSet<Component, Entity>& getMutable() noexcept;
+    void addComponent(Entity entity, const Component& component) noexcept;
 
     template<typename Component>
-    [[nodiscard]] const SparseSet<Component, Entity>& get() const noexcept;
+    [[nodiscard]] bool hasComponent(Entity entity) const noexcept;
+
+    template<typename Component>
+    [[nodiscard]] SparseSet<Component, Entity>& getComponentMutable() noexcept;
+
+    template<typename Component>
+    [[nodiscard]] const SparseSet<Component, Entity>& getComponent() const noexcept;
+
+    template<typename... Components>
+    [[nodiscard]] auto getComponents() noexcept;
 
 private:
     template<typename Component>
@@ -35,7 +45,7 @@ private:
 
 private:
     std::vector<void*> mAddresses;
-    std::vector<void(*)(void*)> mDestructors;
+    std::vector<void (*)(void*)> mDestructors;
     std::size_t mSetSize;
 };
 
@@ -47,7 +57,7 @@ void ComponentHolder<Entity>::create() noexcept {
 
 template<std::unsigned_integral Entity>
 template<typename Component>
-SparseSet<Component, Entity>& ComponentHolder<Entity>::getMutable() noexcept {
+SparseSet<Component, Entity>& ComponentHolder<Entity>::getComponentMutable() noexcept {
     using SetType = SparseSet<Component, Entity>;
     const auto typeIdentifier = growIfNecessaryAndGetTypeIdentifier<Component>();
     return *static_cast<SetType*>(mAddresses[typeIdentifier]);
@@ -55,11 +65,34 @@ SparseSet<Component, Entity>& ComponentHolder<Entity>::getMutable() noexcept {
 
 template<std::unsigned_integral Entity>
 template<typename Component>
-const SparseSet<Component, Entity>& ComponentHolder<Entity>::get() const noexcept {
+const SparseSet<Component, Entity>& ComponentHolder<Entity>::getComponent() const noexcept {
     using SetType = SparseSet<Component, Entity>;
     const auto typeIdentifier = TypeIdentifier::get<Component>();
     assert(typeIdentifier < mAddresses.size());
     return *static_cast<SetType*>(mAddresses[typeIdentifier]);
+}
+
+template<std::unsigned_integral Entity>
+template<typename... Components>
+[[nodiscard]] auto ComponentHolder<Entity>::getComponents() noexcept {
+    const auto entityViews = { getComponent<Components>().entityView()... };
+    const auto minView = *std::min_element(entityViews.begin(), entityViews.end(), [](auto& lhs, auto& rhs) {
+        return lhs.size() < rhs.size();
+    }) | ranges::views::all;
+    return minView |
+           ranges::views::filter([this](auto entity) { return (hasComponent<Components>(entity) && ...); });
+}
+
+template<std::unsigned_integral Entity>
+template<typename Component>
+void ComponentHolder<Entity>::addComponent(Entity entity, const Component& component) noexcept {
+    getComponentMutable<Component>().addComponent(entity, std::move(component));
+}
+
+template<std::unsigned_integral Entity>
+template<typename Component>
+[[nodiscard]] bool ComponentHolder<Entity>::hasComponent(Entity entity) const noexcept {
+    return getComponent<Component>().hasComponent(entity);
 }
 
 template<std::unsigned_integral Entity>
@@ -74,11 +107,15 @@ template<typename Component>
 std::size_t ComponentHolder<Entity>::growIfNecessaryAndGetTypeIdentifier() noexcept {
     using SetType = SparseSet<Component, Entity>;
     const auto typeIdentifier = TypeIdentifier::get<Component>();
-    if (typeIdentifier >= mDestructors.size()) {
+    const bool needsResizing = typeIdentifier >= mDestructors.size();
+    if (!needsResizing && mAddresses[typeIdentifier] != nullptr) {
+        return typeIdentifier;
+    }
+    if (needsResizing) {
         mAddresses.resize(typeIdentifier + 1);
         mDestructors.resize(typeIdentifier + 1);
-        mAddresses[typeIdentifier] = new SetType{ static_cast<Entity>(mSetSize) };
-        mDestructors[typeIdentifier] = [](void* address) { delete static_cast<SetType*>(address); };
     }
+    mAddresses[typeIdentifier] = new SetType{ static_cast<Entity>(mSetSize) };
+    mDestructors[typeIdentifier] = [](void* address) { delete static_cast<SetType*>(address); };
     return typeIdentifier;
 }

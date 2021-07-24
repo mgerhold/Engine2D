@@ -32,6 +32,7 @@ public:
         return mComponentVector.size();
     }
 
+    [[nodiscard]] auto mutableView() noexcept;
     [[nodiscard]] auto entityView() const noexcept;
     [[nodiscard]] auto componentView() const noexcept;
 
@@ -39,6 +40,7 @@ public:
     void forEachComponent(Callable callable) noexcept;
 
     [[nodiscard]] auto zipView() const noexcept;
+    [[nodiscard]] auto mutableZipView() noexcept;
 
     template<typename Callable>
     void forEachPair(Callable callable) noexcept;
@@ -102,6 +104,11 @@ void SparseSet<Component, Entity>::deleteComponent(Entity entity) noexcept {
 }
 
 template<typename Component, std::unsigned_integral Entity>
+[[nodiscard]] auto SparseSet<Component, Entity>::mutableView() noexcept {
+    return mComponentVector | ranges::views::all;
+}
+
+template<typename Component, std::unsigned_integral Entity>
 auto SparseSet<Component, Entity>::entityView() const noexcept {
     return mDenseVector | ranges::views::all;
 }
@@ -121,6 +128,12 @@ void SparseSet<Component, Entity>::forEachComponent(Callable callable) noexcept 
 template<typename Component, std::unsigned_integral Entity>
 auto SparseSet<Component, Entity>::zipView() const noexcept {
     return ranges::views::zip(mDenseVector, mComponentVector);
+}
+
+template<typename Component, std::unsigned_integral Entity>
+auto SparseSet<Component, Entity>::mutableZipView() noexcept {
+    const auto& entities = mDenseVector;
+    return ranges::views::zip(entities, mComponentVector);
 }
 
 template<typename Component, std::unsigned_integral Entity>
