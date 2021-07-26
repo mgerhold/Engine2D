@@ -1,9 +1,10 @@
 #include "Sandbox.hpp"
 #include "SparseSet.hpp"
-#include "ComponentHolder.hpp"
+#include "Registry.hpp"
 #include <cstdlib>
 #include <string>
 #include <range/v3/all.hpp>
+#include <tuple>
 
 using Entity = uint32_t;
 
@@ -16,17 +17,19 @@ struct Velocity {
 };
 
 int main() {
-    ComponentHolder<Entity> registry{ 1000 };
+    Registry<Entity> registry{ 1000 };
     for (Entity i = 10; i < 20; ++i) {
         registry.addComponent<Position>(i, Position{ 2.0f, 3.0f });
         if (i % 2 == 0) {
             registry.addComponent<Velocity>(i, Velocity{ 42.0f, 69.0f });
         }
     }
+
     for (auto&& [entity, position, velocity] : registry.getComponents<Position, Velocity>()) {
         spdlog::info("entity {} has position ({}, {}) and velocity ({}, {})", entity, position.x, position.y,
                      velocity.x, velocity.y);
     }
+
     /*spdlog::info("=============");
     for (auto entity : registry.getComponents<Position>()) {
         spdlog::info(entity);

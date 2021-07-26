@@ -75,24 +75,25 @@ const SparseSet<Component, Entity>& ComponentHolder<Entity>::getComponent() cons
 template<std::unsigned_integral Entity>
 template<typename FirstComponent, typename... Components>
 [[nodiscard]] auto ComponentHolder<Entity>::getComponents() noexcept {
-    return getComponentMutable<FirstComponent>().mutableZipView() |
-           ranges::views::filter([this](auto tuple) { return (hasComponent<Components>(std::get<0>(tuple)) && ...); }) |
-           ranges::views::transform([this](auto tuple) {
+    using ranges::views::filter, ranges::views::transform, ranges::views::zip;
+    return zip(getComponent<FirstComponent>().indices(), getComponentMutable<FirstComponent>().elementsMutable()) |
+           filter([this](auto&& tuple) { return (hasComponent<Components>(std::get<0>(tuple)) && ...); }) |
+           transform([this](auto&& tuple) {
                return std::make_tuple(std::get<0>(tuple), std::get<1>(tuple),
-                                      getComponentMutable<Components>().getComponentMutable(std::get<0>(tuple))...);
+                                      getComponentMutable<Components>().getMutable(std::get<0>(tuple))...);
            });
 }
 
 template<std::unsigned_integral Entity>
 template<typename Component>
 void ComponentHolder<Entity>::addComponent(Entity entity, const Component& component) noexcept {
-    getComponentMutable<Component>().addComponent(entity, std::move(component));
+    getComponentMutable<Component>().add(entity, std::move(component));
 }
 
 template<std::unsigned_integral Entity>
 template<typename Component>
 [[nodiscard]] bool ComponentHolder<Entity>::hasComponent(Entity entity) const noexcept {
-    return getComponent<Component>().hasComponent(entity);
+    return getComponent<Component>().has(entity);
 }
 
 template<std::unsigned_integral Entity>
