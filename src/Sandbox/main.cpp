@@ -17,29 +17,11 @@ struct Velocity {
 };
 
 int main() {
-    Registry<Entity> registry{ 1000 };
-    for (Entity i = 10; i < 20; ++i) {
-        registry.addComponent<Position>(i, Position{ 2.0f, 3.0f });
-        if (i % 2 == 0) {
-            registry.addComponent<Velocity>(i, Velocity{ 42.0f, 69.0f });
-        }
-    }
-
-    for (auto&& [entity, position, velocity] : registry.getComponents<Position, Velocity>()) {
-        spdlog::info("entity {} has position ({}, {}) and velocity ({}, {})", entity, position.x, position.y,
-                     velocity.x, velocity.y);
-    }
-
-    /*spdlog::info("=============");
-    for (auto entity : registry.getComponents<Position>()) {
-        spdlog::info(entity);
-    }*/
-
     // sandbox application
-    /*Sandbox sandbox{ "OpenGL application", WindowSize{ .width{ 800 }, .height{ 600 } },
+    Sandbox sandbox{ "OpenGL application", WindowSize{ .width{ 800 }, .height{ 600 } },
                      OpenGLVersion{ .major{ 4 }, .minor{ 5 } } };
     if (sandbox.hasError()) {
         return EXIT_FAILURE;
     }
-    sandbox.run();*/
+    sandbox.run();
 }

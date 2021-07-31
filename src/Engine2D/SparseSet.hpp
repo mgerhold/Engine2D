@@ -11,7 +11,7 @@
 #include <type_traits>
 #include <concepts>
 
-template<typename T, std::unsigned_integral SparseIndex>
+template<typename T, std::unsigned_integral SparseIndex, SparseIndex invalidIndex>
 class SparseSet final {
 public:
     using value_type = T;
@@ -32,31 +32,28 @@ public:
     [[nodiscard]] auto elementsMutable() noexcept;
 
 private:
-    static constexpr SparseIndex InvalidEntity = std::numeric_limits<SparseIndex>::max();
-
-private:
     std::vector<SparseIndex> mSparseVector;
     std::vector<SparseIndex> mDenseVector;
     std::vector<T> mElementVector;
 };
 
-template<typename T, std::unsigned_integral SparseIndex>
-SparseSet<T, SparseIndex>::SparseSet(SparseIndex initialSetSize, SparseIndex initialElementCapacity) noexcept
-    : mSparseVector(initialSetSize, InvalidEntity) {
+template<typename T, std::unsigned_integral SparseIndex, SparseIndex invalidIndex>
+SparseSet<T, SparseIndex, invalidIndex>::SparseSet(SparseIndex initialSetSize, SparseIndex initialElementCapacity) noexcept
+    : mSparseVector(initialSetSize, invalidIndex) {
     mDenseVector.reserve(initialElementCapacity);
     mElementVector.reserve(initialElementCapacity);
 }
 
-template<typename T, std::unsigned_integral SparseIndex>
-bool SparseSet<T, SparseIndex>::has(SparseIndex index) const noexcept {
+template<typename T, std::unsigned_integral SparseIndex, SparseIndex invalidIndex>
+bool SparseSet<T, SparseIndex, invalidIndex>::has(SparseIndex index) const noexcept {
     assert(index < mSparseVector.size() && "Invalid index id.");
     const auto denseIndex = mSparseVector[index];
     return denseIndex < mDenseVector.size();
 }
 
-template<typename T, std::unsigned_integral SparseIndex>
+template<typename T, std::unsigned_integral SparseIndex, SparseIndex invalidIndex>
 template<std::convertible_to<T> U>
-void SparseSet<T, SparseIndex>::add(SparseIndex index, U&& element) noexcept {
+void SparseSet<T, SparseIndex, invalidIndex>::add(SparseIndex index, U&& element) noexcept {
     assert(index < mSparseVector.size() && "Invalid index id.");
     assert(!has(index));
     mSparseVector[index] = static_cast<SparseIndex>(mDenseVector.size());
@@ -64,24 +61,24 @@ void SparseSet<T, SparseIndex>::add(SparseIndex index, U&& element) noexcept {
     mElementVector.push_back(std::forward<U>(element));
 }
 
-template<typename T, std::unsigned_integral SparseIndex>
-const T& SparseSet<T, SparseIndex>::get(SparseIndex index) const noexcept {
+template<typename T, std::unsigned_integral SparseIndex, SparseIndex invalidIndex>
+const T& SparseSet<T, SparseIndex, invalidIndex>::get(SparseIndex index) const noexcept {
     assert(has(index) && "The given index doesn't have an instance of this element.");
     return mElementVector[mSparseVector[index]];
 }
 
-template<typename T, std::unsigned_integral SparseIndex>
-T& SparseSet<T, SparseIndex>::getMutable(SparseIndex index) noexcept {
+template<typename T, std::unsigned_integral SparseIndex, SparseIndex invalidIndex>
+T& SparseSet<T, SparseIndex, invalidIndex>::getMutable(SparseIndex index) noexcept {
     assert(has(index) && "The given index doesn't have an instance of this element.");
     return mElementVector[mSparseVector[index]];
 }
 
-template<typename T, std::unsigned_integral SparseIndex>
-void SparseSet<T, SparseIndex>::remove(SparseIndex index) noexcept {
+template<typename T, std::unsigned_integral SparseIndex, SparseIndex invalidIndex>
+void SparseSet<T, SparseIndex, invalidIndex>::remove(SparseIndex index) noexcept {
     using std::swap;
     assert(has(index) && "The given index doesn't have an instance of this element.");
     const auto denseIndex = mSparseVector[index];
-    mSparseVector[index] = InvalidEntity;
+    mSparseVector[index] = invalidIndex;
     mSparseVector[mDenseVector.back()] = denseIndex;
     mDenseVector[denseIndex] = mDenseVector.back();
     mDenseVector.resize(mDenseVector.size() - 1);
@@ -90,21 +87,21 @@ void SparseSet<T, SparseIndex>::remove(SparseIndex index) noexcept {
     assert(mDenseVector.size() == mElementVector.size());
 }
 
-template<typename T, std::unsigned_integral SparseIndex>
-[[nodiscard]] std::size_t SparseSet<T, SparseIndex>::size() const noexcept {
+template<typename T, std::unsigned_integral SparseIndex, SparseIndex invalidIndex>
+[[nodiscard]] std::size_t SparseSet<T, SparseIndex, invalidIndex>::size() const noexcept {
     return mElementVector.size();
 }
 
-template<typename T, std::unsigned_integral SparseIndex>
-[[nodiscard]] auto SparseSet<T, SparseIndex>::elementsMutable() noexcept {
+template<typename T, std::unsigned_integral SparseIndex, SparseIndex invalidIndex>
+[[nodiscard]] auto SparseSet<T, SparseIndex, invalidIndex>::elementsMutable() noexcept {
     return mElementVector | ranges::views::all;
 }
 
-template<typename T, std::unsigned_integral SparseIndex>
-auto SparseSet<T, SparseIndex>::indices() const noexcept {
+template<typename T, std::unsigned_integral SparseIndex, SparseIndex invalidIndex>
+auto SparseSet<T, SparseIndex, invalidIndex>::indices() const noexcept {
     return mDenseVector | ranges::views::all;
 }
-template<typename T, std::unsigned_integral SparseIndex>
-auto SparseSet<T, SparseIndex>::elements() const noexcept {
+template<typename T, std::unsigned_integral SparseIndex, SparseIndex invalidIndex>
+auto SparseSet<T, SparseIndex, invalidIndex>::elements() const noexcept {
     return mElementVector | ranges::views::all;
 }
