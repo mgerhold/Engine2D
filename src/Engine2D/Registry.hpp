@@ -21,6 +21,11 @@ public:
     template<typename Component>
     void addComponent(Entity entity, const Component& component) noexcept;
 
+    template<typename Component>
+    [[nodiscard]] bool hasComponent(Entity entity) noexcept {
+        return mComponentHolder.template has<Component>(value_of(getIdentifierBitsFromEntity(entity)));
+    }
+
     template<typename... Components>
     [[nodiscard]] auto getComponentsMutable() noexcept;
 
@@ -66,7 +71,7 @@ private:
 template<std::unsigned_integral Entity, std::size_t IdentifierBits>
 template<typename Component>
 void Registry<Entity, IdentifierBits>::addComponent(Entity entity, const Component& component) noexcept {
-    mComponentHolder.template attach<Component>(entity, component);
+    mComponentHolder.template attach<Component>(value_of(getIdentifierBitsFromEntity(entity)), component);
 }
 
 template<std::unsigned_integral Entity, std::size_t IdentifierBits>
@@ -131,6 +136,10 @@ template<std::unsigned_integral Entity, std::size_t IdentifierBits>
     } else {
         mEntities.push_back(entityFromIdentifierAndGeneration(Identifier{ gsl::narrow_cast<Entity>(mEntities.size()) },
                                                               Generation{ 0 }));
+        // TODO: add option to deny resizing
+        if (mComponentHolder.size() < mEntities.size()) {
+            mComponentHolder.resize(mEntities.size());
+        }
         return mEntities.back();
     }
 }

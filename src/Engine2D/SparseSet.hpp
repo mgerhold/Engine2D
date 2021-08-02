@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <spdlog/spdlog.h>
 #include <range/v3/all.hpp>
 #include <vector>
 #include <cassert>
@@ -22,6 +23,7 @@ public:
     template<std::convertible_to<T> U>
     void add(SparseIndex index, U&& element) noexcept;
     void remove(SparseIndex index) noexcept;
+    void resize(std::size_t size) noexcept;
 
     [[nodiscard]] std::size_t size() const noexcept;
     [[nodiscard]] bool has(SparseIndex index) const noexcept;
@@ -54,6 +56,7 @@ bool SparseSet<T, SparseIndex, invalidIndex>::has(SparseIndex index) const noexc
 template<typename T, std::unsigned_integral SparseIndex, SparseIndex invalidIndex>
 template<std::convertible_to<T> U>
 void SparseSet<T, SparseIndex, invalidIndex>::add(SparseIndex index, U&& element) noexcept {
+    spdlog::info("mSparseVector.size() == {}", mSparseVector.size());
     assert(index < mSparseVector.size() && "Invalid index id.");
     assert(!has(index));
     mSparseVector[index] = static_cast<SparseIndex>(mDenseVector.size());
@@ -85,6 +88,12 @@ void SparseSet<T, SparseIndex, invalidIndex>::remove(SparseIndex index) noexcept
     mElementVector[denseIndex] = std::move(mElementVector.back());
     mElementVector.resize(mElementVector.size() - 1);
     assert(mDenseVector.size() == mElementVector.size());
+}
+
+template<typename T, std::unsigned_integral SparseIndex, SparseIndex invalidIndex>
+void SparseSet<T, SparseIndex, invalidIndex>::resize(std::size_t size) noexcept {
+    assert(size >= mSparseVector.size());
+    mSparseVector.resize(size);
 }
 
 template<typename T, std::unsigned_integral SparseIndex, SparseIndex invalidIndex>
