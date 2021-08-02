@@ -31,7 +31,9 @@ public:
 
     void resize(std::size_t size) noexcept;
 
-    [[nodiscard]] std::size_t size() const noexcept { return mSetSize; }
+    [[nodiscard]] std::size_t size() const noexcept {
+        return mSetSize;
+    }
 
     template<typename Component>
     [[nodiscard]] bool has(Entity entity) const noexcept;
