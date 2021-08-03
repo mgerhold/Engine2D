@@ -14,12 +14,10 @@
 #include <cassert>
 #include <functional>
 
-template<std::unsigned_integral Entity>
+template<std::unsigned_integral SparseIndex>
 class ComponentHolder final {
 public:
-    explicit ComponentHolder(std::size_t initialSetSize) noexcept : mSetSize{ initialSetSize } {
-        assert(initialSetSize > 0 && "Initial set size must be greater than zero.");
-    }
+    explicit ComponentHolder(std::size_t initialSetSize) noexcept : mSetSize{ initialSetSize } { }
 
     ~ComponentHolder();
 
@@ -27,7 +25,7 @@ public:
     void init() noexcept;
 
     template<typename Component>
-    void attach(Entity entity, const Component& component) noexcept;
+    void attach(SparseIndex entity, const Component& component) noexcept;
 
     void resize(std::size_t size) noexcept;
 
@@ -36,7 +34,7 @@ public:
     }
 
     template<typename Component>
-    [[nodiscard]] bool has(Entity entity) const noexcept;
+    [[nodiscard]] bool has(SparseIndex entity) const noexcept;
 
     template<typename FirstComponent, typename... Components>
     [[nodiscard]] auto getMutable() noexcept;
@@ -44,12 +42,18 @@ public:
     template<typename FirstComponent, typename... Components>
     [[nodiscard]] auto get() const noexcept;
 
-private:
     template<typename Component>
-    [[nodiscard]] SparseSet<Component, Entity, invalidEntity<Entity>>& getComponentMutable() noexcept;
+    [[nodiscard]] Component& getMutable(SparseIndex entity) noexcept;
 
     template<typename Component>
-    [[nodiscard]] const SparseSet<Component, Entity, invalidEntity<Entity>>& getComponent() const noexcept;
+    [[nodiscard]] const Component& get(SparseIndex entity) const noexcept;
+
+private:
+    template<typename Component>
+    [[nodiscard]] SparseSet<Component, SparseIndex, invalidEntity<SparseIndex>>& getComponentMutable() noexcept;
+
+    template<typename Component>
+    [[nodiscard]] const SparseSet<Component, SparseIndex, invalidEntity<SparseIndex>>& getComponent() const noexcept;
 
     template<typename Component>
     std::size_t growIfNecessaryAndGetTypeIdentifier() noexcept;
@@ -64,61 +68,77 @@ private:
     std::size_t mSetSize;
 };
 
-template<std::unsigned_integral Entity>
+template<std::unsigned_integral SparseIndex>
 template<typename Component>
-void ComponentHolder<Entity>::init() noexcept {
+void ComponentHolder<SparseIndex>::init() noexcept {
     growIfNecessaryAndGetTypeIdentifier<Component>();
 }
 
-template<std::unsigned_integral Entity>
+template<std::unsigned_integral SparseIndex>
 template<typename Component>
-SparseSet<Component, Entity, invalidEntity<Entity>>& ComponentHolder<Entity>::getComponentMutable() noexcept {
-    using SetType = SparseSet<Component, Entity, invalidEntity<Entity>>;
+SparseSet<Component, SparseIndex, invalidEntity<SparseIndex>>&
+ComponentHolder<SparseIndex>::getComponentMutable() noexcept {
+    using SetType = SparseSet<Component, SparseIndex, invalidEntity<SparseIndex>>;
     const auto typeIdentifier = growIfNecessaryAndGetTypeIdentifier<Component>();
     return *static_cast<SetType*>(mAddresses[typeIdentifier]);
 }
 
-template<std::unsigned_integral Entity>
+template<std::unsigned_integral SparseIndex>
 template<typename Component>
-const SparseSet<Component, Entity, invalidEntity<Entity>>& ComponentHolder<Entity>::getComponent() const noexcept {
-    using SetType = SparseSet<Component, Entity, invalidEntity<Entity>>;
+const SparseSet<Component, SparseIndex, invalidEntity<SparseIndex>>& ComponentHolder<SparseIndex>::getComponent()
+        const noexcept {
+    using SetType = SparseSet<Component, SparseIndex, invalidEntity<SparseIndex>>;
     const auto typeIdentifier = TypeIdentifier::get<Component>();
     assert(typeIdentifier < mAddresses.size());
     return *static_cast<SetType*>(mAddresses[typeIdentifier]);
 }
 
-template<std::unsigned_integral Entity>
+template<std::unsigned_integral SparseIndex>
 template<typename FirstComponent, typename... Components>
-[[nodiscard]] auto ComponentHolder<Entity>::getMutable() noexcept {
+[[nodiscard]] auto ComponentHolder<SparseIndex>::getMutable() noexcept {
     using ranges::views::filter, ranges::views::transform, ranges::views::zip;
     return zip(getComponent<FirstComponent>().indices(), getComponentMutable<FirstComponent>().elementsMutable()) |
-           filter([this](auto&& tuple) { return (has<Components>(std::get<0>(tuple)) && ...); }) |
+           // tuple is marked as maybe_unused in the next line because MSVC reports a warning
+           filter([this]([[maybe_unused]] auto&& tuple) { return (has<Components>(std::get<0>(tuple)) && ...); }) |
            transform([this](auto&& tuple) {
-               return std::make_tuple(std::get<0>(tuple), std::get<1>(tuple),
-                                      getComponentMutable<Components>().getMutable(std::get<0>(tuple))...);
+               return std::forward_as_tuple(std::get<0>(tuple), std::get<1>(tuple),
+                                            getComponentMutable<Components>().getMutable(std::get<0>(tuple))...);
            });
 }
 
-template<std::unsigned_integral Entity>
+template<std::unsigned_integral SparseIndex>
 template<typename FirstComponent, typename... Components>
-[[nodiscard]] auto ComponentHolder<Entity>::get() const noexcept {
+[[nodiscard]] auto ComponentHolder<SparseIndex>::get() const noexcept {
     using ranges::views::filter, ranges::views::transform, ranges::views::zip;
     return zip(getComponent<FirstComponent>().indices(), getComponent<FirstComponent>().elements()) |
-           filter([this](auto&& tuple) { return (has<Components>(std::get<0>(tuple)) && ...); }) |
+           // tuple is marked as maybe_unused in the next line because MSVC reports a warning
+           filter([this]([[maybe_unused]] auto&& tuple) { return (has<Components>(std::get<0>(tuple)) && ...); }) |
            transform([this](auto&& tuple) {
-               return std::make_tuple(std::get<0>(tuple), std::get<1>(tuple),
-                                      getComponent<Components>().get(std::get<0>(tuple))...);
+               return std::forward_as_tuple(std::get<0>(tuple), std::get<1>(tuple),
+                                            getComponent<Components>().get(std::get<0>(tuple))...);
            });
 }
 
-template<std::unsigned_integral Entity>
+template<std::unsigned_integral SparseIndex>
 template<typename Component>
-void ComponentHolder<Entity>::attach(Entity entity, const Component& component) noexcept {
+[[nodiscard]] Component& ComponentHolder<SparseIndex>::getMutable(SparseIndex entity) noexcept {
+    return getComponentMutable<Component>().getMutable(entity);
+}
+
+template<std::unsigned_integral SparseIndex>
+template<typename Component>
+[[nodiscard]] const Component& ComponentHolder<SparseIndex>::get(SparseIndex entity) const noexcept {
+    return getComponent<Component>().get(entity);
+}
+
+template<std::unsigned_integral SparseIndex>
+template<typename Component>
+void ComponentHolder<SparseIndex>::attach(SparseIndex entity, const Component& component) noexcept {
     getComponentMutable<Component>().add(entity, std::move(component));
 }
 
-template<std::unsigned_integral Entity>
-void ComponentHolder<Entity>::resize(std::size_t size) noexcept {
+template<std::unsigned_integral SparseIndex>
+void ComponentHolder<SparseIndex>::resize(std::size_t size) noexcept {
     using ranges::views::zip;
     assert(size >= mSetSize);
     for (auto&& [resizeFunction, address] : zip(mResizeFunctions, mAddresses)) {
@@ -128,23 +148,23 @@ void ComponentHolder<Entity>::resize(std::size_t size) noexcept {
     spdlog::info("New size: {}", mSetSize);
 }
 
-template<std::unsigned_integral Entity>
+template<std::unsigned_integral SparseIndex>
 template<typename Component>
-[[nodiscard]] bool ComponentHolder<Entity>::has(Entity entity) const noexcept {
+[[nodiscard]] bool ComponentHolder<SparseIndex>::has(SparseIndex entity) const noexcept {
     return doesExist<Component>() && getComponent<Component>().has(entity);
 }
 
-template<std::unsigned_integral Entity>
-ComponentHolder<Entity>::~ComponentHolder() {
+template<std::unsigned_integral SparseIndex>
+ComponentHolder<SparseIndex>::~ComponentHolder() {
     for (const auto& [address, destructor] : ranges::views::zip(mAddresses, mDestructors)) {
         destructor(address);
     }
 }
 
-template<std::unsigned_integral Entity>
+template<std::unsigned_integral SparseIndex>
 template<typename Component>
-std::size_t ComponentHolder<Entity>::growIfNecessaryAndGetTypeIdentifier() noexcept {
-    using SetType = SparseSet<Component, Entity, invalidEntity<Entity>>;
+std::size_t ComponentHolder<SparseIndex>::growIfNecessaryAndGetTypeIdentifier() noexcept {
+    using SetType = SparseSet<Component, SparseIndex, invalidEntity<SparseIndex>>;
     const auto typeIdentifier = TypeIdentifier::get<Component>();
     const bool needsResizing = typeIdentifier >= mDestructors.size();
     if (!needsResizing && mAddresses[typeIdentifier] != nullptr) {
@@ -156,7 +176,7 @@ std::size_t ComponentHolder<Entity>::growIfNecessaryAndGetTypeIdentifier() noexc
         mDestructors.resize(typeIdentifier + 1);
     }
     spdlog::info("Resizing component holder, new size: {}", mAddresses.size());
-    mAddresses[typeIdentifier] = new SetType{ static_cast<Entity>(mSetSize) };
+    mAddresses[typeIdentifier] = new SetType{ static_cast<SparseIndex>(mSetSize) };
     mResizeFunctions[typeIdentifier] = [](void* address, std::size_t size) {
         static_cast<SetType*>(address)->resize(size);
     };
@@ -164,9 +184,9 @@ std::size_t ComponentHolder<Entity>::growIfNecessaryAndGetTypeIdentifier() noexc
     return typeIdentifier;
 }
 
-template<std::unsigned_integral Entity>
+template<std::unsigned_integral SparseIndex>
 template<typename Component>
-[[nodiscard]] bool ComponentHolder<Entity>::doesExist() const noexcept {
+[[nodiscard]] bool ComponentHolder<SparseIndex>::doesExist() const noexcept {
     const auto typeIdentifier = TypeIdentifier::get<Component>();
     return typeIdentifier < mAddresses.size();
 }

@@ -18,7 +18,7 @@ public:
     using value_type = T;
 
 public:
-    SparseSet(SparseIndex initialSetSize, SparseIndex initialElementCapacity = 0) noexcept;
+    explicit SparseSet(SparseIndex initialSetSize, SparseIndex initialElementCapacity = SparseIndex{ 0 }) noexcept;
 
     template<std::convertible_to<T> U>
     void add(SparseIndex index, U&& element) noexcept;
@@ -93,7 +93,7 @@ void SparseSet<T, SparseIndex, invalidIndex>::remove(SparseIndex index) noexcept
 template<typename T, std::unsigned_integral SparseIndex, SparseIndex invalidIndex>
 void SparseSet<T, SparseIndex, invalidIndex>::resize(std::size_t size) noexcept {
     assert(size >= mSparseVector.size());
-    mSparseVector.resize(size);
+    mSparseVector.resize(size, invalidIndex);
 }
 
 template<typename T, std::unsigned_integral SparseIndex, SparseIndex invalidIndex>

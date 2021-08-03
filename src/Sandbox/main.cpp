@@ -2,6 +2,7 @@
 #include "SparseSet.hpp"
 #include "Registry.hpp"
 #include <cstdlib>
+#include <limits>
 #include <string>
 #include <range/v3/all.hpp>
 #include <tuple>

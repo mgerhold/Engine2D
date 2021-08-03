@@ -6,7 +6,9 @@
 
 #include "ComponentHolder.hpp"
 #include "strong_type/strong_type.hpp"
+#include "optional/optional.hpp"
 #include <gsl/gsl>
+#include <functional>
 #include <concepts>
 #include <numeric>
 #include <limits>
@@ -14,23 +16,29 @@
 template<std::unsigned_integral Entity, std::size_t identifierBits = sizeof(Entity) * 8 * 20 / 32>
 class Registry final {
 public:
-    explicit Registry(std::size_t initialEntityCapacity) : mComponentHolder{ initialEntityCapacity } {
+    explicit Registry(std::size_t initialEntityCapacity = 0) : mComponentHolder{ initialEntityCapacity } {
         mEntities.reserve(initialEntityCapacity);
     }
 
     template<typename Component>
-    void addComponent(Entity entity, const Component& component) noexcept;
+    void attachComponent(Entity entity, const Component& component) noexcept;
 
     template<typename Component>
-    [[nodiscard]] bool hasComponent(Entity entity) noexcept {
-        return mComponentHolder.template has<Component>(value_of(getIdentifierBitsFromEntity(entity)));
+    [[nodiscard]] bool hasComponent(Entity entity) const noexcept {
+        return mComponentHolder.template has<Component>(getIdentifierBitsFromEntity(entity));
     }
 
-    template<typename... Components>
-    [[nodiscard]] auto getComponentsMutable() noexcept;
+    template<typename Component>
+    [[nodiscard]] tl::optional<const Component&> component(Entity entity) const noexcept;
+
+    template<typename Component>
+    [[nodiscard]] tl::optional<Component&> componentMutable(Entity entity) noexcept;
 
     template<typename... Components>
-    [[nodiscard]] auto getComponents() const noexcept;
+    [[nodiscard]] auto componentsMutable() noexcept;
+
+    template<typename... Components>
+    [[nodiscard]] auto components() const noexcept;
 
     [[nodiscard]] Entity createEntity() noexcept;
     void destroyEntity(Entity entity) noexcept;
@@ -46,8 +54,8 @@ public:
     }
 
 private:
-    using Generation = strong::type<Entity, struct generation_, strong::equality, strong::incrementable>;
-    using Identifier = strong::type<Entity, struct identifier_, strong::equality>;
+    using Generation = Entity;
+    using Identifier = Entity;
 
 private:
     [[nodiscard]] static Identifier getIdentifierBitsFromEntity(Entity entity) noexcept;
@@ -62,7 +70,7 @@ private:
     static constexpr std::size_t generationBits = sizeof(Entity) * 8 - identifierBits;
     static constexpr Entity generationMask = std::numeric_limits<Entity>::max() >> identifierBits;
     static constexpr Entity identifierMask = std::numeric_limits<Entity>::max() << generationBits;
-    ComponentHolder<Entity> mComponentHolder;
+    ComponentHolder<Identifier> mComponentHolder;
     std::vector<Entity> mEntities;
     std::size_t mNumRecyclableEntities{ 0 };
     Entity mNextRecyclableEntity{ invalidEntity<Entity> };
@@ -70,20 +78,52 @@ private:
 
 template<std::unsigned_integral Entity, std::size_t IdentifierBits>
 template<typename Component>
-void Registry<Entity, IdentifierBits>::addComponent(Entity entity, const Component& component) noexcept {
-    mComponentHolder.template attach<Component>(value_of(getIdentifierBitsFromEntity(entity)), component);
+void Registry<Entity, IdentifierBits>::attachComponent(Entity entity, const Component& component) noexcept {
+    mComponentHolder.template attach<Component>(getIdentifierBitsFromEntity(entity), component);
+}
+
+template<std::unsigned_integral Entity, std::size_t IdentifierBits>
+template<typename Component>
+[[nodiscard]] tl::optional<const Component&> Registry<Entity, IdentifierBits>::component(Entity entity) const noexcept {
+    if (!hasComponent<Component>(entity)) {
+        return {};
+    }
+    return mComponentHolder.template get<Component>(getIdentifierBitsFromEntity(entity));
+}
+
+template<std::unsigned_integral Entity, std::size_t IdentifierBits>
+template<typename Component>
+[[nodiscard]] tl::optional<Component&> Registry<Entity, IdentifierBits>::componentMutable(Entity entity) noexcept {
+    if (!hasComponent<Component>(entity)) {
+        return {};
+    }
+    return mComponentHolder.template getMutable<Component>(getIdentifierBitsFromEntity(entity));
 }
 
 template<std::unsigned_integral Entity, std::size_t IdentifierBits>
 template<typename... Components>
-[[nodiscard]] auto Registry<Entity, IdentifierBits>::getComponentsMutable() noexcept {
-    return mComponentHolder.template getMutable<Components...>();
+[[nodiscard]] auto Registry<Entity, IdentifierBits>::componentsMutable() noexcept {
+    using ranges::views::transform;
+    return mComponentHolder.template getMutable<Components...>() | transform([this](auto&& tuple) {
+               return std::apply(
+                       [this](auto&& identifier, auto&&... rest) {
+                           return std::forward_as_tuple(mEntities[identifier], rest...);
+                       },
+                       tuple);
+           });
 }
 
 template<std::unsigned_integral Entity, std::size_t IdentifierBits>
 template<typename... Components>
-[[nodiscard]] auto Registry<Entity, IdentifierBits>::getComponents() const noexcept {
-    return mComponentHolder.template get<Components...>();
+[[nodiscard]] auto Registry<Entity, IdentifierBits>::components() const noexcept {
+    using ranges::views::transform;
+    return mComponentHolder.template get<Components...>() | transform([this](auto&& tuple) {
+               return std::apply(
+                       [this](auto&& identifier, auto&&... rest) {
+                           return std::forward_as_tuple(mEntities[identifier], rest...);
+                       },
+                       tuple);
+           });
 }
 
 template<std::unsigned_integral Entity, std::size_t IdentifierBits>
@@ -102,7 +142,7 @@ template<std::unsigned_integral Entity, std::size_t IdentifierBits>
 [[nodiscard]] Entity Registry<Entity, IdentifierBits>::entityFromIdentifierAndGeneration(
         Identifier identifier,
         Generation generation) noexcept {
-    return Entity{ (value_of(identifier) << generationBits) | value_of(generation) };
+    return Entity{ (identifier << generationBits) | generation };
 }
 
 template<std::unsigned_integral Entity, std::size_t IdentifierBits>
@@ -117,12 +157,12 @@ void Registry<Entity, IdentifierBits>::swapIdentifiers(Entity& entity1, Entity& 
 template<std::unsigned_integral Entity, std::size_t IdentifierBits>
 void Registry<Entity, IdentifierBits>::increaseGeneration(Entity& entity) noexcept {
     entity = entityFromIdentifierAndGeneration(getIdentifierBitsFromEntity(entity),
-                                               ++getGenerationBitsFromEntity(entity));
+                                               getGenerationBitsFromEntity(entity) + 1);
 }
 
 template<std::unsigned_integral Entity, std::size_t IdentifierBits>
 [[nodiscard]] std::size_t Registry<Entity, IdentifierBits>::getIndexFromEntity(Entity entity) noexcept {
-    return static_cast<std::size_t>(value_of(getIdentifierBitsFromEntity(entity)));
+    return static_cast<std::size_t>(getIdentifierBitsFromEntity(entity));
 }
 
 template<std::unsigned_integral Entity, std::size_t IdentifierBits>
@@ -131,7 +171,7 @@ template<std::unsigned_integral Entity, std::size_t IdentifierBits>
         const auto index = getIndexFromEntity(mNextRecyclableEntity);
         swapIdentifiers(mEntities[index], mNextRecyclableEntity);
         --mNumRecyclableEntities;
-        assert(static_cast<std::size_t>(value_of(getIdentifierBitsFromEntity(mEntities[index]))) == index);
+        assert(static_cast<std::size_t>(getIdentifierBitsFromEntity(mEntities[index])) == index);
         return mEntities[index];
     } else {
         mEntities.push_back(entityFromIdentifierAndGeneration(Identifier{ gsl::narrow_cast<Entity>(mEntities.size()) },

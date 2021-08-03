@@ -4,7 +4,8 @@
 
 #pragma once
 
+#include "strong_type/strong_type.hpp"
 #include <limits>
 
 template<typename Entity>
-static constexpr Entity invalidEntity = std::numeric_limits<Entity>::max();
+static constexpr Entity invalidEntity = std::numeric_limits<typename strong::underlying_type<Entity>::type>::max();
