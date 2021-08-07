@@ -9,3 +9,8 @@
 
 template<typename Entity>
 static constexpr Entity invalidEntity = std::numeric_limits<typename strong::underlying_type<Entity>::type>::max();
+
+template<typename Entity>
+using EntityBase = Entity;
+
+using Entity = EntityBase<std::uint32_t>;

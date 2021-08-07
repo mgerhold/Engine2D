@@ -7,6 +7,7 @@
 #include "ComponentHolder.hpp"
 #include "strong_type/strong_type.hpp"
 #include "optional/optional.hpp"
+#include "Entity.hpp"
 #include <gsl/gsl>
 #include <functional>
 #include <concepts>
@@ -14,9 +15,12 @@
 #include <limits>
 
 template<std::unsigned_integral Entity, std::size_t identifierBits = sizeof(Entity) * 8 * 20 / 32>
-class Registry final {
+class RegistryBase final {
 public:
-    explicit Registry(std::size_t initialEntityCapacity = 0) : mComponentHolder{ initialEntityCapacity } {
+    using EntityType = Entity;
+
+public:
+    explicit RegistryBase(std::size_t initialEntityCapacity = 0) : mComponentHolder{ initialEntityCapacity } {
         mEntities.reserve(initialEntityCapacity);
     }
 
@@ -142,3 +146,5 @@ private:
     std::size_t mNumRecyclableEntities{ 0 };
     Entity mNextRecyclableEntity{ invalidEntity<Entity> };
 };
+
+using Registry = RegistryBase<Entity>;

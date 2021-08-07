@@ -7,8 +7,6 @@
 #include <range/v3/all.hpp>
 #include <vector>
 
-using Entity = uint32_t;
-
 struct Position {
     float x, y;
 };
@@ -20,7 +18,7 @@ struct Velocity {
 namespace {
     class RegistryComponentHolderGrowingFixture : public ::testing::Test {
     protected:
-        Registry<Entity> registry;
+        Registry registry;
     };
 
     TEST_F(RegistryComponentHolderGrowingFixture, CreateEntity_CheckIfAlive) {
@@ -58,7 +56,7 @@ namespace {
 
     TEST_F(RegistryComponentHolderGrowingFixture, CreateEntities_AttachComponents_CountComponents) {
         using ranges::views::ints, ranges::views::enumerate;
-        std::vector<Entity> entities;
+        std::vector<typename decltype(registry)::EntityType> entities;
         for (auto i : ints(0, 100)) {
             entities.push_back(registry.createEntity());
         }
@@ -145,7 +143,7 @@ namespace {
 
     class RegistryEntityCreationAndDestructionFixture : public ::testing::Test {
     protected:
-        Registry<Entity> registry{ 100 };
+        Registry registry{ 100 };
     };
 
     TEST_F(RegistryEntityCreationAndDestructionFixture, CreateEntity_CheckIfAlive) {
