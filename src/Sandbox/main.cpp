@@ -1,21 +1,11 @@
 #include "Sandbox.hpp"
 #include "SparseSet.hpp"
 #include "Registry.hpp"
+#include <range/v3/all.hpp>
 #include <cstdlib>
 #include <limits>
 #include <string>
-#include <range/v3/all.hpp>
 #include <tuple>
-
-using Entity = uint32_t;
-
-struct Position {
-    float x, y;
-};
-
-struct Velocity {
-    float x, y;
-};
 
 int main() {
     // sandbox application

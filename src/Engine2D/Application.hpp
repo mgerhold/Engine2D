@@ -13,6 +13,8 @@
 #include <GLFW/glfw3.h>
 
 #include "Input.hpp"
+#include "Registry.hpp"
+#include "Component.hpp"
 
 #include <chrono>
 #include <vector>
@@ -45,6 +47,7 @@ protected:
 
 protected:
     Input mInput;
+    Registry mRegistry;
 
 private:
     static void handleOpenGLDebugOutput(GLenum source,

@@ -35,6 +35,12 @@ void Sandbox::setup() noexcept {
 
     setupShaders();
     glClearColor(73.f / 255.f, 54.f / 255.f, 87.f / 255.f, 1.f);
+
+    // generate game scene
+    const auto entity = mRegistry.createEntity();
+    mRegistry.attachComponent(entity,
+                              Transform{ .position{ 0.0f, 0.0f, 0.0f }, .rotation{ 0.0f }, .scale{ 150.0f, 150.0f } });
+    mRegistry.attachComponent(entity, SpriteRenderer{ .color{ 1.0f, 1.0f, 1.0f } });
 }
 
 void Sandbox::update() noexcept {
@@ -86,14 +92,14 @@ void Sandbox::render() noexcept {
     for (int x = 0; x < dimension; ++x) {
         for (int y = 0; y < dimension; ++y) {
             mRenderer.drawQuad(offset + glm::vec3{ static_cast<float>(x) * 40.0f, static_cast<float>(y) * 40.0f, 0.0f },
-                               0.0f, glm::vec3{ 20.0f }, mShaderPrograms[y % mShaderPrograms.size()],
+                               0.0f, glm::vec2{ 20.0f }, mShaderPrograms[y % mShaderPrograms.size()],
                                mTextures[x % mTextures.size()]);
         }
     }
     const auto mousePosition = mInput.mousePosition();
     mRenderer.drawQuad(
             glm::vec3{ mousePosition.x, mousePosition.y, mInput.mouseDown(MouseButton::Button0) ? -0.5f : 0.5f }, 0.0f,
-            glm::vec3{ 100.0f }, mShaderPrograms.front(), mTextures[mTextures.size() - 2]);
+            glm::vec2{ 100.0f }, mShaderPrograms.front(), mTextures[mTextures.size() - 2]);
     mRenderer.endFrame();
     const RenderStats& stats = mRenderer.stats();
     //spdlog::info("Stats: {} tris, {} vertices ({} batches)", stats.numTriangles, stats.numVertices, stats.numBatches);

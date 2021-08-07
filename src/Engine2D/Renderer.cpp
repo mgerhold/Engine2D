@@ -42,12 +42,12 @@ void Renderer::endFrame() noexcept {
 
 void Renderer::drawQuad(const glm::vec3& translation,
                         float rotationAngle,
-                        const glm::vec3& scale,
+                        const glm::vec2& scale,
                         const ShaderProgram& shader,
                         const Texture& texture) noexcept {
     drawQuad(glm::scale(glm::rotate(glm::translate(glm::mat4{ 1.0f }, translation), rotationAngle,
                                     glm::vec3{ 0.0f, 0.0f, 1.0f }),
-                        scale),
+                        glm::vec3{ scale.x, scale.y, 1.0f }),
              shader, texture);
 }
 

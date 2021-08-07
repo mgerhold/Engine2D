@@ -44,7 +44,7 @@ public:
     void endFrame() noexcept;
     void drawQuad(const glm::vec3& translation,
                   float rotationAngle,
-                  const glm::vec3& scale,
+                  const glm::vec2& scale,
                   const ShaderProgram& shader,
                   const Texture& texture) noexcept;
     template<typename T = glm::mat4>
