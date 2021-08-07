@@ -29,7 +29,7 @@ namespace {
 
     TEST_F(SparseSetInsertionTest, InsertingValue_ReadValue) {
         constexpr Entity entity = 0;
-        auto valueToBeInserted = Position{ .x = 1.0f, .y = 2.0f };
+        const auto valueToBeInserted = Position{ .x = 1.0f, .y = 2.0f };
         positions.add(entity, valueToBeInserted);
         const auto readValue = positions.get(entity);
         ASSERT_EQ(valueToBeInserted, readValue);
