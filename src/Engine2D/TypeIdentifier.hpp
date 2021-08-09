@@ -7,8 +7,7 @@
 #include <spdlog/spdlog.h>
 #include <cstddef>
 
-template<auto = []{}>
-class TypeIdentifierBase final {
+class TypeIdentifier final {
 public:
     template<typename T>
     [[nodiscard]] static std::size_t get() {
@@ -24,5 +23,3 @@ private:
 private:
     static inline std::size_t mNextId{ 0 };
 };
-
-using TypeIdentifier = TypeIdentifierBase<>;
