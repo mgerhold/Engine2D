@@ -5,7 +5,6 @@
 #pragma once
 
 #include "ComponentHolder.hpp"
-#include "strong_type/strong_type.hpp"
 #include "optional/optional.hpp"
 #include "Entity.hpp"
 #include "TypeIdentifier.hpp"
@@ -114,11 +113,11 @@ public:
     [[nodiscard]] std::size_t typeIdentifier() const noexcept {
         return mComponentHolder.template typeIdentifier<Type>();
     }
-    template<typename... Components>
-    void emplaceSystem(std::function<void(void)> setup,
-                       std::function<void(Entity, Components...)> forEach,
-                       std::function<void(void)> finalize) noexcept {
-        mSystemHolder.template emplace<Components...>(setup, forEach, finalize);
+    template<typename... Components, typename SetupFunction, typename ForEachFunction, typename FinalizeFunction>
+    void emplaceSystem(SetupFunction&& setup, ForEachFunction&& forEach, FinalizeFunction&& finalize) noexcept {
+        mSystemHolder.template emplace<Components...>(std::forward<SetupFunction>(setup),
+                                                      std::forward<ForEachFunction>(forEach),
+                                                      std::forward<FinalizeFunction>(finalize));
     }
     void runSystems() noexcept {
         mSystemHolder.run();

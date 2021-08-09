@@ -10,17 +10,19 @@
 template<std::unsigned_integral Entity, typename... Components>
 class System final {
 public:
-    System(auto&& setup, auto&& forEach, auto&& finalize) noexcept
-        : mSetup{ std::forward<decltype(setup)>(setup) },
-          mForEach{ std::forward<decltype(forEach)>(forEach) },
-          mFinalize{ std::forward<decltype(finalize)>(finalize) } { }
+    template<typename SetupFunction, typename ForEachFunction, typename FinalizeFunction>
+    System(SetupFunction&& setup, ForEachFunction&& forEach, FinalizeFunction&& finalize) noexcept
+        : mSetup{ std::forward<SetupFunction>(setup) },
+          mForEach{ std::forward<ForEachFunction>(forEach) },
+          mFinalize{ std::forward<FinalizeFunction>(finalize) } { }
 
     void setup() noexcept {
         mSetup();
     }
 
-    void forEach(auto&& componentView) noexcept {
-        for (auto&& tuple : componentView) {
+    template<typename View>
+    void forEach(View&& components) noexcept {
+        for (auto&& tuple : components) {
             std::apply([this](auto&&... args) { mForEach(std::forward<decltype(args)>(args)...); },
                        std::forward<decltype(tuple)>(tuple));
         }
