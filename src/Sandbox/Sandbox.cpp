@@ -8,6 +8,7 @@
 #include "Texture.hpp"
 #include "hash/hash.hpp"
 #include "ScopedTimer.hpp"
+#include "SystemHolder.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <filesystem>
@@ -42,19 +43,25 @@ void Sandbox::setup() noexcept {
     mRegistry.attachComponent(entity,
                               Transform{ .position{ 0.0f, 0.0f, 0.0f }, .rotation{ 0.0f }, .scale{ 150.0f, 150.0f } });
     mRegistry.attachComponent(entity, DynamicSprite{ .color{ 1.0f, 1.0f, 1.0f } });
-    System<Entity, Transform, DynamicSprite> spriteRenderer{
-        [this]() { mRenderer.beginFrame(); },
-        [this]([[maybe_unused]] Entity entity, Transform&& transform, [[maybe_unused]] auto&& sprite) {
-            mRenderer.drawQuad(transform.position, transform.rotation, transform.scale, mShaderPrograms.front(),
-                               mTextures.front());
-        },
-        [this]() { mRenderer.endFrame(); }
-    };
+
+    mRegistry.emplaceSystem<Transform&, DynamicSprite&>(
+            [this]() {
+                mRenderer.beginFrame();
+            },
+            [this]([[maybe_unused]] Entity entity, [[maybe_unused]] Transform& transform,
+                   [[maybe_unused]] auto& sprite) {
+                mRenderer.drawQuad(transform.position, transform.rotation, transform.scale, mShaderPrograms.front(),
+                                   *(mTextures.end() - 2));
+            },
+            [this]() {
+                mRenderer.endFrame();
+            });
 }
 
 void Sandbox::update() noexcept {
     processInput();
     render();
+    mRegistry.runSystems();
 }
 
 void Sandbox::processInput() noexcept {

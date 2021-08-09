@@ -15,8 +15,23 @@ public:
           mForEach{ std::forward<decltype(forEach)>(forEach) },
           mFinalize{ std::forward<decltype(finalize)>(finalize) } { }
 
+    void setup() noexcept {
+        mSetup();
+    }
+
+    void forEach(auto&& componentView) noexcept {
+        for (auto&& tuple : componentView) {
+            std::apply([this](auto&&... args) { mForEach(std::forward<decltype(args)>(args)...); },
+                       std::forward<decltype(tuple)>(tuple));
+        }
+    }
+
+    void finalize() noexcept {
+        mFinalize();
+    }
+
 private:
     std::function<void(void)> mSetup;
-    std::function<void(Entity, Components&&...)> mForEach;
+    std::function<void(Entity, Components...)> mForEach;
     std::function<void(void)> mFinalize;
 };

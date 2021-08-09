@@ -6,7 +6,6 @@
 
 #include "Entity.hpp"
 #include "SparseSet.hpp"
-#include "TypeIdentifier.hpp"
 #include <spdlog/spdlog.h>
 #include <range/v3/all.hpp>
 #include <concepts>
@@ -14,7 +13,7 @@
 #include <cassert>
 #include <functional>
 
-template<std::unsigned_integral SparseIndex>
+template<std::unsigned_integral SparseIndex, typename TypeIdentifier>
 class ComponentHolder final {
 public:
     explicit ComponentHolder(std::size_t initialSetSize) noexcept : mSetSize{ initialSetSize } { }
@@ -78,6 +77,8 @@ public:
     [[nodiscard]] const Component& get(SparseIndex entity) const noexcept {
         return getComponent<Component>().get(entity);
     }
+    template<typename Component>
+    [[nodiscard]] std::size_t typeIdentifier() const noexcept { return TypeIdentifier::template get<Component>(); }
 
 private:
     template<typename Component>
@@ -91,14 +92,14 @@ private:
     }
     template<typename Component>
     [[nodiscard]] decltype(auto) getComponent() const noexcept {
-        const auto typeIdentifier = TypeIdentifier::get<Component>();
+        const auto typeIdentifier = TypeIdentifier::template get<Component>();
         assert(typeIdentifier < mAddresses.size());
         return *static_cast<ComponentSet<Component>*>(mAddresses[typeIdentifier]);
     }
     template<typename Component>
     std::size_t growIfNecessaryAndGetTypeIdentifier() noexcept {
         using SetType = SparseSet<Component, SparseIndex, invalidEntity<SparseIndex>>;
-        const auto typeIdentifier = TypeIdentifier::get<Component>();
+        const auto typeIdentifier = TypeIdentifier::template get<Component>();
         const bool needsResizing = typeIdentifier >= mDestructors.size();
         if (!needsResizing && mAddresses[typeIdentifier] != nullptr) {
             return typeIdentifier;
@@ -117,7 +118,7 @@ private:
     }
     template<typename Component>
     [[nodiscard]] bool doesExist() const noexcept {
-        const auto typeIdentifier = TypeIdentifier::get<Component>();
+        const auto typeIdentifier = TypeIdentifier::template get<Component>();
         return typeIdentifier < mAddresses.size();
     }
 

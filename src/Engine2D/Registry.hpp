@@ -8,6 +8,8 @@
 #include "strong_type/strong_type.hpp"
 #include "optional/optional.hpp"
 #include "Entity.hpp"
+#include "TypeIdentifier.hpp"
+#include "SystemHolder.hpp"
 #include <gsl/gsl>
 #include <functional>
 #include <concepts>
@@ -20,7 +22,9 @@ public:
     using EntityType = Entity;
 
 public:
-    explicit RegistryBase(std::size_t initialEntityCapacity = 0) : mComponentHolder{ initialEntityCapacity } {
+    explicit RegistryBase(std::size_t initialEntityCapacity = 0)
+        : mComponentHolder{ initialEntityCapacity },
+          mSystemHolder{ mComponentHolder } {
         mEntities.reserve(initialEntityCapacity);
     }
 
@@ -106,6 +110,19 @@ public:
     [[nodiscard]] std::size_t numEntitiesDead() const noexcept {
         return mNumRecyclableEntities;
     }
+    template<typename Type>
+    [[nodiscard]] std::size_t typeIdentifier() const noexcept {
+        return mComponentHolder.template typeIdentifier<Type>();
+    }
+    template<typename... Components>
+    void emplaceSystem(std::function<void(void)> setup,
+                       std::function<void(Entity, Components...)> forEach,
+                       std::function<void(void)> finalize) noexcept {
+        mSystemHolder.template emplace<Components...>(setup, forEach, finalize);
+    }
+    void runSystems() noexcept {
+        mSystemHolder.run();
+    }
 
 private:
     using Generation = Entity;
@@ -141,7 +158,8 @@ private:
     static constexpr std::size_t generationBits = sizeof(Entity) * 8 - identifierBits;
     static constexpr Entity generationMask = std::numeric_limits<Entity>::max() >> identifierBits;
     static constexpr Entity identifierMask = std::numeric_limits<Entity>::max() << generationBits;
-    ComponentHolder<Identifier> mComponentHolder;
+    ComponentHolder<Identifier, TypeIdentifier<struct componentTypeIdentifier>> mComponentHolder;
+    SystemHolder<Entity, TypeIdentifier<struct systemTypeIdentifier>, decltype(mComponentHolder)> mSystemHolder;
     std::vector<Entity> mEntities;
     std::size_t mNumRecyclableEntities{ 0 };
     Entity mNextRecyclableEntity{ invalidEntity<Entity> };

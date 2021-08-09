@@ -143,9 +143,9 @@ namespace {
     }
 
     TEST_F(RegistryComponentHolderGrowingFixture, TriggerTypeIdentifierCreation_UseInDifferentOrder) {
-        const auto positionID = TypeIdentifier::get<Position>();
+        const auto positionID = registry.typeIdentifier<Position>();
         ASSERT_EQ(positionID, 0);
-        const auto velocityID = TypeIdentifier::get<Velocity>();
+        const auto velocityID = registry.typeIdentifier<Velocity>();
         ASSERT_EQ(velocityID, 1);
         const auto entity = registry.createEntity();
         registry.attachComponent(entity, Velocity{ 1.0f, 2.0f });
