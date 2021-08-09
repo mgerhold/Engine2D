@@ -12,7 +12,7 @@ struct Transform {
     glm::vec2 scale;
 };
 
-struct SpriteRenderer {
+struct DynamicSprite {
     // GUID texture;
     glm::vec3 color;
 };

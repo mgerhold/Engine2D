@@ -55,7 +55,7 @@ add_library(Engine2D STATIC
         src/Engine2D/Entity.hpp
         src/Engine2D/optional/optional.hpp
         src/Engine2D/Component.hpp
-        )
+        src/Engine2D/System.hpp)
 add_executable(Sandbox src/Sandbox/main.cpp src/Sandbox/Sandbox.hpp src/Sandbox/Sandbox.cpp)
 target_include_directories(Sandbox PUBLIC ${PROJECT_SOURCE_DIR}/src/Engine2D)
 add_dependencies(Sandbox Engine2D)

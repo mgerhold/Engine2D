@@ -3,6 +3,7 @@
 //
 
 #include "Sandbox.hpp"
+#include "System.hpp"
 #include "Image.hpp"
 #include "Texture.hpp"
 #include "hash/hash.hpp"
@@ -40,7 +41,15 @@ void Sandbox::setup() noexcept {
     const auto entity = mRegistry.createEntity();
     mRegistry.attachComponent(entity,
                               Transform{ .position{ 0.0f, 0.0f, 0.0f }, .rotation{ 0.0f }, .scale{ 150.0f, 150.0f } });
-    mRegistry.attachComponent(entity, SpriteRenderer{ .color{ 1.0f, 1.0f, 1.0f } });
+    mRegistry.attachComponent(entity, DynamicSprite{ .color{ 1.0f, 1.0f, 1.0f } });
+    System<Entity, Transform, DynamicSprite> spriteRenderer{
+        [this]() { mRenderer.beginFrame(); },
+        [this]([[maybe_unused]] Entity entity, Transform&& transform, [[maybe_unused]] auto&& sprite) {
+            mRenderer.drawQuad(transform.position, transform.rotation, transform.scale, mShaderPrograms.front(),
+                               mTextures.front());
+        },
+        [this]() { mRenderer.endFrame(); }
+    };
 }
 
 void Sandbox::update() noexcept {
