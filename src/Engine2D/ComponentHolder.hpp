@@ -39,7 +39,6 @@ public:
             resizeFunction(address, size);
         }
         mSetSize = size;
-        spdlog::info("New size: {}", mSetSize);
     }
     [[nodiscard]] std::size_t size() const noexcept {
         return mSetSize;
@@ -109,7 +108,6 @@ private:
             mResizeFunctions.resize(typeIdentifier + 1);
             mDestructors.resize(typeIdentifier + 1);
         }
-        spdlog::info("Resizing component holder, new size: {}", mAddresses.size());
         mAddresses[typeIdentifier] = new SetType{ static_cast<SparseIndex>(mSetSize) };
         mResizeFunctions[typeIdentifier] = [](void* address, std::size_t size) {
             static_cast<SetType*>(address)->resize(size);

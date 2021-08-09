@@ -4,21 +4,25 @@
 
 #pragma once
 
+#include <spdlog/spdlog.h>
 #include <cstddef>
 
-class TypeIdentifier final {
+template<auto = []{}>
+class TypeIdentifierBase final {
 public:
     template<typename T>
-    static std::size_t get() {
+    [[nodiscard]] static std::size_t get() {
         const static std::size_t id = getNext();
         return id;
     }
 
 private:
-    static std::size_t getNext() {
-        return sNextId++;
+    [[nodiscard]] static std::size_t getNext() {
+        return mNextId++;
     }
 
 private:
-    static inline std::size_t sNextId{ 0 };
+    static inline std::size_t mNextId{ 0 };
 };
+
+using TypeIdentifier = TypeIdentifierBase<>;

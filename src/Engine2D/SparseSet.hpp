@@ -26,7 +26,6 @@ public:
 
     template<std::convertible_to<T> Component>
     void add(SparseIndex index, Component&& element) noexcept {
-        spdlog::info("mSparseVector.size() == {}", mSparseVector.size());
         assert(index < mSparseVector.size() && "Invalid index id.");
         assert(!has(index));
         mSparseVector[index] = static_cast<SparseIndex>(mDenseVector.size());

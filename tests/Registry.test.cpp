@@ -3,6 +3,7 @@
 //
 
 #include <Registry.hpp>
+#include <TypeIdentifier.hpp>
 #include <gtest/gtest.h>
 #include <range/v3/all.hpp>
 #include <vector>
@@ -139,6 +140,24 @@ namespace {
             ASSERT_EQ(velocity.x, 10.0f);
             ASSERT_EQ(velocity.y, 5.0f);
         }
+    }
+
+    TEST_F(RegistryComponentHolderGrowingFixture, TriggerTypeIdentifierCreation_UseInDifferentOrder) {
+        const auto positionID = TypeIdentifier::get<Position>();
+        ASSERT_EQ(positionID, 0);
+        const auto velocityID = TypeIdentifier::get<Velocity>();
+        ASSERT_EQ(velocityID, 1);
+        const auto entity = registry.createEntity();
+        registry.attachComponent(entity, Velocity{ 1.0f, 2.0f });
+        registry.attachComponent(entity, Position{ 3.0f, 4.0f });
+        const auto& optionalVelocity = registry.component<Velocity>(entity);
+        ASSERT_TRUE(optionalVelocity);
+        const auto& optionalPosition = registry.component<Position>(entity);
+        ASSERT_TRUE(optionalPosition);
+        ASSERT_EQ(optionalVelocity->x, 1.0f);
+        ASSERT_EQ(optionalVelocity->y, 2.0f);
+        ASSERT_EQ(optionalPosition->x, 3.0f);
+        ASSERT_EQ(optionalPosition->y, 4.0f);
     }
 
     class RegistryEntityCreationAndDestructionFixture : public ::testing::Test {
