@@ -5,6 +5,7 @@
 #pragma once
 
 #include "expected/expected.hpp"
+#include "Color.hpp"
 #include <stb_image.h>
 #include <memory>
 #include <filesystem>
@@ -18,9 +19,8 @@ public:
     Image& operator=(const Image&) = delete;
     Image& operator=(Image&& other) noexcept;
 
-    [[nodiscard]] static tl::expected<Image, std::string> LoadFromFile(const std::filesystem::path& filename,
+    [[nodiscard]] static tl::expected<Image, std::string> loadFromFile(const std::filesystem::path& filename,
                                                                        int numChannels = 0) noexcept;
-
     [[nodiscard]] int getWidth() const noexcept;
     [[nodiscard]] int getHeight() const noexcept;
     [[nodiscard]] int getNumChannels() const noexcept;

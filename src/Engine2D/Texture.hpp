@@ -6,6 +6,7 @@
 
 #include "Image.hpp"
 #include "expected/expected.hpp"
+#include "Color.hpp"
 #include <glad/glad.h>
 
 class Texture final {
@@ -16,6 +17,7 @@ public:
     };
 
     Texture() = default;
+
     Texture(const Texture&) = delete;
     Texture(Texture&& other) noexcept;
     ~Texture();
@@ -32,7 +34,15 @@ public:
     int getHeight() const noexcept;
     int getNumChannels() const noexcept;
 
-    [[nodiscard]] static tl::expected<Texture, std::string> Create(const Image& image) noexcept;
+    [[nodiscard]] static tl::expected<Texture, std::string> create(const Image& image) noexcept;
+    [[nodiscard]] static tl::expected<Texture, std::string> createFromMemory(int width,
+                                                                             int height,
+                                                                             int numChannels,
+                                                                             unsigned char* data) noexcept;
+    [[nodiscard]] static tl::expected<Texture, std::string> createFromFillColor(int width,
+                                                                                int height,
+                                                                                int numChannels,
+                                                                                Color fillColor) noexcept;
     [[nodiscard]] static GLint getTextureUnitCount() noexcept;
 
 private:

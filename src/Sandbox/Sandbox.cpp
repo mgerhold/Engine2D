@@ -19,12 +19,12 @@ void Sandbox::setup() noexcept {
 #else
     spdlog::info("This is the release build");
 #endif
-    auto imagePath = std::filesystem::current_path() / "assets" / "images";
+    /*auto imagePath = std::filesystem::current_path() / "assets" / "images";
     if (!exists(imagePath)) {
         spdlog::error("Could not find path to image files: {}", imagePath.string());
     } else {
         for (const auto& directoryEntry : std::filesystem::directory_iterator(imagePath)) {
-            auto expectedTexture = Image::LoadFromFile(directoryEntry).and_then(Texture::Create);
+            auto expectedTexture = Image::loadFromFile(directoryEntry).and_then(Texture::create);
             if (expectedTexture) {
                 mTextures.push_back(std::move(expectedTexture.value()));
                 spdlog::info("Loaded texture: {}", directoryEntry.path().string());
@@ -33,29 +33,43 @@ void Sandbox::setup() noexcept {
                              expectedTexture.error());
             }
         }
-    }
+    }*/
+    constexpr GUID bjarneID{ 0 };
+    mAssetDatabase.loadTexture(std::filesystem::current_path() / "assets" / "images" / "bjarne.jpg", bjarneID);
 
-    setupShaders();
+    constexpr GUID shaderID0{ 1 }, shaderID1{ 2 };
+    auto& shader0 = mAssetDatabase.loadShaderProgram(
+            std::filesystem::current_path() / "assets" / "shaders" / "default.vert",
+            std::filesystem::current_path() / "assets" / "shaders" / "default.frag", shaderID0);
+    auto& shader1 = mAssetDatabase.loadShaderProgram(
+            std::filesystem::current_path() / "assets" / "shaders" / "default.vert",
+            std::filesystem::current_path() / "assets" / "shaders" / "debug.frag", shaderID1);
     glClearColor(73.f / 255.f, 54.f / 255.f, 87.f / 255.f, 1.f);
 
     // generate game scene
     const auto entity = mRegistry.createEntity();
     mRegistry.attachComponent(entity,
                               Transform{ .position{ 0.0f, 0.0f, 0.0f }, .rotation{ 0.0f }, .scale{ 150.0f, 150.0f } });
-    mRegistry.attachComponent(entity, DynamicSprite{ .color{ 1.0f, 1.0f, 1.0f } });
-
-    mRegistry.emplaceSystem<Transform&, DynamicSprite&>(
-            [this]() {
+    mRegistry.attachComponent(entity, DynamicSprite{ .texture{ &mAssetDatabase.getTexture(bjarneID) },
+                                                     .shader{ &mAssetDatabase.getShaderProgram(shaderID0) },
+                                                     .color{ 1.0f, 1.0f, 1.0f } });
+    mRegistry.emplaceSystem<const Transform&, const DynamicSprite&>(
+            [&]() {
+                const auto framebufferSize = mWindow.getFramebufferSize();
+                const auto projectionMatrix =
+                        glm::ortho<float>(gsl::narrow_cast<float>(-framebufferSize.width / 2),
+                                          gsl::narrow_cast<float>(framebufferSize.width / 2),
+                                          gsl::narrow_cast<float>(-framebufferSize.height / 2),
+                                          gsl::narrow_cast<float>(framebufferSize.height / 2), -2.0f, 2.0f);
+                shader0.setUniform(Hash::staticHashString("projectionMatrix"), projectionMatrix);
+                shader1.setUniform(Hash::staticHashString("projectionMatrix"), projectionMatrix);
                 mRenderer.beginFrame();
             },
-            [this]([[maybe_unused]] Entity entity, [[maybe_unused]] Transform& transform,
-                   [[maybe_unused]] auto& sprite) {
-                mRenderer.drawQuad(transform.position, transform.rotation, transform.scale, mShaderPrograms.front(),
-                                   *(mTextures.end() - 2));
+            [this]([[maybe_unused]] Entity entity, const Transform& transform, const auto& sprite) {
+                mRenderer.drawQuad(transform.position, transform.rotation, transform.scale, *sprite.shader,
+                                   *sprite.texture);
             },
-            [this]() {
-                mRenderer.endFrame();
-            });
+            [this]() { mRenderer.endFrame(); });
 }
 
 void Sandbox::update() noexcept {
@@ -85,25 +99,16 @@ void Sandbox::processInput() noexcept {
         spdlog::info("Mouse position: ({},{})", mousePosition.x, mousePosition.y);
     }
 
-    if (glfwGetKey(getGLFWWindowPointer(), GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-        glfwSetWindowShouldClose(getGLFWWindowPointer(), true);
+    if (glfwGetKey(mWindow.getGLFWWindowPointer(), GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+        glfwSetWindowShouldClose(mWindow.getGLFWWindowPointer(), true);
     }
 }
 
 void Sandbox::render() noexcept {
     SCOPED_TIMER();
-    const auto framebufferSize = getFramebufferSize();
-    const auto projectionMatrix = glm::ortho<float>(gsl::narrow_cast<float>(-framebufferSize.width / 2),
-                                                    gsl::narrow_cast<float>(framebufferSize.width / 2),
-                                                    gsl::narrow_cast<float>(-framebufferSize.height / 2),
-                                                    gsl::narrow_cast<float>(framebufferSize.height / 2), -2.0f, 2.0f);
-    for (auto& shaderProgram : mShaderPrograms) {
-        shaderProgram.setUniform(Hash::staticHashString("projectionMatrix"), projectionMatrix);
-    }
-
-    mRenderer.beginFrame();
-    const auto offset = glm::vec3{ -gsl::narrow_cast<float>(getFramebufferSize().width) / 2.0f + 20.0f,
-                                   -gsl::narrow_cast<float>(getFramebufferSize().height) / 2.0f + 20.0f, 0.0f };
+    /*mRenderer.beginFrame();
+    const auto offset = glm::vec3{ -gsl::narrow_cast<float>(mWindow.getFramebufferSize().width) / 2.0f + 20.0f,
+                                   -gsl::narrow_cast<float>(mWindow.getFramebufferSize().height) / 2.0f + 20.0f, 0.0f };
     constexpr int dimension = 20;
     for (int x = 0; x < dimension; ++x) {
         for (int y = 0; y < dimension; ++y) {
@@ -117,26 +122,5 @@ void Sandbox::render() noexcept {
             glm::vec3{ mousePosition.x, mousePosition.y, mInput.mouseDown(MouseButton::Button0) ? -0.5f : 0.5f }, 0.0f,
             glm::vec2{ 100.0f }, mShaderPrograms.front(), mTextures[mTextures.size() - 2]);
     mRenderer.endFrame();
-    const RenderStats& stats = mRenderer.stats();
-    //spdlog::info("Stats: {} tris, {} vertices ({} batches)", stats.numTriangles, stats.numVertices, stats.numBatches);
-}
-
-void Sandbox::setupShaders() noexcept {
-    auto expectedShaderProgram =
-            ShaderProgram::generateFromFiles(std::filesystem::current_path() / "assets" / "shaders" / "default.vert",
-                                             std::filesystem::current_path() / "assets" / "shaders" / "default.frag");
-    if (!expectedShaderProgram) {
-        spdlog::error("Failed to generate shader program from files: {}", expectedShaderProgram.error());
-        return;
-    }
-    mShaderPrograms.push_back(std::move(expectedShaderProgram.value()));
-
-    expectedShaderProgram =
-            ShaderProgram::generateFromFiles(std::filesystem::current_path() / "assets" / "shaders" / "default.vert",
-                                             std::filesystem::current_path() / "assets" / "shaders" / "debug.frag");
-    if (!expectedShaderProgram) {
-        spdlog::error("Failed to generate shader program from files: {}", expectedShaderProgram.error());
-        return;
-    }
-    mShaderPrograms.push_back(std::move(expectedShaderProgram.value()));
+    const RenderStats& stats = mRenderer.stats();*/
 }

@@ -4,8 +4,11 @@
 
 #include "Texture.hpp"
 #include <spdlog/spdlog.h>
+#include <range/v3/all.hpp>
+#include <memory>
+#include <cstring>
 
-tl::expected<Texture, std::string> Texture::Create(const Image& image) noexcept {
+tl::expected<Texture, std::string> Texture::create(const Image& image) noexcept {
     GLint colorComponentFormat;
     const int numChannels = image.getNumChannels();
     switch (numChannels) {
@@ -32,6 +35,55 @@ tl::expected<Texture, std::string> Texture::Create(const Image& image) noexcept 
     result.setWrap(false);
     return result;
 }
+
+tl::expected<Texture, std::string> Texture::createFromMemory(int width,
+                                                   int height,
+                                                   int numChannels,
+                                                   unsigned char* data) noexcept {
+    GLint colorComponentFormat;
+    switch (numChannels) {
+        case 3:
+            colorComponentFormat = GL_RGB;
+            break;
+        case 4:
+            colorComponentFormat = GL_RGBA;
+            break;
+        default:
+            return tl::unexpected{ fmt::format("Unsupported number of channels: {}", numChannels) };
+    }
+
+    Texture result;
+    glGenTextures(1, &result.mName);
+    result.bind();
+    glTexImage2D(GL_TEXTURE_2D, 0, colorComponentFormat, width, height, 0, colorComponentFormat,
+                 GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    result.mWidth = width;
+    result.mHeight = height;
+    result.mNumChannels = numChannels;
+    result.setFiltering(Filtering::Linear);
+    result.setWrap(true);
+    return result;
+}
+
+tl::expected<Texture, std::string> Texture::createFromFillColor(int width,
+                                                   int height,
+                                                   int numChannels,
+                                                   Color fillColor) noexcept {
+    using ranges::views::ints;
+    auto bufferLength{ static_cast<std::size_t>(width * height * numChannels) };
+    auto buffer = std::make_unique<unsigned char[]>(bufferLength);
+    for (auto i : ints(0, width * height)) {
+        buffer[i * numChannels + 0] = fillColor.r;
+        buffer[i * numChannels + 1] = fillColor.g;
+        buffer[i * numChannels + 2] = fillColor.b;
+        if (numChannels == 4) {
+            buffer[i * numChannels + 3] = fillColor.a;
+        }
+    }
+    return createFromMemory(width, height, numChannels, buffer.get());
+}
+
 
 void Texture::bind(GLint textureUnit) const noexcept {
     /*if (textureUnit < 0 || textureUnit >= getTextureUnitCount()) {

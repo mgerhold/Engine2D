@@ -5,7 +5,7 @@
 #include "Image.hpp"
 #include <spdlog/spdlog.h>
 
-tl::expected<Image, std::string> Image::LoadFromFile(const std::filesystem::path& filename, int numChannels) noexcept {
+tl::expected<Image, std::string> Image::loadFromFile(const std::filesystem::path& filename, int numChannels) noexcept {
     if (!std::filesystem::exists(filename)) {
         return tl::unexpected{ fmt::format("File not found: {}", filename.string()) };
     }

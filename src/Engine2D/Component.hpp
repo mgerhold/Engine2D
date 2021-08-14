@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "Texture.hpp"
+#include "ShaderProgram.hpp"
 #include <glm/glm.hpp>
 
 struct Transform {
@@ -13,6 +15,7 @@ struct Transform {
 };
 
 struct DynamicSprite {
-    // GUID texture;
+    const Texture* texture;
+    const ShaderProgram* shader;
     glm::vec3 color;
 };

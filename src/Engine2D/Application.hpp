@@ -12,9 +12,12 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "Input.hpp"
 #include "Registry.hpp"
 #include "Component.hpp"
+#include "Window.hpp"
+#include "Input.hpp"
+#include "AssetDatabase.hpp"
+#include "Renderer.hpp"
 
 #include <chrono>
 #include <vector>
@@ -35,33 +38,13 @@ public:
     Application& operator=(Application&&) = delete;
 
     void run() noexcept;
-    [[nodiscard]] bool hasError() const {
-        return mError;
-    };
-    [[nodiscard]] WindowSize getFramebufferSize() const;
-
-protected:
-    [[nodiscard]] inline GLFWwindow* getGLFWWindowPointer() const noexcept {
-        return mWindowPtr;
-    }
 
 protected:
     Input mInput;
+    Window mWindow;
+    AssetDatabase mAssetDatabase;
     Registry mRegistry;
-
-private:
-    static void handleOpenGLDebugOutput(GLenum source,
-                                        GLenum type,
-                                        unsigned int id,
-                                        GLenum severity,
-                                        GLsizei /* length */,
-                                        const char* message,
-                                        const void* /* userParam */);
-
-private:
-    GLFWwindow* mWindowPtr;
-    bool mError{ false };
-    WindowSize mFrameBufferSize;
+    Renderer mRenderer;
 };
 
 #include "Application.inc"

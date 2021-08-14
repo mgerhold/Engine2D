@@ -195,4 +195,6 @@ private:
 
     template<typename T>
     friend class Application;
+
+    friend class Window;
 };
