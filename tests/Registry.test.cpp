@@ -58,7 +58,7 @@ namespace {
     TEST_F(RegistryComponentHolderGrowingFixture, CreateEntities_AttachComponents_CountComponents) {
         using ranges::views::ints, ranges::views::enumerate;
         std::vector<typename decltype(registry)::EntityType> entities;
-        for (auto i : ints(0, 100)) {
+        for ([[maybe_unused]] auto i : ints(0, 100)) {
             entities.push_back(registry.createEntity());
         }
         for (auto entity : entities) {
@@ -90,7 +90,7 @@ namespace {
     TEST_F(RegistryComponentHolderGrowingFixture, CreateEntities_AttachComponents_ModifyComponents) {
         using ranges::views::ints, ranges::views::enumerate;
         std::vector<Entity> entities;
-        for (auto i : ints(0, 100)) {
+        for ([[maybe_unused]] auto i : ints(0, 100)) {
             entities.push_back(registry.createEntity());
         }
         for (auto entity : entities) {
