@@ -5,3 +5,4 @@ cmake-build-release/
 cmake-build-release-with-profiling/
 cmake-build-debug-remote-host/
 cmake-build-release-remote-host/
+cmake-build-debug-remote-host-coverage/
