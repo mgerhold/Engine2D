@@ -22,7 +22,7 @@ public:
     Window& operator=(Window&&) = delete;
     ~Window();
 
-    [[nodiscard]] inline GLFWwindow* const getGLFWWindowPointer() const noexcept {
+    [[nodiscard]] inline GLFWwindow* getGLFWWindowPointer() const noexcept {
         return mWindowPtr;
     }
     [[nodiscard]] WindowSize getFramebufferSize() const;
