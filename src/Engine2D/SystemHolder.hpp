@@ -34,8 +34,8 @@ public:
         }
     }
 
-    template<typename... Components, typename SetupFunction, typename ForEachFunction, typename FinalizeFunction>
-    void emplace(SetupFunction&& setup, ForEachFunction&& forEach, FinalizeFunction&& finalize) noexcept {
+    template<typename... Components>
+    void emplace(auto&& setup, auto&& forEach, auto&& finalize) noexcept {
         using SystemType = System<Entity, Components...>;
         const auto typeIdentifier = TypeIdentifier::template get<SystemType>();
         const bool needsResizing = typeIdentifier >= mSystemContexts.size();
@@ -46,8 +46,8 @@ public:
             mDestructors.resize(typeIdentifier + 1);
         }
         mSystemContexts[typeIdentifier] = SystemContext{
-            .address{ new SystemType{ std::forward<SetupFunction>(setup), std::forward<ForEachFunction>(forEach),
-                                      std::forward<FinalizeFunction>(finalize) } },
+            .address{ new SystemType{ std::forward<decltype(setup)>(setup), std::forward<decltype(forEach)>(forEach),
+                                      std::forward<decltype(finalize)>(finalize) } },
             .setupFunction{ [](void* address) { static_cast<SystemType*>(address)->setup(); } },
             .forEachFunction{ [](void* address, SystemHolder* self) {
                 static_cast<SystemType*>(address)->forEach(
