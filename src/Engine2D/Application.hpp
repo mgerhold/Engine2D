@@ -18,6 +18,7 @@
 #include "Input.hpp"
 #include "AssetDatabase.hpp"
 #include "Renderer.hpp"
+#include "Time.hpp"
 
 #include <chrono>
 #include <vector>
@@ -45,6 +46,7 @@ protected:
     AssetDatabase mAssetDatabase;
     Registry mRegistry;
     Renderer mRenderer;
+    Time mTime;
 };
 
 #include "Application.inc"

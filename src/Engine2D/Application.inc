@@ -1,8 +1,6 @@
 template<typename DerivedType>
 Application<DerivedType>::Application(const std::string& title, WindowSize size, OpenGLVersion version) noexcept
-    : mWindow{ title, size, version, mInput } {
-
-}
+    : mWindow{ title, size, version, mInput } { }
 
 template<typename DerivedType>
 void Application<DerivedType>::run() noexcept {
@@ -21,6 +19,7 @@ void Application<DerivedType>::run() noexcept {
         glfwPollEvents();
         ++numFramesDuringOutputInterval;
         const auto currentTime = std::chrono::high_resolution_clock::now();
+        mTime.delta = currentTime - lastTime;
         lastTime = currentTime;
         if (currentTime >= lastFrameTimeOutput + frameTimeOutputInterval) {
             const double framesPerSecond =

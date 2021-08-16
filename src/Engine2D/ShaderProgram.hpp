@@ -31,6 +31,7 @@ public:
     }
     static tl::expected<ShaderProgram, std::string> generateFromFiles(const std::filesystem::path& vertexShaderPath,
                                                                       const std::filesystem::path& fragmentShaderPath);
+    static void setUniform(GLuint shaderName, std::size_t uniformNameHash, const glm::mat4& matrix) noexcept;
     void setUniform(std::size_t uniformNameHash, const glm::mat4& matrix) const noexcept;
 
 private:

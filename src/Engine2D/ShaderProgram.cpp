@@ -124,7 +124,24 @@ tl::expected<ShaderProgram, std::string> ShaderProgram::generateFromFiles(
     return shaderProgram;
 }
 
+/*void ShaderProgram::setUniform(GLuint shaderName, std::size_t uniformNameHash, const glm::mat4& matrix) noexcept {
+    bind(shaderName);
+    const auto it = mUniformLocations.find(uniformNameHash);
+
+    if (it == mUniformLocations.cend()) {
+#ifdef DEBUG_BUILD
+        spdlog::error("Could not set uniform \"{}\" since it could not be found.",
+                      Hash::getStringFromHash(uniformNameHash));
+#else
+        spdlog::error("Could not set uniform because the hash value {} could not be found.", uniformNameHash);
+#endif
+        return;
+    }
+    glUniformMatrix4fv(it->second, 1, false, glm::value_ptr(matrix));
+}*/
+
 void ShaderProgram::setUniform(std::size_t uniformNameHash, const glm::mat4& matrix) const noexcept {
+    //setUniform(mName, uniformNameHash, matrix);
     bind();
     const auto it = mUniformLocations.find(uniformNameHash);
 

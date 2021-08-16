@@ -40,15 +40,15 @@ public:
 public:
     Renderer();
 
-    void beginFrame() noexcept;
+    void beginFrame(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) noexcept;
     void endFrame() noexcept;
     void drawQuad(const glm::vec3& translation,
                   float rotationAngle,
                   const glm::vec2& scale,
-                  const ShaderProgram& shader,
+                  ShaderProgram& shader,
                   const Texture& texture) noexcept;
     template<typename T = glm::mat4>
-    void drawQuad(T&& transform, const ShaderProgram& shader, const Texture& texture) noexcept;
+    void drawQuad(T&& transform, ShaderProgram& shader, const Texture& texture) noexcept;
     [[nodiscard]] const RenderStats& stats() const {
         return mRenderStats;
     }
@@ -58,7 +58,8 @@ private:
     struct RenderCommand {
         glm::mat4 transform;
         glm::vec4 color;
-        GLuint shaderName;
+        //GLuint shaderName;
+        ShaderProgram* shader;
         GLuint textureName;
     };
 
@@ -80,4 +81,5 @@ private:
     RenderStats mRenderStats;
     std::vector<GLuint> mCurrentTextureNames;
     GLuint mCurrentShaderProgramName{ 0U };
+    glm::mat4 mCurrentViewProjectionMatrix{ 0.0f };
 };

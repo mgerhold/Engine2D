@@ -5,6 +5,7 @@
 #include "Renderer.hpp"
 #include "GLDataUsagePattern.hpp"
 #include "ScopedTimer.hpp"
+#include "hash/hash.hpp"
 #include <gsl/gsl>
 #include <spdlog/spdlog.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -29,10 +30,11 @@ Renderer::Renderer()
             VertexAttributeDefinition{ 2, GL_FLOAT, false }, VertexAttributeDefinition{ 1, GL_UNSIGNED_INT, false });
 }
 
-void Renderer::beginFrame() noexcept {
+void Renderer::beginFrame(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) noexcept {
     mVertexIterator = mVertexData.begin();
     mIndexIterator = mIndexData.begin();
     mRenderStats = RenderStats{};
+    mCurrentViewProjectionMatrix = projectionMatrix * viewMatrix;
 }
 
 void Renderer::endFrame() noexcept {
@@ -43,7 +45,7 @@ void Renderer::endFrame() noexcept {
 void Renderer::drawQuad(const glm::vec3& translation,
                         float rotationAngle,
                         const glm::vec2& scale,
-                        const ShaderProgram& shader,
+                        ShaderProgram& shader,
                         const Texture& texture) noexcept {
     drawQuad(glm::scale(glm::rotate(glm::translate(glm::mat4{ 1.0f }, translation), rotationAngle,
                                     glm::vec3{ 0.0f, 0.0f, 1.0f }),
@@ -52,14 +54,14 @@ void Renderer::drawQuad(const glm::vec3& translation,
 }
 
 template<typename T>
-void Renderer::drawQuad(T&& transform, const ShaderProgram& shader, const Texture& texture) noexcept {
+void Renderer::drawQuad(T&& transform, ShaderProgram& shader, const Texture& texture) noexcept {
     if (mCommandIterator == mCommandBuffer.end()) {
         flushCommandBuffer();
     }
-    *mCommandIterator++ = RenderCommand{ .transform = transform,
-                                         .color = glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f },
-                                         .shaderName = shader.mName,
-                                         .textureName = texture.mName };
+    *mCommandIterator++ = RenderCommand{ .transform{ transform },
+                                         .color{ glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f } },
+                                         .shader{ &shader },
+                                         .textureName{ texture.mName } };
 }
 
 void Renderer::flushCommandBuffer() noexcept {
@@ -71,20 +73,21 @@ void Renderer::flushCommandBuffer() noexcept {
         SCOPED_TIMER_NAMED("Sorting");
         std::sort(mCommandBuffer.begin(), mCommandIterator, [](const RenderCommand& lhs, const RenderCommand& rhs) {
             // TODO: sort differently for transparent shaders
-            return (lhs.shaderName < rhs.shaderName) ||
-                   (lhs.shaderName == rhs.shaderName && lhs.textureName < rhs.textureName);
+            return (lhs.shader->mName < rhs.shader->mName) ||
+                   (lhs.shader->mName == rhs.shader->mName && lhs.textureName < rhs.textureName);
         });
     }
     auto currentStartIt = mCommandBuffer.begin();
     auto currentEndIt = std::upper_bound(
             mCommandBuffer.begin(), mCommandIterator, mCommandBuffer.front(),
-            [](const RenderCommand& lhs, const RenderCommand& rhs) { return lhs.shaderName < rhs.shaderName; });
+            [](const RenderCommand& lhs, const RenderCommand& rhs) { return lhs.shader->mName < rhs.shader->mName; });
 
     while (currentStartIt != mCommandIterator) {// one iteration per shader
         mVertexIterator = mVertexData.begin();
         mIndexIterator = mIndexData.begin();
         mCurrentTextureNames.clear();
-        ShaderProgram::bind(currentStartIt->shaderName);
+        currentStartIt->shader->bind();
+        currentStartIt->shader->setUniform(Hash::staticHashString("projectionMatrix"), mCurrentViewProjectionMatrix);
         {
             SCOPED_TIMER_NAMED("commands to data");
             std::for_each(currentStartIt, currentEndIt, [&](const RenderCommand& renderCommand) {
@@ -94,9 +97,10 @@ void Renderer::flushCommandBuffer() noexcept {
 
         currentStartIt = currentEndIt;
         if (currentEndIt != mCommandBuffer.end()) {// there's at least one more shader to draw with
-            currentEndIt = std::upper_bound(
-                    currentEndIt, mCommandIterator, *currentEndIt,
-                    [](const RenderCommand& lhs, const RenderCommand& rhs) { return lhs.shaderName < rhs.shaderName; });
+            currentEndIt = std::upper_bound(currentEndIt, mCommandIterator, *currentEndIt,
+                                            [](const RenderCommand& lhs, const RenderCommand& rhs) {
+                                                return lhs.shader->mName < rhs.shader->mName;
+                                            });
         }
         flushVertexAndIndexData();
     }
@@ -173,7 +177,7 @@ void Renderer::addVertexAndIndexDataFromRenderCommand(const Renderer::RenderComm
 }
 
 void Renderer::clear(bool colorBuffer, bool depthBuffer) noexcept {
-    const auto flags{ gsl::narrow<GLbitfield>(GL_COLOR_BUFFER_BIT * colorBuffer) |
+    const auto flags{ gsl::narrow_cast<GLbitfield>(GL_COLOR_BUFFER_BIT * colorBuffer) |
                       (GL_DEPTH_BUFFER_BIT * depthBuffer) };
     assert(flags && "At least one of the flags must be set.");
     glClear(flags);

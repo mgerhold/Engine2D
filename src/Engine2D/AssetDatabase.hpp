@@ -39,6 +39,9 @@ public:
         return get<Texture>(guid, mDebugFallbackTexture);
     }
 
+    [[nodiscard]] ShaderProgram& getShaderProgram(GUID guid) noexcept {
+        return getMutable<ShaderProgram>(guid, mDebugFallbackShaderProgram);
+    }
     [[nodiscard]] const ShaderProgram& getShaderProgram(GUID guid) const noexcept {
         return get<ShaderProgram>(guid, mDebugFallbackShaderProgram);
     }
@@ -63,7 +66,17 @@ private:
     }
 
     template<typename T>
-    const T& get(GUID guid, const T& debugFallback) const noexcept {
+    [[nodiscard]] const T& get(GUID guid, const T& debugFallback) const noexcept {
+        const auto findIterator = mAssets.find(guid);
+        if (findIterator == mAssets.end() || !std::holds_alternative<T>(findIterator->second)) {
+            spdlog::error("Unable to retrieve asset for GUID {}", guid);
+            return debugFallback;
+        }
+        return std::get<T>(findIterator->second);
+    }
+
+    template<typename T>
+    [[nodiscard]] T& getMutable(GUID guid, T& debugFallback) noexcept {
         const auto findIterator = mAssets.find(guid);
         if (findIterator == mAssets.end() || !std::holds_alternative<T>(findIterator->second)) {
             spdlog::error("Unable to retrieve asset for GUID {}", guid);

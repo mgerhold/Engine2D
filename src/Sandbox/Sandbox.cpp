@@ -9,6 +9,7 @@
 #include "hash/hash.hpp"
 #include "ScopedTimer.hpp"
 #include "SystemHolder.hpp"
+#include <gsl/gsl>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <filesystem>
@@ -19,21 +20,6 @@ void Sandbox::setup() noexcept {
 #else
     spdlog::info("This is the release build");
 #endif
-    /*auto imagePath = std::filesystem::current_path() / "assets" / "images";
-    if (!exists(imagePath)) {
-        spdlog::error("Could not find path to image files: {}", imagePath.string());
-    } else {
-        for (const auto& directoryEntry : std::filesystem::directory_iterator(imagePath)) {
-            auto expectedTexture = Image::loadFromFile(directoryEntry).and_then(Texture::create);
-            if (expectedTexture) {
-                mTextures.push_back(std::move(expectedTexture.value()));
-                spdlog::info("Loaded texture: {}", directoryEntry.path().string());
-            } else {
-                spdlog::warn("Could not load image: {} (Error: {})", directoryEntry.path().string(),
-                             expectedTexture.error());
-            }
-        }
-    }*/
     constexpr GUID bjarneID{ 0 };
     mAssetDatabase.loadTexture(std::filesystem::current_path() / "assets" / "images" / "bjarne.jpg", bjarneID);
 
@@ -53,8 +39,12 @@ void Sandbox::setup() noexcept {
     mRegistry.attachComponent(entity, DynamicSprite{ .texture{ &mAssetDatabase.getTexture(bjarneID) },
                                                      .shader{ &mAssetDatabase.getShaderProgram(shaderID0) },
                                                      .color{ 1.0f, 1.0f, 1.0f } });
+    const auto cameraEntity = mRegistry.createEntity();
+    mRegistry.attachComponent(cameraEntity, Transform{ .position{ 0.0f }, .rotation{ 0.0f }, .scale{ 1.0f } });
+    mRegistry.attachComponent(cameraEntity, Camera{});
+    const auto& cameraTransform = mRegistry.component<Transform>(cameraEntity).value();
     mRegistry.emplaceSystem<const Transform&, const DynamicSprite&>(
-            [this, &shader0, &shader1]() {
+            [this, &shader0, &shader1, &cameraTransform]() {
                 const auto framebufferSize = mWindow.getFramebufferSize();
                 const auto projectionMatrix =
                         glm::ortho<float>(gsl::narrow_cast<float>(-framebufferSize.width / 2),
@@ -64,7 +54,7 @@ void Sandbox::setup() noexcept {
                 shader0.setUniform(Hash::staticHashString("projectionMatrix"), projectionMatrix);
                 shader1.setUniform(Hash::staticHashString("projectionMatrix"), projectionMatrix);
                 mRenderer.clear(true, true);
-                mRenderer.beginFrame();
+                mRenderer.beginFrame(glm::inverse(cameraTransform.matrix()), projectionMatrix);
             },
             [this]([[maybe_unused]] Entity entity, const Transform& transform, const auto& sprite) {
                 mRenderer.drawQuad(transform.position, transform.rotation, transform.scale, *sprite.shader,
@@ -80,14 +70,33 @@ void Sandbox::update() noexcept {
 }
 
 void Sandbox::processInput() noexcept {
-    if (mInput.keyPressed(Key::A)) {// pressed since last frame
-        spdlog::info("A pressed");
+    auto& cameraTransform = std::get<Transform&>(mRegistry.componentsMutable<Camera, Transform>().front());
+    constexpr double translationPerSecond{ 100.0 };
+    constexpr double zoomFactorPerSecond{ 1.2 };
+    constexpr double rotationRadiansPerSecond{ glm::radians(30.0) };
+    if (mInput.keyDown(Key::A)) {
+        cameraTransform.position.x -= gsl::narrow_cast<float>(translationPerSecond * mTime.delta.count());
     }
-    if (mInput.keyDown(Key::A)) {// is currently held down?
-        spdlog::info("A is currently held down");
+    if (mInput.keyDown(Key::D)) {
+        cameraTransform.position.x += gsl::narrow_cast<float>(translationPerSecond * mTime.delta.count());
     }
-    if (mInput.keyReleased(Key::A)) {// released since last frame
-        spdlog::info("A released");
+    if (mInput.keyDown(Key::W)) {
+        cameraTransform.position.y += gsl::narrow_cast<float>(translationPerSecond * mTime.delta.count());
+    }
+    if (mInput.keyDown(Key::S)) {
+        cameraTransform.position.y -= gsl::narrow_cast<float>(translationPerSecond * mTime.delta.count());
+    }
+    if (mInput.keyDown(Key::E)) {
+        cameraTransform.rotation -= gsl::narrow_cast<float>(rotationRadiansPerSecond * mTime.delta.count());
+    }
+    if (mInput.keyDown(Key::Q)) {
+        cameraTransform.rotation += gsl::narrow_cast<float>(rotationRadiansPerSecond * mTime.delta.count());
+    }
+    if (mInput.keyDown(Key::NumpadAdd)) {
+        cameraTransform.scale /= gsl::narrow_cast<float>((zoomFactorPerSecond - 1.0) * mTime.delta.count() + 1.0);
+    }
+    if (mInput.keyDown(Key::NumpadSubtract)) {
+        cameraTransform.scale *= gsl::narrow_cast<float>((zoomFactorPerSecond - 1.0) * mTime.delta.count() + 1.0);
     }
     if (mInput.mousePressed(MouseButton::Button0)) {
         spdlog::info("Left mouse button pressed");
@@ -107,21 +116,4 @@ void Sandbox::processInput() noexcept {
 
 void Sandbox::render() noexcept {
     SCOPED_TIMER();
-    /*mRenderer.beginFrame();
-    const auto offset = glm::vec3{ -gsl::narrow_cast<float>(mWindow.getFramebufferSize().width) / 2.0f + 20.0f,
-                                   -gsl::narrow_cast<float>(mWindow.getFramebufferSize().height) / 2.0f + 20.0f, 0.0f };
-    constexpr int dimension = 20;
-    for (int x = 0; x < dimension; ++x) {
-        for (int y = 0; y < dimension; ++y) {
-            mRenderer.drawQuad(offset + glm::vec3{ static_cast<float>(x) * 40.0f, static_cast<float>(y) * 40.0f, 0.0f },
-                               0.0f, glm::vec2{ 20.0f }, mShaderPrograms[y % mShaderPrograms.size()],
-                               mTextures[x % mTextures.size()]);
-        }
-    }
-    const auto mousePosition = mInput.mousePosition();
-    mRenderer.drawQuad(
-            glm::vec3{ mousePosition.x, mousePosition.y, mInput.mouseDown(MouseButton::Button0) ? -0.5f : 0.5f }, 0.0f,
-            glm::vec2{ 100.0f }, mShaderPrograms.front(), mTextures[mTextures.size() - 2]);
-    mRenderer.endFrame();
-    const RenderStats& stats = mRenderer.stats();*/
 }

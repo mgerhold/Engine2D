@@ -40,8 +40,8 @@ Window::Window(const std::string& title, WindowSize size, OpenGLVersion version,
     glfwSetCursorPosCallback(mWindowPtr, [](GLFWwindow* window, double mouseX, double mouseY) {
         auto& self = *static_cast<Window*>(glfwGetWindowUserPointer(window));
         mouseY = self.mFrameBufferSize.height - mouseY - 1;
-        mouseX -= gsl::narrow<float>(self.mFrameBufferSize.width) / 2.0f;
-        mouseY -= gsl::narrow<float>(self.mFrameBufferSize.height) / 2.0f;
+        mouseX -= gsl::narrow_cast<float>(self.mFrameBufferSize.width) / 2.0f;
+        mouseY -= gsl::narrow_cast<float>(self.mFrameBufferSize.height) / 2.0f;
         self.mInput.mouseCallback(mouseX, mouseY);
     });
     glfwSetCursorEnterCallback(mWindowPtr, [](GLFWwindow* window, int entered) {
