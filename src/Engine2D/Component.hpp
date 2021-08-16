@@ -27,4 +27,8 @@ struct DynamicSprite {
     glm::vec3 color;
 };
 
-struct Camera { };
+struct Camera {
+    [[nodiscard]] static glm::mat4 matrix(const Transform& transform) noexcept {
+        return glm::inverse(transform.matrix());
+    }
+};

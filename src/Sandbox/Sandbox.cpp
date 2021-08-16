@@ -54,7 +54,7 @@ void Sandbox::setup() noexcept {
                 shader0.setUniform(Hash::staticHashString("projectionMatrix"), projectionMatrix);
                 shader1.setUniform(Hash::staticHashString("projectionMatrix"), projectionMatrix);
                 mRenderer.clear(true, true);
-                mRenderer.beginFrame(glm::inverse(cameraTransform.matrix()), projectionMatrix);
+                mRenderer.beginFrame(Camera::matrix(cameraTransform), projectionMatrix);
             },
             [this]([[maybe_unused]] Entity entity, const Transform& transform, const auto& sprite) {
                 mRenderer.drawQuad(transform.position, transform.rotation, transform.scale, *sprite.shader,
