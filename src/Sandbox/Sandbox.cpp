@@ -63,6 +63,7 @@ void Sandbox::setup() noexcept {
                                           gsl::narrow_cast<float>(framebufferSize.height / 2), -2.0f, 2.0f);
                 shader0.setUniform(Hash::staticHashString("projectionMatrix"), projectionMatrix);
                 shader1.setUniform(Hash::staticHashString("projectionMatrix"), projectionMatrix);
+                mRenderer.clear(true, true);
                 mRenderer.beginFrame();
             },
             [this]([[maybe_unused]] Entity entity, const Transform& transform, const auto& sprite) {

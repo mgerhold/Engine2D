@@ -64,9 +64,6 @@ void Renderer::drawQuad(T&& transform, const ShaderProgram& shader, const Textur
 
 void Renderer::flushCommandBuffer() noexcept {
     SCOPED_TIMER();
-    if (mRenderStats.numBatches == 0ULL) {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    }
     if (mCommandIterator == mCommandBuffer.begin()) {
         return;
     }
@@ -173,4 +170,11 @@ void Renderer::addVertexAndIndexDataFromRenderCommand(const Renderer::RenderComm
     mNumTrianglesInCurrentBatch += 2ULL;
     mRenderStats.numVertices += 4ULL;
     mRenderStats.numTriangles += 2ULL;
+}
+
+void Renderer::clear(bool colorBuffer, bool depthBuffer) noexcept {
+    const auto flags{ gsl::narrow<GLbitfield>(GL_COLOR_BUFFER_BIT * colorBuffer) |
+                      (GL_DEPTH_BUFFER_BIT * depthBuffer) };
+    assert(flags && "At least one of the flags must be set.");
+    glClear(flags);
 }

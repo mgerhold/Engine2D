@@ -52,6 +52,7 @@ public:
     [[nodiscard]] const RenderStats& stats() const {
         return mRenderStats;
     }
+    static void clear(bool colorBuffer, bool depthBuffer) noexcept;
 
 private:
     struct RenderCommand {
