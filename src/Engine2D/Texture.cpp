@@ -147,18 +147,6 @@ Texture& Texture::operator=(Texture&& other) noexcept {
     return *this;
 }
 
-int Texture::getWidth() const noexcept {
-    return mWidth;
-}
-
-int Texture::getHeight() const noexcept {
-    return mHeight;
-}
-
-int Texture::getNumChannels() const noexcept {
-    return mNumChannels;
-}
-
 void Texture::bind(GLuint textureName, GLint textureUnit) noexcept {
     if (textureUnit < 0 || textureUnit >= getTextureUnitCount()) {
         spdlog::error("Cannot bind texture since {} is no valid texture unit.", textureUnit);

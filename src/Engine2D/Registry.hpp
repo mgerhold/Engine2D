@@ -31,6 +31,12 @@ public:
     void attachComponent(Entity entity, const Component& component) noexcept {
         mComponentHolder.template attach<Component>(getIdentifierBitsFromEntity(entity), component);
     }
+
+    template<typename... Components>
+    void attachComponents(Entity entity, const Components&... components) noexcept {
+        (attachComponent(entity, components), ...);
+    }
+
     template<typename Component>
     [[nodiscard]] bool hasComponent(Entity entity) const noexcept {
         return mComponentHolder.template has<Component>(getIdentifierBitsFromEntity(entity));
@@ -71,23 +77,30 @@ public:
                            tuple);
                });
     }
-    [[nodiscard]] Entity createEntity() noexcept {
-        if (mNumRecyclableEntities > 0) {
-            const auto index = getIndexFromEntity(mNextRecyclableEntity);
-            swapIdentifiers(mEntities[index], mNextRecyclableEntity);
-            --mNumRecyclableEntities;
-            assert(static_cast<std::size_t>(getIdentifierBitsFromEntity(mEntities[index])) == index);
-            return mEntities[index];
-        } else {
-            mEntities.push_back(entityFromIdentifierAndGeneration(
-                    Identifier{ gsl::narrow_cast<Entity>(mEntities.size()) }, Generation{ 0 }));
-            // TODO: add option to deny resizing
-            if (mComponentHolder.size() < mEntities.size()) {
-                mComponentHolder.resize(mEntities.size());
+
+    template<typename... Components>
+    Entity createEntity(Components... components) noexcept {
+        const auto entity = [&]() {
+            if (mNumRecyclableEntities > 0) {
+                const auto index = getIndexFromEntity(mNextRecyclableEntity);
+                swapIdentifiers(mEntities[index], mNextRecyclableEntity);
+                --mNumRecyclableEntities;
+                assert(static_cast<std::size_t>(getIdentifierBitsFromEntity(mEntities[index])) == index);
+                return mEntities[index];
+            } else {
+                mEntities.push_back(entityFromIdentifierAndGeneration(
+                        Identifier{ gsl::narrow_cast<Entity>(mEntities.size()) }, Generation{ 0 }));
+                // TODO: add option to deny resizing
+                if (mComponentHolder.size() < mEntities.size()) {
+                    mComponentHolder.resize(mEntities.size());
+                }
+                return mEntities.back();
             }
-            return mEntities.back();
-        }
+        }();// immediately invoked
+        attachComponents(entity, components...);
+        return entity;
     }
+
     void destroyEntity(Entity entity) noexcept {
         assert(isEntityAlive(entity) && "The entity to remove must be alive.");
         const auto index = getIndexFromEntity(entity);

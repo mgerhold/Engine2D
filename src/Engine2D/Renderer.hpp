@@ -7,6 +7,7 @@
 #include "VertexBuffer.hpp"
 #include "ShaderProgram.hpp"
 #include "Texture.hpp"
+#include "Color.hpp"
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <vector>
@@ -46,21 +47,25 @@ public:
                   float rotationAngle,
                   const glm::vec2& scale,
                   ShaderProgram& shader,
-                  const Texture& texture) noexcept;
+                  const Texture& texture,
+                  const Color& color = Color::white()) noexcept;
     template<typename T = glm::mat4>
-    void drawQuad(T&& transform, ShaderProgram& shader, const Texture& texture) noexcept;
+    void drawQuad(T&& transform,
+                  ShaderProgram& shader,
+                  const Texture& texture,
+                  const Color& color = Color::white()) noexcept;
     [[nodiscard]] const RenderStats& stats() const {
         return mRenderStats;
     }
     static void clear(bool colorBuffer, bool depthBuffer) noexcept;
+    static void setClearColor(const Color& color) noexcept;
 
 private:
     struct RenderCommand {
         glm::mat4 transform;
-        glm::vec4 color;
-        //GLuint shaderName;
+        Color color;
         ShaderProgram* shader;
-        GLuint textureName;
+        const Texture* texture;
     };
 
 private:

@@ -81,7 +81,7 @@ Window::~Window() {
     glfwTerminate();
 }
 
-WindowSize Window::getFramebufferSize() const {
+WindowSize Window::framebufferSize() const {
     return mFrameBufferSize;
 }
 

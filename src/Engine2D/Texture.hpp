@@ -30,9 +30,18 @@ public:
     static void unbind(GLint textureUnit) noexcept;
     void setFiltering(Filtering filtering) const noexcept;
     void setWrap(bool enabled) const noexcept;
-    int getWidth() const noexcept;
-    int getHeight() const noexcept;
-    int getNumChannels() const noexcept;
+    [[nodiscard]] int width() const noexcept {
+        return mWidth;
+    }
+    [[nodiscard]] int height() const noexcept {
+        return mHeight;
+    }
+    [[nodiscard]] float widthToHeightRatio() const noexcept {
+        return static_cast<float>(mWidth) / mHeight;
+    }
+    [[nodiscard]] int numChannels() const noexcept {
+        return mNumChannels;
+    }
 
     [[nodiscard]] static tl::expected<Texture, std::string> create(const Image& image) noexcept;
     [[nodiscard]] static tl::expected<Texture, std::string> createFromMemory(int width,

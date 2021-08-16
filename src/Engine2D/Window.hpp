@@ -25,7 +25,7 @@ public:
     [[nodiscard]] inline GLFWwindow* getGLFWWindowPointer() const noexcept {
         return mWindowPtr;
     }
-    [[nodiscard]] WindowSize getFramebufferSize() const;
+    [[nodiscard]] WindowSize framebufferSize() const;
 
 private:
     static void handleOpenGLDebugOutput(GLenum source,

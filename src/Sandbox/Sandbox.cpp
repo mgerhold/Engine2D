@@ -12,6 +12,7 @@
 #include <gsl/gsl>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <random>
 #include <filesystem>
 
 void Sandbox::setup() noexcept {
@@ -21,7 +22,8 @@ void Sandbox::setup() noexcept {
     spdlog::info("This is the release build");
 #endif
     constexpr GUID bjarneID{ 0 };
-    mAssetDatabase.loadTexture(std::filesystem::current_path() / "assets" / "images" / "bjarne.jpg", bjarneID);
+    auto& texture =
+            mAssetDatabase.loadTexture(std::filesystem::current_path() / "assets" / "images" / "bjarne.jpg", bjarneID);
 
     constexpr GUID shaderID0{ 1 }, shaderID1{ 2 };
     auto& shader0 = mAssetDatabase.loadShaderProgram(
@@ -30,35 +32,40 @@ void Sandbox::setup() noexcept {
     auto& shader1 = mAssetDatabase.loadShaderProgram(
             std::filesystem::current_path() / "assets" / "shaders" / "default.vert",
             std::filesystem::current_path() / "assets" / "shaders" / "debug.frag", shaderID1);
-    glClearColor(73.f / 255.f, 54.f / 255.f, 87.f / 255.f, 1.f);
+    mRenderer.setClearColor({ 73, 54, 87 });
 
     // generate game scene
-    const auto entity = mRegistry.createEntity();
-    mRegistry.attachComponent(entity,
-                              Transform{ .position{ 0.0f, 0.0f, 0.0f }, .rotation{ 0.0f }, .scale{ 150.0f, 150.0f } });
-    mRegistry.attachComponent(entity, DynamicSprite{ .texture{ &mAssetDatabase.getTexture(bjarneID) },
-                                                     .shader{ &mAssetDatabase.getShaderProgram(shaderID0) },
-                                                     .color{ 1.0f, 1.0f, 1.0f } });
-    const auto cameraEntity = mRegistry.createEntity();
-    mRegistry.attachComponent(cameraEntity, Transform{ .position{ 0.0f }, .rotation{ 0.0f }, .scale{ 1.0f } });
-    mRegistry.attachComponent(cameraEntity, Camera{});
+    constexpr float textureHeight = 40.0f;
+    mRegistry.createEntity(Transform{ .position{ 0.0f, 0.0f, 0.0f },
+                                      .rotation{ 0.0f },
+                                      .scale{ textureHeight * texture.widthToHeightRatio(), textureHeight } },
+                           DynamicSprite{ .texture{ &mAssetDatabase.getTexture(bjarneID) },
+                                          .shader{ &mAssetDatabase.getShaderProgram(shaderID0) },
+                                          .color{ 255, 40, 160 } });
+    std::random_device randomDevice;
+    std::mt19937 randomEngine{ randomDevice() };
+    std::uniform_int_distribution distribution{ -2000, 2000 };
+    constexpr int numEntities = 500;
+    for (auto _ : ranges::views::ints(0, numEntities)) {
+        const glm::vec3 position{ distribution(randomEngine), distribution(randomEngine), 0.0f };
+        const glm::vec2 scale{ texture.widthToHeightRatio() * textureHeight, textureHeight };
+        mRegistry.createEntity(Transform{ .position{ position }, .rotation{ 0.0f }, .scale{ scale } },
+                               DynamicSprite{ .texture{ &mAssetDatabase.getTexture(bjarneID) },
+                                              .shader{ &mAssetDatabase.getShaderProgram(shaderID0) },
+                                              .color{ Color::white() } });
+    }
+    const auto cameraEntity =
+            mRegistry.createEntity(Transform{ .position{ 0.0f }, .rotation{ 0.0f }, .scale{ 1.0f } }, Camera{});
     const auto& cameraTransform = mRegistry.component<Transform>(cameraEntity).value();
     mRegistry.emplaceSystem<const Transform&, const DynamicSprite&>(
-            [this, &shader0, &shader1, &cameraTransform]() {
-                const auto framebufferSize = mWindow.getFramebufferSize();
-                const auto projectionMatrix =
-                        glm::ortho<float>(gsl::narrow_cast<float>(-framebufferSize.width / 2),
-                                          gsl::narrow_cast<float>(framebufferSize.width / 2),
-                                          gsl::narrow_cast<float>(-framebufferSize.height / 2),
-                                          gsl::narrow_cast<float>(framebufferSize.height / 2), -2.0f, 2.0f);
-                shader0.setUniform(Hash::staticHashString("projectionMatrix"), projectionMatrix);
-                shader1.setUniform(Hash::staticHashString("projectionMatrix"), projectionMatrix);
+            [this, &cameraTransform]() {
                 mRenderer.clear(true, true);
-                mRenderer.beginFrame(Camera::matrix(cameraTransform), projectionMatrix);
+                mRenderer.beginFrame(Camera::viewMatrix(cameraTransform),
+                                     Camera::projectionMatrix(mWindow.framebufferSize()));
             },
             [this]([[maybe_unused]] Entity entity, const Transform& transform, const auto& sprite) {
                 mRenderer.drawQuad(transform.position, transform.rotation, transform.scale, *sprite.shader,
-                                   *sprite.texture);
+                                   *sprite.texture, sprite.color);
             },
             [this]() { mRenderer.endFrame(); });
 }
@@ -70,7 +77,8 @@ void Sandbox::update() noexcept {
 }
 
 void Sandbox::processInput() noexcept {
-    auto& cameraTransform = std::get<Transform&>(mRegistry.componentsMutable<Camera, Transform>().front());
+    const auto& cameraEntity = mRegistry.componentsMutable<Camera, Transform>().front();
+    auto& cameraTransform = std::get<Transform&>(cameraEntity);
     constexpr double translationPerSecond{ 100.0 };
     constexpr double zoomFactorPerSecond{ 1.2 };
     constexpr double rotationRadiansPerSecond{ glm::radians(30.0) };
@@ -104,10 +112,11 @@ void Sandbox::processInput() noexcept {
     if (mInput.mousePressed(MouseButton::Button1)) {
         spdlog::info("Right mouse button pressed");
     }
-    if (mInput.mouseDown(MouseButton::Button0)) {
-        const auto mousePosition = mInput.mousePosition();
-        spdlog::info("Mouse position: ({},{})", mousePosition.x, mousePosition.y);
-    }
+    auto& textureTransform = std::get<Transform&>(mRegistry.componentsMutable<DynamicSprite, Transform>().front());
+    const auto mousePosition = mInput.mousePosition();
+    const auto worldPosition = Camera::screenToWorldPoint(mousePosition, cameraTransform);
+    textureTransform.position.x = worldPosition.x;
+    textureTransform.position.y = worldPosition.y;
 
     if (glfwGetKey(mWindow.getGLFWWindowPointer(), GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(mWindow.getGLFWWindowPointer(), true);

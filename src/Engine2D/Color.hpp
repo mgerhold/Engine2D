@@ -4,8 +4,23 @@
 
 #pragma once
 
+#include <glm/glm.hpp>
+#include <limits>
 #include <cstdint>
 
 struct Color {
-    std::uint8_t r{ 0 }, g{ 0 }, b{ 0 }, a{ 255 };
+    using Channel = std::uint8_t;
+
+    Channel r{ 0 }, g{ 0 }, b{ 0 }, a{ 255 };
+
+    [[nodiscard]] auto normalized() const noexcept {
+        return glm::vec4{ static_cast<float>(r) / static_cast<float>(std::numeric_limits<Channel>::max()),
+                          static_cast<float>(g) / static_cast<float>(std::numeric_limits<Channel>::max()),
+                          static_cast<float>(b) / static_cast<float>(std::numeric_limits<Channel>::max()),
+                          static_cast<float>(a) / static_cast<float>(std::numeric_limits<Channel>::max()) };
+    };
+
+    static constexpr Color white() {
+        return Color{ 255, 255, 255, 255 };
+    }
 };

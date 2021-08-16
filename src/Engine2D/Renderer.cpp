@@ -10,6 +10,7 @@
 #include <spdlog/spdlog.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <algorithm>
+#include <limits>
 #include <execution>
 #include <array>
 
@@ -46,22 +47,21 @@ void Renderer::drawQuad(const glm::vec3& translation,
                         float rotationAngle,
                         const glm::vec2& scale,
                         ShaderProgram& shader,
-                        const Texture& texture) noexcept {
+                        const Texture& texture,
+                        const Color& color) noexcept {
     drawQuad(glm::scale(glm::rotate(glm::translate(glm::mat4{ 1.0f }, translation), rotationAngle,
                                     glm::vec3{ 0.0f, 0.0f, 1.0f }),
                         glm::vec3{ scale.x, scale.y, 1.0f }),
-             shader, texture);
+             shader, texture, color);
 }
 
 template<typename T>
-void Renderer::drawQuad(T&& transform, ShaderProgram& shader, const Texture& texture) noexcept {
+void Renderer::drawQuad(T&& transform, ShaderProgram& shader, const Texture& texture, const Color& color) noexcept {
     if (mCommandIterator == mCommandBuffer.end()) {
         flushCommandBuffer();
     }
-    *mCommandIterator++ = RenderCommand{ .transform{ transform },
-                                         .color{ glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f } },
-                                         .shader{ &shader },
-                                         .textureName{ texture.mName } };
+    *mCommandIterator++ =
+            RenderCommand{ .transform{ transform }, .color{ color }, .shader{ &shader }, .texture{ &texture } };
 }
 
 void Renderer::flushCommandBuffer() noexcept {
@@ -74,7 +74,7 @@ void Renderer::flushCommandBuffer() noexcept {
         std::sort(mCommandBuffer.begin(), mCommandIterator, [](const RenderCommand& lhs, const RenderCommand& rhs) {
             // TODO: sort differently for transparent shaders
             return (lhs.shader->mName < rhs.shader->mName) ||
-                   (lhs.shader->mName == rhs.shader->mName && lhs.textureName < rhs.textureName);
+                   (lhs.shader->mName == rhs.shader->mName && lhs.texture->mName < rhs.texture->mName);
         });
     }
     auto currentStartIt = mCommandBuffer.begin();
@@ -135,7 +135,7 @@ void Renderer::addVertexAndIndexDataFromRenderCommand(const Renderer::RenderComm
     bool foundTexture = false;
 
     for (std::size_t i = 0; i < mCurrentTextureNames.size(); ++i) {
-        if (mCurrentTextureNames[i] == renderCommand.textureName) {
+        if (mCurrentTextureNames[i] == renderCommand.texture->mName) {
             textureIndex = gsl::narrow_cast<GLuint>(i);
             foundTexture = true;
             break;
@@ -148,7 +148,7 @@ void Renderer::addVertexAndIndexDataFromRenderCommand(const Renderer::RenderComm
     }
     if (!foundTexture) {
         textureIndex = static_cast<GLuint>(mCurrentTextureNames.size());
-        mCurrentTextureNames.push_back(renderCommand.textureName);
+        mCurrentTextureNames.push_back(renderCommand.texture->mName);
     }
 
     const auto indexOffset = gsl::narrow_cast<GLuint>(mVertexIterator - mVertexData.begin());
@@ -158,9 +158,11 @@ void Renderer::addVertexAndIndexDataFromRenderCommand(const Renderer::RenderComm
                                                   glm::vec4{ -1.0f, 1.0f, 0.0f, 1.0f } };
     constexpr std::array<glm::vec2, 4> texCoords{ glm::vec2{ 0.0f, 0.0f }, glm::vec2{ 1.0f, 0.0f },
                                                   glm::vec2{ 1.0f, 1.0f }, glm::vec2{ 0.0f, 1.0f } };
+    const auto color = renderCommand.color.normalized(); /* TODO: change members of Color struct to float
+                                                                  to avoid normalization */
     for (std::size_t i = 0; i < 4; ++i) {
         mVertexIterator->position = renderCommand.transform * positions[i];
-        mVertexIterator->color = renderCommand.color;
+        mVertexIterator->color = color;
         mVertexIterator->texCoords = texCoords[i];
         mVertexIterator->texIndex = textureIndex;
         ++mVertexIterator;
@@ -181,4 +183,9 @@ void Renderer::clear(bool colorBuffer, bool depthBuffer) noexcept {
                       (GL_DEPTH_BUFFER_BIT * depthBuffer) };
     assert(flags && "At least one of the flags must be set.");
     glClear(flags);
+}
+
+void Renderer::setClearColor(const Color& color) noexcept {
+    const auto normalized = color.normalized();
+    glClearColor(normalized.r, normalized.g, normalized.b, normalized.a);
 }
