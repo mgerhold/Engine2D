@@ -34,9 +34,10 @@ public:
         }
     }
 
-    template<typename... Components>
-    void emplace(auto&& setup, auto&& forEach, auto&& finalize) noexcept {
-        using SystemType = System<Entity, Components...>;
+    template<typename... Components, typename SetupFunction, typename ForEachFunction, typename FinalizeFunction>
+    void emplace(SetupFunction&& setup, ForEachFunction&& forEach, FinalizeFunction&& finalize) noexcept {
+        using SystemType = System<Entity, std::remove_cvref_t<decltype(setup)>, std::remove_cvref_t<decltype(forEach)>,
+                                  std::remove_cvref_t<decltype(finalize)>, Components...>;
         const auto typeIdentifier = TypeIdentifier::template get<SystemType>();
         const bool needsResizing = typeIdentifier >= mSystemContexts.size();
         assert((needsResizing || mSystemContexts[typeIdentifier].address == nullptr) &&

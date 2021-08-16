@@ -7,10 +7,13 @@
 #include <functional>
 #include <concepts>
 
-template<std::unsigned_integral Entity, typename... Components>
+template<std::unsigned_integral Entity,
+         typename SetupFunction,
+         typename ForEachFunction,
+         typename FinalizeFunction,
+         typename... Components>
 class System final {
 public:
-    template<typename SetupFunction, typename ForEachFunction, typename FinalizeFunction>
     System(SetupFunction&& setup, ForEachFunction&& forEach, FinalizeFunction&& finalize) noexcept
         : mSetup{ std::forward<SetupFunction>(setup) },
           mForEach{ std::forward<ForEachFunction>(forEach) },
@@ -33,7 +36,7 @@ public:
     }
 
 private:
-    std::function<void(void)> mSetup;
-    std::function<void(Entity, Components...)> mForEach;
-    std::function<void(void)> mFinalize;
+    SetupFunction mSetup;
+    ForEachFunction mForEach;
+    FinalizeFunction mFinalize;
 };

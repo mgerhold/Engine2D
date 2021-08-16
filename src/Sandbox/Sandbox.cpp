@@ -54,7 +54,7 @@ void Sandbox::setup() noexcept {
                                                      .shader{ &mAssetDatabase.getShaderProgram(shaderID0) },
                                                      .color{ 1.0f, 1.0f, 1.0f } });
     mRegistry.emplaceSystem<const Transform&, const DynamicSprite&>(
-            [&]() {
+            [this, &shader0, &shader1]() {
                 const auto framebufferSize = mWindow.getFramebufferSize();
                 const auto projectionMatrix =
                         glm::ortho<float>(gsl::narrow_cast<float>(-framebufferSize.width / 2),
