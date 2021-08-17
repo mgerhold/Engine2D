@@ -56,7 +56,7 @@ add_library(Engine2D STATIC
         src/Engine2D/optional/optional.hpp
         src/Engine2D/Component.hpp
         src/Engine2D/System.hpp
-        src/Engine2D/SystemHolder.hpp src/Engine2D/AssetDatabase.cpp src/Engine2D/AssetDatabase.hpp src/Engine2D/GUID.hpp src/Engine2D/Color.hpp src/Engine2D/Window.cpp src/Engine2D/Window.hpp src/Engine2D/Time.hpp)
+        src/Engine2D/SystemHolder.hpp src/Engine2D/AssetDatabase.cpp src/Engine2D/AssetDatabase.hpp src/Engine2D/GUID.hpp src/Engine2D/Color.hpp src/Engine2D/Window.cpp src/Engine2D/Window.hpp src/Engine2D/Time.hpp src/Engine2D/AssetList.cpp src/Engine2D/AssetList.hpp src/Engine2D/FileUtils.cpp src/Engine2D/FileUtils.hpp src/Engine2D/BoostJsonInclude.cpp)
 add_executable(Sandbox src/Sandbox/main.cpp src/Sandbox/Sandbox.hpp src/Sandbox/Sandbox.cpp)
 target_include_directories(Sandbox PUBLIC ${PROJECT_SOURCE_DIR}/src/Engine2D)
 add_dependencies(Sandbox Engine2D)
@@ -113,7 +113,11 @@ find_path(STB_INCLUDE_DIRS "stb.h")
 target_include_directories(Engine2D PRIVATE ${STB_INCLUDE_DIRS})
 
 find_package(Boost REQUIRED COMPONENTS random)
-target_link_libraries(Engine2D PRIVATE Boost::boost)
+target_link_libraries(Engine2D PRIVATE ${Boost_LIBRARIES})
+target_include_directories(Engine2D PRIVATE ${Boost_INCLUDE_DIRS})
+
+find_package(nlohmann_json CONFIG REQUIRED)
+target_link_libraries(Engine2D PRIVATE nlohmann_json nlohmann_json::nlohmann_json)
 
 target_link_libraries(Sandbox PRIVATE spdlog::spdlog spdlog::spdlog_header_only)
 target_link_libraries(Sandbox PRIVATE Engine2D)

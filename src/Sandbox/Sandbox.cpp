@@ -9,6 +9,7 @@
 #include "hash/hash.hpp"
 #include "ScopedTimer.hpp"
 #include "SystemHolder.hpp"
+#include "AssetList.hpp"
 #include <gsl/gsl>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -22,8 +23,9 @@ void Sandbox::setup() noexcept {
     spdlog::info("This is the release build");
 #endif
     const auto bjarneID{ GUID::create() };
-    auto& texture =
-            mAssetDatabase.loadTexture(std::filesystem::current_path() / "assets" / "images" / "bjarne.jpg", bjarneID);
+    AssetList assetList{ AssetDatabase::assetPath() / "scenes" / "assets.json" };
+    auto& texture = mAssetDatabase.loadTexture(std::filesystem::current_path() / "assets" / "textures" / "bjarne.jpg",
+                                               bjarneID);
 
     const auto shaderID0{ GUID::create() }, shaderID1{ GUID::create() };
     auto& shader0 = mAssetDatabase.loadShaderProgram(
