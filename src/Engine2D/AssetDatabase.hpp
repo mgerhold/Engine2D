@@ -38,11 +38,25 @@ public:
     [[nodiscard]] const Texture& texture(GUID guid) const noexcept {
         return get<Texture>(guid, mDebugFallbackTexture);
     }
+
     [[nodiscard]] ShaderProgram& shaderProgramMutable(GUID guid) noexcept {
         return getMutable<ShaderProgram>(guid, mDebugFallbackShaderProgram);
     }
+
     [[nodiscard]] const ShaderProgram& shaderProgram(GUID guid) const noexcept {
         return get<ShaderProgram>(guid, mDebugFallbackShaderProgram);
+    }
+
+    [[nodiscard]] static auto assetPath() noexcept {
+        return std::filesystem::current_path() / "assets";
+    }
+
+    [[nodiscard]] static auto directoryIterator(const std::filesystem::path& path) noexcept {
+        return std::filesystem::directory_iterator{ path };
+    }
+
+    [[nodiscard]] static auto recursiveDirectoryIterator(const std::filesystem::path& path) noexcept {
+        return std::filesystem::recursive_directory_iterator{ path };
     }
 
 private:
