@@ -39,8 +39,8 @@ void Sandbox::setup() noexcept {
     mRegistry.createEntity(Transform{ .position{ 0.0f, 0.0f, 0.0f },
                                       .rotation{ 0.0f },
                                       .scale{ textureHeight * texture.widthToHeightRatio(), textureHeight } },
-                           DynamicSprite{ .texture{ &mAssetDatabase.getTexture(bjarneID) },
-                                          .shader{ &mAssetDatabase.getShaderProgram(shaderID0) },
+                           DynamicSprite{ .texture{ &mAssetDatabase.texture(bjarneID) },
+                                          .shader{ &mAssetDatabase.shaderProgramMutable(shaderID0) },
                                           .color{ 255, 40, 160 } });
     std::random_device randomDevice;
     std::mt19937 randomEngine{ randomDevice() };
@@ -50,8 +50,8 @@ void Sandbox::setup() noexcept {
         const glm::vec3 position{ distribution(randomEngine), distribution(randomEngine), 0.0f };
         const glm::vec2 scale{ texture.widthToHeightRatio() * textureHeight, textureHeight };
         mRegistry.createEntity(Transform{ .position{ position }, .rotation{ 0.0f }, .scale{ scale } },
-                               DynamicSprite{ .texture{ &mAssetDatabase.getTexture(bjarneID) },
-                                              .shader{ &mAssetDatabase.getShaderProgram(shaderID0) },
+                               DynamicSprite{ .texture{ &mAssetDatabase.texture(bjarneID) },
+                                              .shader{ &mAssetDatabase.shaderProgramMutable(shaderID0) },
                                               .color{ Color::white() } });
     }
     const auto cameraEntity =

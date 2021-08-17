@@ -35,14 +35,13 @@ public:
                 mDebugFallbackShaderProgram);
     }
 
-    [[nodiscard]] const Texture& getTexture(GUID guid) const noexcept {
+    [[nodiscard]] const Texture& texture(GUID guid) const noexcept {
         return get<Texture>(guid, mDebugFallbackTexture);
     }
-
-    [[nodiscard]] ShaderProgram& getShaderProgram(GUID guid) noexcept {
+    [[nodiscard]] ShaderProgram& shaderProgramMutable(GUID guid) noexcept {
         return getMutable<ShaderProgram>(guid, mDebugFallbackShaderProgram);
     }
-    [[nodiscard]] const ShaderProgram& getShaderProgram(GUID guid) const noexcept {
+    [[nodiscard]] const ShaderProgram& shaderProgram(GUID guid) const noexcept {
         return get<ShaderProgram>(guid, mDebugFallbackShaderProgram);
     }
 
