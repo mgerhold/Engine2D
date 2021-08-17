@@ -7,7 +7,10 @@
 #include "GUID.hpp"
 #include "Texture.hpp"
 #include "ShaderProgram.hpp"
+#include "AssetList.hpp"
+
 #include <spdlog/spdlog.h>
+
 #include <unordered_map>
 #include <variant>
 #include <filesystem>
@@ -17,6 +20,8 @@
 class AssetDatabase final {
 public:
     AssetDatabase() noexcept;
+    void loadFromList(const AssetList& list) noexcept;
+    void loadFromList(const std::filesystem::path& path) noexcept;
 
     Texture& loadTexture(const std::filesystem::path& filename, GUID guid) noexcept {
         return load<Texture>(

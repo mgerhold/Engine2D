@@ -22,27 +22,19 @@ void Sandbox::setup() noexcept {
 #else
     spdlog::info("This is the release build");
 #endif
-    const auto bjarneID{ GUID::create() };
-    AssetList assetList{ AssetDatabase::assetPath() / "scenes" / "assets.json" };
-    auto& texture = mAssetDatabase.loadTexture(std::filesystem::current_path() / "assets" / "textures" / "bjarne.jpg",
-                                               bjarneID);
+    mAssetDatabase.loadFromList(AssetDatabase::assetPath() / "scenes" / "assets.json");
 
-    const auto shaderID0{ GUID::create() }, shaderID1{ GUID::create() };
-    auto& shader0 = mAssetDatabase.loadShaderProgram(
-            std::filesystem::current_path() / "assets" / "shaders" / "default.vert",
-            std::filesystem::current_path() / "assets" / "shaders" / "default.frag", shaderID0);
-    auto& shader1 = mAssetDatabase.loadShaderProgram(
-            std::filesystem::current_path() / "assets" / "shaders" / "default.vert",
-            std::filesystem::current_path() / "assets" / "shaders" / "debug.frag", shaderID1);
+    const auto textureGUID{ GUID::fromString("9043b452-363c-4917-bfde-592a72077e37") };
+    const auto shaderGUID{ GUID::fromString("b520f0eb-1756-41e0-ac07-66c3338bc594") };
     mRenderer.setClearColor({ 73, 54, 87 });
 
     // generate game scene
     constexpr float textureHeight = 40.0f;
-    mRegistry.createEntity(Transform{ .position{ 0.0f, 0.0f, 0.0f },
-                                      .rotation{ 0.0f },
-                                      .scale{ textureHeight * texture.widthToHeightRatio(), textureHeight } },
-                           DynamicSprite{ .texture{ &mAssetDatabase.texture(bjarneID) },
-                                          .shader{ &mAssetDatabase.shaderProgramMutable(shaderID0) },
+    const glm::vec2 textureSize{ textureHeight * mAssetDatabase.texture(textureGUID).widthToHeightRatio(),
+                                 textureHeight };
+    mRegistry.createEntity(Transform{ .position{ 0.0f, 0.0f, 0.0f }, .rotation{ 0.0f }, .scale{ textureSize } },
+                           DynamicSprite{ .texture{ &mAssetDatabase.texture(textureGUID) },
+                                          .shader{ &mAssetDatabase.shaderProgramMutable(shaderGUID) },
                                           .color{ 255, 40, 160 } });
     std::random_device randomDevice;
     std::mt19937 randomEngine{ randomDevice() };
@@ -50,10 +42,9 @@ void Sandbox::setup() noexcept {
     constexpr int numEntities = 500;
     for (auto _ : ranges::views::ints(0, numEntities)) {
         const glm::vec3 position{ distribution(randomEngine), distribution(randomEngine), 0.0f };
-        const glm::vec2 scale{ texture.widthToHeightRatio() * textureHeight, textureHeight };
-        mRegistry.createEntity(Transform{ .position{ position }, .rotation{ 0.0f }, .scale{ scale } },
-                               DynamicSprite{ .texture{ &mAssetDatabase.texture(bjarneID) },
-                                              .shader{ &mAssetDatabase.shaderProgramMutable(shaderID0) },
+        mRegistry.createEntity(Transform{ .position{ position }, .rotation{ 0.0f }, .scale{ textureSize } },
+                               DynamicSprite{ .texture{ &mAssetDatabase.texture(textureGUID) },
+                                              .shader{ &mAssetDatabase.shaderProgramMutable(shaderGUID) },
                                               .color{ Color::white() } });
     }
     const auto cameraEntity =

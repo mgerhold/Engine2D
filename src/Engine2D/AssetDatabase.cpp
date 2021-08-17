@@ -15,3 +15,18 @@ AssetDatabase::AssetDatabase() noexcept {
         spdlog::error("Unable to create debug texture");
     }
 }
+
+void AssetDatabase::loadFromList(const AssetList& list) noexcept {
+    const auto assets = assetPath();
+    for (const auto& textureDescription : list.textureDescriptions()) {
+        loadTexture(assets / textureDescription.filename, textureDescription.guid);
+    }
+    for (const auto& shaderProgramDescription : list.shaderProgramDescriptions()) {
+        loadShaderProgram(assets / shaderProgramDescription.vertexShaderFilename,
+                          assets / shaderProgramDescription.fragmentShaderFilename, shaderProgramDescription.guid);
+    }
+}
+
+void AssetDatabase::loadFromList(const std::filesystem::path& path) noexcept {
+    loadFromList(AssetList{ path });
+}

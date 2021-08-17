@@ -17,8 +17,13 @@ class AssetList {
 public:
     AssetList() = default;
     AssetList(const std::filesystem::path& path) noexcept;
-
     void fromFile(const std::filesystem::path& path) noexcept;
+    [[nodiscard]] const auto& textureDescriptions() const noexcept {
+        return mTextureDescriptions;
+    }
+    [[nodiscard]] const auto& shaderProgramDescriptions() const noexcept {
+        return mShaderProgramDescriptions;
+    }
 
 private:
     struct TextureAssetDescription {
