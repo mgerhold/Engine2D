@@ -66,6 +66,8 @@ if (ENABLE_PROFILING)
     add_definitions(-DENABLE_PROFILING=1)
 endif ()
 
+add_definitions(-DBOOST_UUID_FORCE_AUTO_LINK)
+
 foreach (target ${TARGET_LIST})
     # set warning levels
     if (MSVC)
@@ -109,6 +111,9 @@ target_link_libraries(Engine2D PRIVATE range-v3 range-v3-meta range-v3::meta ran
 
 find_path(STB_INCLUDE_DIRS "stb.h")
 target_include_directories(Engine2D PRIVATE ${STB_INCLUDE_DIRS})
+
+find_package(Boost REQUIRED COMPONENTS random)
+target_link_libraries(Engine2D PRIVATE Boost::boost)
 
 target_link_libraries(Sandbox PRIVATE spdlog::spdlog spdlog::spdlog_header_only)
 target_link_libraries(Sandbox PRIVATE Engine2D)

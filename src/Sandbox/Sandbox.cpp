@@ -21,11 +21,11 @@ void Sandbox::setup() noexcept {
 #else
     spdlog::info("This is the release build");
 #endif
-    constexpr GUID bjarneID{ 0 };
+    const auto bjarneID{ GUID::create() };
     auto& texture =
             mAssetDatabase.loadTexture(std::filesystem::current_path() / "assets" / "images" / "bjarne.jpg", bjarneID);
 
-    constexpr GUID shaderID0{ 1 }, shaderID1{ 2 };
+    const auto shaderID0{ GUID::create() }, shaderID1{ GUID::create() };
     auto& shader0 = mAssetDatabase.loadShaderProgram(
             std::filesystem::current_path() / "assets" / "shaders" / "default.vert",
             std::filesystem::current_path() / "assets" / "shaders" / "default.frag", shaderID0);
