@@ -57,13 +57,13 @@ void Sandbox::setup() noexcept {
     const auto cameraEntity =
             mRegistry.createEntity(Transform{ .position{ 0.0f }, .rotation{ 0.0f }, .scale{ 1.0f } }, Camera{});
     const auto& cameraTransform = mRegistry.component<Transform>(cameraEntity).value();
-    mRegistry.emplaceSystem<const Transform&, const DynamicSprite&>(
+    mRegistry.emplaceSystem<const DynamicSprite&, const Transform&>(
             [this, &cameraTransform]() {
                 mRenderer.clear(true, true);
                 mRenderer.beginFrame(Camera::viewMatrix(cameraTransform),
                                      Camera::projectionMatrix(mWindow.framebufferSize()));
             },
-            [this]([[maybe_unused]] Entity entity, const Transform& transform, const auto& sprite) {
+            [this]([[maybe_unused]] Entity entity, const auto& sprite, const Transform& transform) {
                 mRenderer.drawQuad(transform.position, transform.rotation, transform.scale, *sprite.shader,
                                    *sprite.texture, sprite.color);
             },
