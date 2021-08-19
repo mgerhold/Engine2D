@@ -5,6 +5,7 @@
 #pragma once
 
 #include "GUID.hpp"
+#include "AssetDescription.hpp"
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 #include <filesystem>
@@ -16,7 +17,7 @@
 class AssetList {
 public:
     AssetList() = default;
-    AssetList(const std::filesystem::path& path) noexcept;
+    explicit AssetList(const std::filesystem::path& path) noexcept;
     void fromFile(const std::filesystem::path& path) noexcept;
     [[nodiscard]] const auto& textureDescriptions() const noexcept {
         return mTextureDescriptions;
@@ -24,20 +25,6 @@ public:
     [[nodiscard]] const auto& shaderProgramDescriptions() const noexcept {
         return mShaderProgramDescriptions;
     }
-
-private:
-    struct TextureAssetDescription {
-        GUID guid;
-        std::optional<std::string> group;
-        std::filesystem::path filename;
-    };
-
-    struct ShaderProgramAssetDescription {
-        GUID guid;
-        std::optional<std::string> group;
-        std::filesystem::path vertexShaderFilename;
-        std::filesystem::path fragmentShaderFilename;
-    };
 
 private:
     template<typename AssetDescription>
@@ -54,7 +41,7 @@ private:
             return;
         }
         for (const auto& item : categoryItems) {
-            const auto parsed = convertFromJSON<AssetDescription>(item);
+            const auto parsed = AssetDescription::deserialize(item);
             if (!parsed) {
                 spdlog::error("Failed to parse item: {}", to_string(item));
                 continue;
@@ -62,47 +49,6 @@ private:
             targetContainer.push_back(parsed.value());
         }
         spdlog::info("Parsed {} items of category \"{}\"...", targetContainer.size(), title);
-    }
-
-    template<typename Target>
-    [[nodiscard]] std::optional<Target> convertFromJSON(const nlohmann::json& json) {
-        Target::unimplemented_function;
-    }
-
-    template<>
-    [[nodiscard]] std::optional<TextureAssetDescription> convertFromJSON(const nlohmann::json& json) {
-        if (!verifyStringKeys(json, "guid", "filename")) {
-            return {};
-        }
-        return TextureAssetDescription{
-            .guid{ GUID::fromString(json["guid"].get<std::string>()) },
-            .group{ verifyStringKey(json, "group") ? std::optional<std::string>(json["group"])
-                                                   : std::optional<std::string>{} },
-            .filename{ json["filename"].get<std::string>() },
-        };
-    }
-
-    template<>
-    [[nodiscard]] std::optional<ShaderProgramAssetDescription> convertFromJSON(const nlohmann::json& json) {
-        if (!verifyStringKeys(json, "guid", "vertexShaderFilename", "fragmentShaderFilename")) {
-            return {};
-        }
-        return ShaderProgramAssetDescription{
-            .guid{ GUID::fromString(json["guid"].get<std::string>()) },
-            .group{ verifyStringKey(json, "group") ? std::optional<std::string>(json["group"])
-                                                   : std::optional<std::string>{} },
-            .vertexShaderFilename{ json["vertexShaderFilename"].get<std::string>() },
-            .fragmentShaderFilename{ json["fragmentShaderFilename"].get<std::string>() }
-        };
-    }
-
-    template<typename... Keys>
-    [[nodiscard]] inline bool verifyStringKeys(const nlohmann::json& json, Keys... keys) noexcept {
-        return (verifyStringKey(json, keys) && ...);
-    }
-
-    [[nodiscard]] inline bool verifyStringKey(const nlohmann::json& json, const std::string& key) noexcept {
-        return json.contains(key) && json[key].is_string();
     }
 
 private:

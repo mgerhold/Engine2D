@@ -16,6 +16,14 @@
 #include <cstdint>
 
 struct GUID : public boost::uuids::uuid {
+    GUID(const GUID& other) noexcept {
+        std::copy(std::begin(other.data), std::end(other.data), std::begin(data));
+    }
+
+    GUID& operator=(const GUID& other) noexcept {
+        std::copy(std::begin(other.data), std::end(other.data), std::begin(data));
+        return *this;
+    }
 
     [[nodiscard]] static GUID create() noexcept {
         return fromGenerator<boost::uuids::random_generator>();
@@ -29,8 +37,13 @@ struct GUID : public boost::uuids::uuid {
         return boost::lexical_cast<std::string>(boost::uuids::uuid{ *this });
     }
 
+    [[nodiscard]] static GUID invalid() noexcept {
+        static const auto result{ create() };
+        return result;
+    }
+
 private:
-    GUID() { }
+    GUID() = default;
 
     template<typename Generator, typename... Args>
     [[nodiscard]] static GUID fromGenerator(Args... args) noexcept {
