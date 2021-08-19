@@ -48,65 +48,66 @@ void Sandbox::setup() noexcept {
     }
     const auto cameraEntity = mRegistry.createEntity(Transform{}, Camera{});
     const auto& cameraTransform = mRegistry.component<Transform>(cameraEntity).value();
+    mRegistry.emplaceSystem<>([]() {},
+                              [this]() {
+                                  /* this system quits the application when the escape key
+                                   * is pressed */
+                                  if (mInput.keyPressed(Key::Escape)) {
+                                      quit();
+                                  }
+                              });
+    mRegistry.emplaceSystem<>(
+            []() {},
+            [this]() {
+                /* this system handles controlling the camera */
+                constexpr double translationPerSecond{ 100.0 };
+                constexpr double zoomFactorPerSecond{ 1.2 };
+                constexpr double rotationRadiansPerSecond{ glm::radians(30.0) };
+                auto& cameraTransform = std::get<Transform&>(mRegistry.componentsMutable<Camera, Transform>().front());
+                if (mInput.keyDown(Key::A)) {
+                    cameraTransform.position.x -= gsl::narrow_cast<float>(translationPerSecond * mTime.delta.count());
+                }
+                if (mInput.keyDown(Key::D)) {
+                    cameraTransform.position.x += gsl::narrow_cast<float>(translationPerSecond * mTime.delta.count());
+                }
+                if (mInput.keyDown(Key::W)) {
+                    cameraTransform.position.y += gsl::narrow_cast<float>(translationPerSecond * mTime.delta.count());
+                }
+                if (mInput.keyDown(Key::S)) {
+                    cameraTransform.position.y -= gsl::narrow_cast<float>(translationPerSecond * mTime.delta.count());
+                }
+                if (mInput.keyDown(Key::E)) {
+                    cameraTransform.rotation -= gsl::narrow_cast<float>(rotationRadiansPerSecond * mTime.delta.count());
+                }
+                if (mInput.keyDown(Key::Q)) {
+                    cameraTransform.rotation += gsl::narrow_cast<float>(rotationRadiansPerSecond * mTime.delta.count());
+                }
+                if (mInput.keyDown(Key::NumpadAdd)) {
+                    cameraTransform.scale /=
+                            gsl::narrow_cast<float>((zoomFactorPerSecond - 1.0) * mTime.delta.count() + 1.0);
+                }
+                if (mInput.keyDown(Key::NumpadSubtract)) {
+                    cameraTransform.scale *=
+                            gsl::narrow_cast<float>((zoomFactorPerSecond - 1.0) * mTime.delta.count() + 1.0);
+                }
+            });
+    mRegistry.emplaceSystem<>(
+            []() {},
+            [this]() {
+                /* this system sets the position of the first sprite to the current
+                 * position of the mouse every frame */
+                auto& textureTransform =
+                        std::get<Transform&>(mRegistry.componentsMutable<DynamicSprite, Transform>().front());
+                auto& cameraTransform = std::get<Transform&>(mRegistry.componentsMutable<Camera, Transform>().front());
+
+                const auto mousePosition = mInput.mousePosition();
+                const auto worldPosition = Camera::screenToWorldPoint(mousePosition, cameraTransform);
+                textureTransform.position.x = worldPosition.x;
+                textureTransform.position.y = worldPosition.y;
+            });
     mRegistry.addScreenClearer(mRenderer, true, true);
     mRegistry.addDynamicSpriteRenderer(mRenderer, cameraTransform);
     mRegistry.addDynamicSpriteRenderer(mRenderer);// overlay
-    //mRegistry.emplaceSystem<>()
 }
 
-void Sandbox::update() noexcept {
-    processInput();
-    render();
-    mRegistry.runSystems();
-}
-
-void Sandbox::processInput() noexcept {
-    const auto& cameraEntity = mRegistry.componentsMutable<Camera, Transform>().front();
-    auto& cameraTransform = std::get<Transform&>(cameraEntity);
-    constexpr double translationPerSecond{ 100.0 };
-    constexpr double zoomFactorPerSecond{ 1.2 };
-    constexpr double rotationRadiansPerSecond{ glm::radians(30.0) };
-    if (mInput.keyDown(Key::A)) {
-        cameraTransform.position.x -= gsl::narrow_cast<float>(translationPerSecond * mTime.delta.count());
-    }
-    if (mInput.keyDown(Key::D)) {
-        cameraTransform.position.x += gsl::narrow_cast<float>(translationPerSecond * mTime.delta.count());
-    }
-    if (mInput.keyDown(Key::W)) {
-        cameraTransform.position.y += gsl::narrow_cast<float>(translationPerSecond * mTime.delta.count());
-    }
-    if (mInput.keyDown(Key::S)) {
-        cameraTransform.position.y -= gsl::narrow_cast<float>(translationPerSecond * mTime.delta.count());
-    }
-    if (mInput.keyDown(Key::E)) {
-        cameraTransform.rotation -= gsl::narrow_cast<float>(rotationRadiansPerSecond * mTime.delta.count());
-    }
-    if (mInput.keyDown(Key::Q)) {
-        cameraTransform.rotation += gsl::narrow_cast<float>(rotationRadiansPerSecond * mTime.delta.count());
-    }
-    if (mInput.keyDown(Key::NumpadAdd)) {
-        cameraTransform.scale /= gsl::narrow_cast<float>((zoomFactorPerSecond - 1.0) * mTime.delta.count() + 1.0);
-    }
-    if (mInput.keyDown(Key::NumpadSubtract)) {
-        cameraTransform.scale *= gsl::narrow_cast<float>((zoomFactorPerSecond - 1.0) * mTime.delta.count() + 1.0);
-    }
-    if (mInput.mousePressed(MouseButton::Button0)) {
-        spdlog::info("Left mouse button pressed");
-    }
-    if (mInput.mousePressed(MouseButton::Button1)) {
-        spdlog::info("Right mouse button pressed");
-    }
-    auto& textureTransform = std::get<Transform&>(mRegistry.componentsMutable<DynamicSprite, Transform>().front());
-    const auto mousePosition = mInput.mousePosition();
-    const auto worldPosition = Camera::screenToWorldPoint(mousePosition, cameraTransform);
-    textureTransform.position.x = worldPosition.x;
-    textureTransform.position.y = worldPosition.y;
-
-    if (glfwGetKey(mWindow.getGLFWWindowPointer(), GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-        glfwSetWindowShouldClose(mWindow.getGLFWWindowPointer(), true);
-    }
-}
-
-void Sandbox::render() noexcept {
-    SCOPED_TIMER();
-}
+void Sandbox::update() noexcept { }

@@ -39,6 +39,7 @@ public:
     Application& operator=(Application&&) = delete;
 
     void run() noexcept;
+    void quit() noexcept;
 
 protected:
     Input mInput;

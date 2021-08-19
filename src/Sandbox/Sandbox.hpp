@@ -14,9 +14,6 @@ private:
     void setup() noexcept;
     void update() noexcept;
 
-    void processInput() noexcept;
-    void render() noexcept;
-
 private:
     friend class Application;
 };

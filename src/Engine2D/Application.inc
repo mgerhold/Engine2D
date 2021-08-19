@@ -1,7 +1,15 @@
+
+#include "Application.hpp"
+
 template<typename DerivedType>
 Application<DerivedType>::Application(const std::string& title, WindowSize size, OpenGLVersion version) noexcept
     : mWindow{ title, size, version, mInput },
       mRenderer{ mWindow } { }
+
+template<typename DerivedType>
+Application<DerivedType>::~Application() {
+    ScopedTimer::logResults();
+}
 
 template<typename DerivedType>
 void Application<DerivedType>::run() noexcept {
@@ -15,6 +23,7 @@ void Application<DerivedType>::run() noexcept {
     unsigned long numFramesDuringOutputInterval = 0UL;
     while (!glfwWindowShouldClose(mWindow.getGLFWWindowPointer())) {
         static_cast<DerivedType*>(this)->update();
+        mRegistry.runSystems();
         glfwSwapBuffers(mWindow.getGLFWWindowPointer());
         mInput.nextFrame();
         glfwPollEvents();
@@ -36,6 +45,6 @@ void Application<DerivedType>::run() noexcept {
 }
 
 template<typename DerivedType>
-Application<DerivedType>::~Application() {
-    ScopedTimer::logResults();
+void Application<DerivedType>::quit() noexcept {
+    glfwSetWindowShouldClose(mWindow.getGLFWWindowPointer(), true);
 }
