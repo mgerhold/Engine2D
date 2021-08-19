@@ -96,14 +96,13 @@ void Sandbox::setup() noexcept {
             [this]() {
                 /* this system sets the position of the first sprite to the current
                  * position of the mouse every frame */
-                auto& textureTransform =
-                        std::get<Transform&>(mRegistry.componentsMutable<DynamicSprite, Transform>().front());
+                auto& transform = std::get<Transform&>(mRegistry.componentsMutable<DynamicSprite, Transform>().front());
                 auto& cameraTransform = std::get<Transform&>(mRegistry.componentsMutable<Camera, Transform>().front());
 
                 const auto mousePosition = mInput.mousePosition();
                 const auto worldPosition = Camera::screenToWorldPoint(mousePosition, cameraTransform);
-                textureTransform.position.x = worldPosition.x;
-                textureTransform.position.y = worldPosition.y;
+                transform.position.x = worldPosition.x;
+                transform.position.y = worldPosition.y;
             });
     mRegistry.addScreenClearer(mRenderer, true, true);
     mRegistry.addDynamicSpriteRenderer(mRenderer, cameraTransform);
