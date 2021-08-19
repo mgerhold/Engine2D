@@ -12,7 +12,7 @@
 #include <vector>
 #include <cassert>
 
-template<std::unsigned_integral Entity, typename TypeIdentifier, typename ComponentHolderType>
+template<std::unsigned_integral Entity, typename ComponentHolderType>
 class SystemHolder final {
 public:
     explicit SystemHolder(ComponentHolderType& componentHolder) : mComponentHolder{ componentHolder } { }
@@ -38,25 +38,25 @@ public:
     void emplace(SetupFunction&& setup, ForEachFunction&& forEach, FinalizeFunction&& finalize) noexcept {
         using SystemType = System<Entity, std::remove_cvref_t<decltype(setup)>, std::remove_cvref_t<decltype(forEach)>,
                                   std::remove_cvref_t<decltype(finalize)>, Components...>;
-        const auto typeIdentifier = TypeIdentifier::template get<SystemType>();
-        const bool needsResizing = typeIdentifier >= mSystemContexts.size();
-        assert((needsResizing || mSystemContexts[typeIdentifier].address == nullptr) &&
-               "Index of this System is already taken");
-        if (needsResizing) {
-            mSystemContexts.resize(typeIdentifier + 1);
-            mDestructors.resize(typeIdentifier + 1);
-        }
-        mSystemContexts[typeIdentifier] = SystemContext{
-            .address{ new SystemType{ std::forward<decltype(setup)>(setup), std::forward<decltype(forEach)>(forEach),
-                                      std::forward<decltype(finalize)>(finalize) } },
-            .setupFunction{ [](void* address) { static_cast<SystemType*>(address)->setup(); } },
-            .forEachFunction{ [](void* address, SystemHolder* self) {
-                static_cast<SystemType*>(address)->forEach(
-                        self->mComponentHolder.template getMutable<std::remove_cvref_t<Components>...>());
-            } },
-            .finalizeFunction{ [](void* address) { static_cast<SystemType*>(address)->finalize(); } }
-        };
-        mDestructors[typeIdentifier] = [](void* address) { delete static_cast<SystemType*>(address); };
+        constexpr auto numComponents = sizeof...(Components);
+        const auto forEachFunction = []() {
+            if constexpr (numComponents == 0) {
+                return [](void* address, SystemHolder*) {};
+            } else {
+                return [](void* address, SystemHolder* self) {
+                    static_cast<SystemType*>(address)->forEach(
+                            self->mComponentHolder.template getMutable<std::remove_cvref_t<Components>...>());
+                };
+            }
+        }();
+        mSystemContexts.push_back(SystemContext{
+                .address{ new SystemType{ std::forward<decltype(setup)>(setup),
+                                          std::forward<decltype(forEach)>(forEach),
+                                          std::forward<decltype(finalize)>(finalize) } },
+                .setupFunction{ [](void* address) { static_cast<SystemType*>(address)->setup(); } },
+                .forEachFunction{ forEachFunction },
+                .finalizeFunction{ [](void* address) { static_cast<SystemType*>(address)->finalize(); } } });
+        mDestructors.push_back([](void* address) { delete static_cast<SystemType*>(address); });
     }
 
 private:

@@ -134,13 +134,19 @@ public:
                                                       std::forward<ForEachFunction>(forEach),
                                                       std::forward<FinalizeFunction>(finalize));
     }
-    void addDynamicSpriteRenderer(Renderer& renderer, const Transform& cameraTransform) noexcept {
+    void addDynamicSpriteRenderer(Renderer& renderer,
+                                  const Transform& cameraTransform = Transform::identity()) noexcept {
         emplaceSystem<const DynamicSprite&, const Transform&>(
                 [&renderer, &cameraTransform]() { DynamicSpriteRenderer::init(renderer, cameraTransform); },
                 [&renderer](Entity entity, const auto& sprite, const Transform& transform) {
                     DynamicSpriteRenderer::forEach(renderer, entity, sprite, transform);
                 },
                 [&renderer]() { DynamicSpriteRenderer::finalize(renderer); });
+    }
+    void addScreenClearer(Renderer& renderer, bool colorBuffer, bool depthBuffer) {
+        emplaceSystem<>(
+                [&renderer, colorBuffer, depthBuffer]() { ScreenClearer::init(renderer, colorBuffer, depthBuffer); },
+                []() {}, []() {});
     }
     void runSystems() noexcept {
         mSystemHolder.run();
@@ -181,7 +187,7 @@ private:
     static constexpr Entity generationMask = std::numeric_limits<Entity>::max() >> identifierBits;
     static constexpr Entity identifierMask = std::numeric_limits<Entity>::max() << generationBits;
     ComponentHolder<Identifier, TypeIdentifier<struct componentTypeIdentifier>> mComponentHolder;
-    SystemHolder<Entity, TypeIdentifier<struct systemTypeIdentifier>, decltype(mComponentHolder)> mSystemHolder;
+    SystemHolder<Entity, decltype(mComponentHolder)> mSystemHolder;
     std::vector<Entity> mEntities;
     std::size_t mNumRecyclableEntities{ 0 };
     Entity mNextRecyclableEntity{ invalidEntity<Entity> };

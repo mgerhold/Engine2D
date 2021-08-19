@@ -11,7 +11,6 @@
 namespace DynamicSpriteRenderer {
 
     inline void init(Renderer& renderer, const Transform& cameraTransform) noexcept {
-        renderer.clear(true, true);
         renderer.beginFrame(Camera::viewMatrix(cameraTransform));
     }
 
@@ -25,3 +24,9 @@ namespace DynamicSpriteRenderer {
     }
 
 }// namespace DynamicSpriteRenderer
+
+namespace ScreenClearer {
+    inline void init(Renderer& renderer, bool colorBuffer, bool depthBuffer) {
+        renderer.clear(colorBuffer, depthBuffer);
+    }
+}// namespace ScreenClearer

@@ -26,7 +26,6 @@ void Sandbox::setup() noexcept {
 
     const auto textureGUID{ GUID::fromString("9043b452-363c-4917-bfde-592a72077e37") };
     const auto shaderGUID{ GUID::fromString("b520f0eb-1756-41e0-ac07-66c3338bc594") };
-    mRenderer.setClearColor({ 73, 54, 87 });
 
     // generate game scene
     constexpr float textureHeight = 40.0f;
@@ -49,7 +48,9 @@ void Sandbox::setup() noexcept {
     }
     const auto cameraEntity = mRegistry.createEntity(Transform{}, Camera{});
     const auto& cameraTransform = mRegistry.component<Transform>(cameraEntity).value();
+    mRegistry.addScreenClearer(mRenderer, true, true);
     mRegistry.addDynamicSpriteRenderer(mRenderer, cameraTransform);
+    mRegistry.addDynamicSpriteRenderer(mRenderer);// overlay
 }
 
 void Sandbox::update() noexcept {

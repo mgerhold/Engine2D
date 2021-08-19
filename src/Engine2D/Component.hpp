@@ -20,6 +20,10 @@ struct Transform {
                 glm::rotate(glm::translate(glm::mat4{ 1.0f }, position), rotation, glm::vec3{ 0.0f, 0.0f, 1.0f }),
                 glm::vec3{ scale.x, scale.y, 1.0f });
     }
+    [[nodiscard]] static const Transform& identity() noexcept {
+        static auto result{ Transform{} };
+        return result;
+    }
 };
 
 struct DynamicSprite {
