@@ -128,6 +128,16 @@ public:
     [[nodiscard]] std::size_t typeIdentifier() const noexcept {
         return mComponentHolder.template typeIdentifier<Type>();
     }
+    template<typename... Components, typename SetupFunction>
+    void emplaceSystem(SetupFunction&& setup) noexcept {
+        emplaceSystem<Components...>(
+                std::forward<SetupFunction>(setup), []() {}, []() {});
+    }
+    template<typename... Components, typename SetupFunction, typename ForEachFunction>
+    void emplaceSystem(SetupFunction&& setup, ForEachFunction&& forEach) noexcept {
+        emplaceSystem<Components...>(std::forward<SetupFunction>(setup), std::forward<ForEachFunction>(forEach),
+                                     []() {});
+    }
     template<typename... Components, typename SetupFunction, typename ForEachFunction, typename FinalizeFunction>
     void emplaceSystem(SetupFunction&& setup, ForEachFunction&& forEach, FinalizeFunction&& finalize) noexcept {
         mSystemHolder.template emplace<Components...>(std::forward<SetupFunction>(setup),
@@ -145,8 +155,7 @@ public:
     }
     void addScreenClearer(Renderer& renderer, bool colorBuffer, bool depthBuffer) {
         emplaceSystem<>(
-                [&renderer, colorBuffer, depthBuffer]() { ScreenClearer::init(renderer, colorBuffer, depthBuffer); },
-                []() {}, []() {});
+                [&renderer, colorBuffer, depthBuffer]() { ScreenClearer::init(renderer, colorBuffer, depthBuffer); });
     }
     void runSystems() noexcept {
         mSystemHolder.run();

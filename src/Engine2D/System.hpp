@@ -31,6 +31,10 @@ public:
         }
     }
 
+    void forEach() noexcept {
+        mForEach();
+    }
+
     void finalize() noexcept {
         mFinalize();
     }

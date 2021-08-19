@@ -41,7 +41,7 @@ public:
         constexpr auto numComponents = sizeof...(Components);
         const auto forEachFunction = []() {
             if constexpr (numComponents == 0) {
-                return [](void* address, SystemHolder*) {};
+                return [](void* address, SystemHolder*) { static_cast<SystemType*>(address)->forEach(); };
             } else {
                 return [](void* address, SystemHolder* self) {
                     static_cast<SystemType*>(address)->forEach(

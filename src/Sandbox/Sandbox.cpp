@@ -51,6 +51,7 @@ void Sandbox::setup() noexcept {
     mRegistry.addScreenClearer(mRenderer, true, true);
     mRegistry.addDynamicSpriteRenderer(mRenderer, cameraTransform);
     mRegistry.addDynamicSpriteRenderer(mRenderer);// overlay
+    //mRegistry.emplaceSystem<>()
 }
 
 void Sandbox::update() noexcept {
