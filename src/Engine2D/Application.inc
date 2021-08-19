@@ -1,6 +1,7 @@
 template<typename DerivedType>
 Application<DerivedType>::Application(const std::string& title, WindowSize size, OpenGLVersion version) noexcept
-    : mWindow{ title, size, version, mInput } { }
+    : mWindow{ title, size, version, mInput },
+      mRenderer{ mWindow } { }
 
 template<typename DerivedType>
 void Application<DerivedType>::run() noexcept {

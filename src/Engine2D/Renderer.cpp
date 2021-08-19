@@ -3,6 +3,7 @@
 //
 
 #include "Renderer.hpp"
+#include "Component.hpp"
 #include "GLDataUsagePattern.hpp"
 #include "ScopedTimer.hpp"
 #include "hash/hash.hpp"
@@ -14,10 +15,11 @@
 #include <execution>
 #include <array>
 
-Renderer::Renderer()
+Renderer::Renderer(const Window& window)
     : mVertexBuffer(GLDataUsagePattern::StreamDraw,
                     maxCommandsPerBatch * 4ULL * sizeof(VertexData),
-                    maxCommandsPerBatch * 6ULL * sizeof(IndexData)) {
+                    maxCommandsPerBatch * 6ULL * sizeof(IndexData)),
+      mWindow{ window } {
     mCommandBuffer.resize(maxCommandsPerBatch);
     mVertexData.resize(maxCommandsPerBatch * 4ULL);
     mIndexData.resize(maxCommandsPerBatch * 6ULL);
@@ -31,11 +33,11 @@ Renderer::Renderer()
             VertexAttributeDefinition{ 2, GL_FLOAT, false }, VertexAttributeDefinition{ 1, GL_UNSIGNED_INT, false });
 }
 
-void Renderer::beginFrame(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) noexcept {
+void Renderer::beginFrame(const glm::mat4& viewMatrix) noexcept {
     mVertexIterator = mVertexData.begin();
     mIndexIterator = mIndexData.begin();
     mRenderStats = RenderStats{};
-    mCurrentViewProjectionMatrix = projectionMatrix * viewMatrix;
+    mCurrentViewProjectionMatrix = Camera::projectionMatrix(mWindow.framebufferSize()) * viewMatrix;
 }
 
 void Renderer::endFrame() noexcept {

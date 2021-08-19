@@ -9,11 +9,13 @@
 #include "Entity.hpp"
 #include "TypeIdentifier.hpp"
 #include "SystemHolder.hpp"
+#include "PredefinedSystems.hpp"
 #include <gsl/gsl>
 #include <functional>
 #include <concepts>
 #include <numeric>
 #include <limits>
+
 
 template<std::unsigned_integral Entity, std::size_t identifierBits = sizeof(Entity) * 8 * 20 / 32>
 class RegistryBase final {
@@ -131,6 +133,14 @@ public:
         mSystemHolder.template emplace<Components...>(std::forward<SetupFunction>(setup),
                                                       std::forward<ForEachFunction>(forEach),
                                                       std::forward<FinalizeFunction>(finalize));
+    }
+    void addDynamicSpriteRenderer(Renderer& renderer, const Transform& cameraTransform) noexcept {
+        emplaceSystem<const DynamicSprite&, const Transform&>(
+                [&renderer, &cameraTransform]() { DynamicSpriteRenderer::init(renderer, cameraTransform); },
+                [&renderer](Entity entity, const auto& sprite, const Transform& transform) {
+                    DynamicSpriteRenderer::forEach(renderer, entity, sprite, transform);
+                },
+                [&renderer]() { DynamicSpriteRenderer::finalize(renderer); });
     }
     void runSystems() noexcept {
         mSystemHolder.run();

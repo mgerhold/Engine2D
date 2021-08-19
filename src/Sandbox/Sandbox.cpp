@@ -32,7 +32,7 @@ void Sandbox::setup() noexcept {
     constexpr float textureHeight = 40.0f;
     const glm::vec2 textureSize{ textureHeight * mAssetDatabase.texture(textureGUID).widthToHeightRatio(),
                                  textureHeight };
-    mRegistry.createEntity(Transform{ .position{ 0.0f, 0.0f, 0.0f }, .rotation{ 0.0f }, .scale{ textureSize } },
+    mRegistry.createEntity(Transform{ .scale{ textureSize } },
                            DynamicSprite{ .texture{ &mAssetDatabase.texture(textureGUID) },
                                           .shader{ &mAssetDatabase.shaderProgramMutable(shaderGUID) },
                                           .color{ 255, 40, 160 } });
@@ -42,25 +42,14 @@ void Sandbox::setup() noexcept {
     constexpr int numEntities = 500;
     for (auto _ : ranges::views::ints(0, numEntities)) {
         const glm::vec3 position{ distribution(randomEngine), distribution(randomEngine), 0.0f };
-        mRegistry.createEntity(Transform{ .position{ position }, .rotation{ 0.0f }, .scale{ textureSize } },
+        mRegistry.createEntity(Transform{ .position{ position }, .scale{ textureSize } },
                                DynamicSprite{ .texture{ &mAssetDatabase.texture(textureGUID) },
                                               .shader{ &mAssetDatabase.shaderProgramMutable(shaderGUID) },
                                               .color{ Color::white() } });
     }
-    const auto cameraEntity =
-            mRegistry.createEntity(Transform{ .position{ 0.0f }, .rotation{ 0.0f }, .scale{ 1.0f } }, Camera{});
+    const auto cameraEntity = mRegistry.createEntity(Transform{}, Camera{});
     const auto& cameraTransform = mRegistry.component<Transform>(cameraEntity).value();
-    mRegistry.emplaceSystem<const DynamicSprite&, const Transform&>(
-            [this, &cameraTransform]() {
-                mRenderer.clear(true, true);
-                mRenderer.beginFrame(Camera::viewMatrix(cameraTransform),
-                                     Camera::projectionMatrix(mWindow.framebufferSize()));
-            },
-            [this]([[maybe_unused]] Entity entity, const auto& sprite, const Transform& transform) {
-                mRenderer.drawQuad(transform.position, transform.rotation, transform.scale, *sprite.shader,
-                                   *sprite.texture, sprite.color);
-            },
-            [this]() { mRenderer.endFrame(); });
+    mRegistry.addDynamicSpriteRenderer(mRenderer, cameraTransform);
 }
 
 void Sandbox::update() noexcept {

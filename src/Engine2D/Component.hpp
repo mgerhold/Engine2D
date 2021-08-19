@@ -11,9 +11,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 struct Transform {
-    glm::vec3 position;
-    float rotation;
-    glm::vec2 scale;
+    glm::vec3 position{ 0.0f };
+    float rotation{ 0.0f };
+    glm::vec2 scale{ 1.0f };
 
     [[nodiscard]] glm::mat4 matrix() const noexcept {
         return glm::scale(

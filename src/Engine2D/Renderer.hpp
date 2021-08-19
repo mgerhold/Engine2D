@@ -8,6 +8,7 @@
 #include "ShaderProgram.hpp"
 #include "Texture.hpp"
 #include "Color.hpp"
+#include "Window.hpp"
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <vector>
@@ -39,9 +40,9 @@ public:
     static_assert(sizeof(IndexData[2]) == 2 * sizeof(IndexData));
 
 public:
-    Renderer();
+    Renderer(const Window& window);
 
-    void beginFrame(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) noexcept;
+    void beginFrame(const glm::mat4& viewMatrix) noexcept;
     void endFrame() noexcept;
     void drawQuad(const glm::vec3& translation,
                   float rotationAngle,
@@ -87,4 +88,5 @@ private:
     std::vector<GLuint> mCurrentTextureNames;
     GLuint mCurrentShaderProgramName{ 0U };
     glm::mat4 mCurrentViewProjectionMatrix{ 0.0f };
+    const Window& mWindow;
 };
