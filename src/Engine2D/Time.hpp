@@ -4,8 +4,12 @@
 
 #pragma once
 
-#include <chrono>
+#include "pch.hpp"
 
-struct Time {
-    std::chrono::duration<double, std::ratio<1, 1>> delta{ std::chrono::milliseconds{ 1000 / 60 } };
-};
+namespace c2k {
+
+    struct Time {
+        std::chrono::duration<double, std::ratio<1, 1>> delta{ std::chrono::milliseconds{ 1000 / 60 } };
+    };
+
+}// namespace c2k

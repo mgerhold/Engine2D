@@ -68,12 +68,11 @@ add_library(Engine2D STATIC
         src/Engine2D/AssetList.hpp
         src/Engine2D/FileUtils.cpp
         src/Engine2D/FileUtils.hpp
-        src/Engine2D/BoostJsonInclude.cpp
         src/Engine2D/AssetDescription.hpp
         src/Engine2D/AssetDescription.cpp
         src/Engine2D/PredefinedSystems.hpp
         src/Engine2D/Random.cpp
-        src/Engine2D/Random.hpp)
+        src/Engine2D/Random.hpp src/Engine2D/pch.hpp)
 add_executable(Sandbox src/Sandbox/main.cpp src/Sandbox/Sandbox.hpp src/Sandbox/Sandbox.cpp)
 target_include_directories(Sandbox PUBLIC ${PROJECT_SOURCE_DIR}/src/Engine2D)
 add_dependencies(Sandbox Engine2D)
@@ -106,6 +105,9 @@ foreach (target ${TARGET_LIST})
     set_target_properties(${target} PROPERTIES OUTPUT_NAME_RELEASE ${target}-release)
     set_target_properties(${target} PROPERTIES OUTPUT_NAME_MINSIZEREL ${target}-minsizerel)
 endforeach ()
+
+# precompiled headers
+target_precompile_headers(Engine2D PRIVATE "src/Engine2D/pch.hpp")
 
 find_package(glfw3 CONFIG REQUIRED)
 target_link_libraries(Engine2D PRIVATE glfw)

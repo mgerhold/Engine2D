@@ -4,76 +4,73 @@
 
 #pragma once
 
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/functional/hash.hpp>
-#include <boost/lexical_cast.hpp>
-#include <fmt/format.h>
-#include <algorithm>
-#include <string>
-#include <cassert>
-#include <cstdint>
+#include "pch.hpp"
 
-struct GUID : public boost::uuids::uuid {
-    GUID(const GUID& other) noexcept {
-        std::copy(std::begin(other.data), std::end(other.data), std::begin(data));
-    }
+namespace c2k {
 
-    GUID& operator=(const GUID& other) noexcept {
-        std::copy(std::begin(other.data), std::end(other.data), std::begin(data));
-        return *this;
-    }
+    struct GUID : public boost::uuids::uuid {
+        GUID(const GUID& other) noexcept {
+            std::copy(std::begin(other.data), std::end(other.data), std::begin(data));
+        }
 
-    [[nodiscard]] static GUID create() noexcept {
-        return fromGenerator<boost::uuids::random_generator>();
-    }
+        GUID& operator=(const GUID& other) noexcept {
+            std::copy(std::begin(other.data), std::end(other.data), std::begin(data));
+            return *this;
+        }
 
-    [[nodiscard]] static GUID fromString(const std::string& string) noexcept {
-        return fromGenerator<boost::uuids::string_generator>(string);
-    }
+        [[nodiscard]] static GUID create() noexcept {
+            return fromGenerator<boost::uuids::random_generator>();
+        }
 
-    [[nodiscard]] std::string string() const noexcept {
-        return boost::lexical_cast<std::string>(boost::uuids::uuid{ *this });
-    }
+        [[nodiscard]] static GUID fromString(const std::string& string) noexcept {
+            return fromGenerator<boost::uuids::string_generator>(string);
+        }
 
-    [[nodiscard]] static GUID invalid() noexcept {
-        static const auto result{ create() };
-        return result;
-    }
+        [[nodiscard]] std::string string() const noexcept {
+            return boost::lexical_cast<std::string>(boost::uuids::uuid{ *this });
+        }
 
-private:
-    GUID() = default;
+        [[nodiscard]] static GUID invalid() noexcept {
+            static const auto result{ create() };
+            return result;
+        }
 
-    template<typename Generator, typename... Args>
-    [[nodiscard]] static GUID fromGenerator(Args... args) noexcept {
-        using namespace boost::uuids;
-        static Generator gen;
-        uuid id = gen(args...);
-        GUID result;
-        std::copy(std::begin(id.data), std::end(id.data), std::begin(result.data));
-        return result;
-    }
-};
+    private:
+        GUID() = default;
 
-namespace std {
-    template<>
-    struct hash<GUID> {
-        size_t operator()(const GUID& guid) const {
-            return boost::hash<GUID>()(guid);
+        template<typename Generator, typename... Args>
+        [[nodiscard]] static GUID fromGenerator(Args... args) noexcept {
+            using namespace boost::uuids;
+            static Generator gen;
+            uuid id = gen(args...);
+            GUID result;
+            std::copy(std::begin(id.data), std::end(id.data), std::begin(result.data));
+            return result;
         }
     };
-}// namespace std
+
+}// namespace c2k
 
 template<>
-struct fmt::formatter<GUID> {
+struct fmt::formatter<c2k::GUID> {
     constexpr auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
         auto it = ctx.begin();
         return it;
     }
 
     template<typename FormatContext>
-    auto format(const GUID& guid, FormatContext& ctx) -> decltype(ctx.out()) {
+    auto format(const c2k::GUID& guid, FormatContext& ctx) -> decltype(ctx.out()) {
         return format_to(ctx.out(), "{}", boost::lexical_cast<std::string>(guid));
     }
 };
+
+namespace std {
+
+    template<>
+    struct hash<c2k::GUID> {
+        size_t operator()(const c2k::GUID& guid) const {
+            return boost::hash<c2k::GUID>()(guid);
+        }
+    };
+
+}// namespace std

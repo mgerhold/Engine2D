@@ -4,7 +4,7 @@
 
 #include "GlUtils.hpp"
 
-namespace GLUtils {
+namespace c2k::GLUtils {
 
     bool isIntegralType(GLenum dataType) {
         switch (dataType) {

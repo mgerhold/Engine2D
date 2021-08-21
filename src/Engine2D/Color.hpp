@@ -4,23 +4,25 @@
 
 #pragma once
 
-#include <glm/glm.hpp>
-#include <limits>
-#include <cstdint>
+#include "pch.hpp"
 
-struct Color {
-    using Channel = std::uint8_t;
+namespace c2k {
 
-    Channel r{ 0 }, g{ 0 }, b{ 0 }, a{ 255 };
+    struct Color {
+        using Channel = std::uint8_t;
 
-    [[nodiscard]] auto normalized() const noexcept {
-        return glm::vec4{ static_cast<float>(r) / static_cast<float>(std::numeric_limits<Channel>::max()),
-                          static_cast<float>(g) / static_cast<float>(std::numeric_limits<Channel>::max()),
-                          static_cast<float>(b) / static_cast<float>(std::numeric_limits<Channel>::max()),
-                          static_cast<float>(a) / static_cast<float>(std::numeric_limits<Channel>::max()) };
+        Channel r{ 0 }, g{ 0 }, b{ 0 }, a{ 255 };
+
+        [[nodiscard]] auto normalized() const noexcept {
+            return glm::vec4{ static_cast<float>(r) / static_cast<float>(std::numeric_limits<Channel>::max()),
+                              static_cast<float>(g) / static_cast<float>(std::numeric_limits<Channel>::max()),
+                              static_cast<float>(b) / static_cast<float>(std::numeric_limits<Channel>::max()),
+                              static_cast<float>(a) / static_cast<float>(std::numeric_limits<Channel>::max()) };
+        };
+
+        static constexpr Color white() {
+            return Color{ 255, 255, 255, 255 };
+        }
     };
 
-    static constexpr Color white() {
-        return Color{ 255, 255, 255, 255 };
-    }
-};
+}// namespace c2k

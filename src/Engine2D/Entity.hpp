@@ -5,12 +5,16 @@
 #pragma once
 
 #include "strong_type/strong_type.hpp"
-#include <limits>
+#include "pch.hpp"
 
-template<typename Entity>
-static constexpr Entity invalidEntity = std::numeric_limits<typename strong::underlying_type<Entity>::type>::max();
+namespace c2k {
 
-template<typename Entity>
-using EntityBase = Entity;
+    template<typename Entity>
+    static constexpr Entity invalidEntity = std::numeric_limits<typename strong::underlying_type<Entity>::type>::max();
 
-using Entity = EntityBase<std::uint32_t>;
+    template<typename Entity>
+    using EntityBase = Entity;
+
+    using Entity = EntityBase<std::uint32_t>;
+
+}

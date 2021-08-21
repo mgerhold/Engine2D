@@ -4,7 +4,11 @@
 
 #pragma once
 
-struct WindowSize {
-    int width;
-    int height;
-};
+namespace c2k {
+
+    struct WindowSize {
+        int width;
+        int height;
+    };
+
+}// namespace c2k

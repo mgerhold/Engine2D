@@ -5,18 +5,22 @@
 #include "AssetList.hpp"
 #include "FileUtils.hpp"
 
-AssetList::AssetList(const std::filesystem::path& path) noexcept {
-    fromFile(path);
-}
+namespace c2k {
 
-void AssetList::fromFile(const std::filesystem::path& path) noexcept {
-    const auto fileContents = FileUtils::readTextFile(path);
-    auto json = nlohmann::json::parse(fileContents, nullptr, false);
-    if (json.is_discarded()) {
-        spdlog::error("Failed to parse JSON file {}: {}", path.string());
-        return;
+    AssetList::AssetList(const std::filesystem::path& path) noexcept {
+        fromFile(path);
     }
-    spdlog::info("Parsing asset list {}...", path.string());
-    parseCategory(json, "textures", mTextureDescriptions);
-    parseCategory(json, "shaderPrograms", mShaderProgramDescriptions);
+
+    void AssetList::fromFile(const std::filesystem::path& path) noexcept {
+        const auto fileContents = FileUtils::readTextFile(path);
+        auto json = nlohmann::json::parse(fileContents, nullptr, false);
+        if (json.is_discarded()) {
+            spdlog::error("Failed to parse JSON file {}: {}", path.string());
+            return;
+        }
+        spdlog::info("Parsing asset list {}...", path.string());
+        parseCategory(json, "textures", mTextureDescriptions);
+        parseCategory(json, "shaderPrograms", mShaderProgramDescriptions);
+    }
+
 }

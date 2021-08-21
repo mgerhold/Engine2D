@@ -4,7 +4,11 @@
 
 #pragma once
 
-struct OpenGLVersion {
-    int major;
-    int minor;
-};
+namespace c2k {
+
+    struct OpenGLVersion {
+        int major;
+        int minor;
+    };
+
+}// namespace c2k

@@ -4,43 +4,46 @@
 
 #pragma once
 
-#include <functional>
-#include <concepts>
+#include "pch.hpp"
 
-template<std::unsigned_integral Entity,
-         typename SetupFunction,
-         typename ForEachFunction,
-         typename FinalizeFunction,
-         typename... Components>
-class System final {
-public:
-    System(SetupFunction&& setup, ForEachFunction&& forEach, FinalizeFunction&& finalize) noexcept
-        : mSetup{ std::forward<SetupFunction>(setup) },
-          mForEach{ std::forward<ForEachFunction>(forEach) },
-          mFinalize{ std::forward<FinalizeFunction>(finalize) } { }
+namespace c2k {
 
-    void setup() noexcept {
-        mSetup();
-    }
+    template<std::unsigned_integral Entity,
+             typename SetupFunction,
+             typename ForEachFunction,
+             typename FinalizeFunction,
+             typename... Components>
+    class System final {
+    public:
+        System(SetupFunction&& setup, ForEachFunction&& forEach, FinalizeFunction&& finalize) noexcept
+            : mSetup{ std::forward<SetupFunction>(setup) },
+              mForEach{ std::forward<ForEachFunction>(forEach) },
+              mFinalize{ std::forward<FinalizeFunction>(finalize) } { }
 
-    template<typename View>
-    void forEach(View&& components) noexcept {
-        for (auto&& tuple : components) {
-            std::apply([this](auto&&... args) { mForEach(std::forward<decltype(args)>(args)...); },
-                       std::forward<decltype(tuple)>(tuple));
+        void setup() noexcept {
+            mSetup();
         }
-    }
 
-    void forEach() noexcept {
-        mForEach();
-    }
+        template<typename View>
+        void forEach(View&& components) noexcept {
+            for (auto&& tuple : components) {
+                std::apply([this](auto&&... args) { mForEach(std::forward<decltype(args)>(args)...); },
+                           std::forward<decltype(tuple)>(tuple));
+            }
+        }
 
-    void finalize() noexcept {
-        mFinalize();
-    }
+        void forEach() noexcept {
+            mForEach();
+        }
 
-private:
-    SetupFunction mSetup;
-    ForEachFunction mForEach;
-    FinalizeFunction mFinalize;
-};
+        void finalize() noexcept {
+            mFinalize();
+        }
+
+    private:
+        SetupFunction mSetup;
+        ForEachFunction mForEach;
+        FinalizeFunction mFinalize;
+    };
+
+}// namespace c2k

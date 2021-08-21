@@ -8,4 +8,6 @@ target_include_directories(Tests PUBLIC ${PROJECT_SOURCE_DIR}/src/Engine2D)
 # static runtime library
 set_property(TARGET Tests PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
+target_precompile_headers(Tests PRIVATE "../src/Engine2D/pch.hpp")
+
 add_test(NAME unit COMMAND Tests)

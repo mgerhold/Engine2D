@@ -5,7 +5,9 @@
 #include <Entity.hpp>
 #include <SparseSet.hpp>
 #include <gtest/gtest.h>
-#include <cstdint>
+#include <pch.hpp>
+
+using namespace c2k;
 
 struct Position {
     float x, y;

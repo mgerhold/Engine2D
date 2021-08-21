@@ -5,8 +5,9 @@
 #include <Registry.hpp>
 #include <TypeIdentifier.hpp>
 #include <gtest/gtest.h>
-#include <range/v3/all.hpp>
-#include <vector>
+#include <pch.hpp>
+
+using namespace c2k;
 
 struct Position {
     float x, y;

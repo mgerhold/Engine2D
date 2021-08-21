@@ -4,10 +4,13 @@
 
 #include "FileUtils.hpp"
 
-#include <fstream>
-#include <iterator>
+#include "pch.hpp"
 
-std::string FileUtils::readTextFile(const std::filesystem::path& path) noexcept {
-    std::ifstream inputFileStream{ path };
-    return std::string{ std::istreambuf_iterator<char>{ inputFileStream }, {} };
-}
+namespace c2k::FileUtils {
+
+    std::string readTextFile(const std::filesystem::path& path) noexcept {
+        std::ifstream inputFileStream{ path };
+        return std::string{ std::istreambuf_iterator<char>{ inputFileStream }, {} };
+    }
+
+}// namespace c2k::FileUtils

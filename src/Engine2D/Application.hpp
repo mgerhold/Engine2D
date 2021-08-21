@@ -8,10 +8,6 @@
 #include "OpenGLVersion.hpp"
 #include "ScopedTimer.hpp"
 
-#include <spdlog/spdlog.h>
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
 #include "Registry.hpp"
 #include "Component.hpp"
 #include "Window.hpp"
@@ -21,35 +17,33 @@
 #include "Time.hpp"
 #include "Random.hpp"
 
-#include <chrono>
-#include <vector>
-#include <cmath>
-#include <string>
-#include <iostream>
-#include <concepts>
-#include <ratio>
+#include "pch.hpp"
 
-template<typename DerivedType>
-class Application {
-public:
-    Application(const std::string& title, WindowSize size, OpenGLVersion version) noexcept;
-    Application(const Application&) = delete;
-    Application(Application&&) = delete;
-    virtual ~Application();
-    Application& operator=(const Application&) = delete;
-    Application& operator=(Application&&) = delete;
+namespace c2k {
 
-    void run() noexcept;
-    void quit() noexcept;
+    template<typename DerivedType>
+    class Application {
+    public:
+        Application(const std::string& title, WindowSize size, OpenGLVersion version) noexcept;
+        Application(const Application&) = delete;
+        Application(Application&&) = delete;
+        virtual ~Application();
+        Application& operator=(const Application&) = delete;
+        Application& operator=(Application&&) = delete;
 
-protected:
-    Input mInput;
-    Window mWindow;
-    AssetDatabase mAssetDatabase;
-    Registry mRegistry;
-    Renderer mRenderer;
-    Time mTime;
-    Random mRandom;
-};
+        void run() noexcept;
+        void quit() noexcept;
+
+    protected:
+        Input mInput;
+        Window mWindow;
+        AssetDatabase mAssetDatabase;
+        Registry mRegistry;
+        Renderer mRenderer;
+        Time mTime;
+        Random mRandom;
+    };
 
 #include "Application.inc"
+
+}// namespace c2k

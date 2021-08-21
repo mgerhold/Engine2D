@@ -4,23 +4,26 @@
 
 #pragma once
 
-#include <spdlog/spdlog.h>
-#include <cstddef>
+#include "pch.hpp"
 
-template<typename T>
-class TypeIdentifier final {
-public:
-    template<typename Type>
-    [[nodiscard]] static std::size_t get() {
-        const static std::size_t id = getNext();
-        return id;
-    }
+namespace c2k {
 
-private:
-    [[nodiscard]] static std::size_t getNext() {
-        return mNextId++;
-    }
+    template<typename T>
+    class TypeIdentifier final {
+    public:
+        template<typename Type>
+        [[nodiscard]] static std::size_t get() {
+            const static std::size_t id = getNext();
+            return id;
+        }
 
-private:
-    static inline std::size_t mNextId{ 0 };
-};
+    private:
+        [[nodiscard]] static std::size_t getNext() {
+            return mNextId++;
+        }
+
+    private:
+        static inline std::size_t mNextId{ 0 };
+    };
+
+}// namespace c2k

@@ -5,26 +5,28 @@
 #pragma once
 
 #include "GUID.hpp"
-#include <nlohmann/json.hpp>
-#include <optional>
-#include <filesystem>
-#include <string>
+#include "pch.hpp"
 
-struct TextureAssetDescription {
-    GUID guid;
-    std::string group;
-    std::filesystem::path filename;
+namespace c2k {
 
-    [[nodiscard]] nlohmann::json serialize() noexcept;
-    [[nodiscard]] static std::optional<TextureAssetDescription> deserialize(const nlohmann::json& json) noexcept;
-};
+    struct TextureAssetDescription {
+        GUID guid;
+        std::string group;
+        std::filesystem::path filename;
 
-struct ShaderProgramAssetDescription {
-    GUID guid;
-    std::string group;
-    std::filesystem::path vertexShaderFilename;
-    std::filesystem::path fragmentShaderFilename;
+        [[nodiscard]] nlohmann::json serialize() noexcept;
+        [[nodiscard]] static std::optional<TextureAssetDescription> deserialize(const nlohmann::json& json) noexcept;
+    };
 
-    [[nodiscard]] nlohmann::json serialize() noexcept;
-    [[nodiscard]] static std::optional<ShaderProgramAssetDescription> deserialize(const nlohmann::json& json) noexcept;
-};
+    struct ShaderProgramAssetDescription {
+        GUID guid;
+        std::string group;
+        std::filesystem::path vertexShaderFilename;
+        std::filesystem::path fragmentShaderFilename;
+
+        [[nodiscard]] nlohmann::json serialize() noexcept;
+        [[nodiscard]] static std::optional<ShaderProgramAssetDescription> deserialize(
+                const nlohmann::json& json) noexcept;
+    };
+
+}// namespace c2k

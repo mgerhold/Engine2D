@@ -4,12 +4,11 @@
 
 #pragma once
 
-#include <glad/glad.h>
-#include <cstddef>
+#include "pch.hpp"
 
-namespace GLUtils {
+namespace c2k::GLUtils {
 
     bool isIntegralType(GLenum dataType);
     std::size_t getSizeOfGLType(GLenum dataType);
 
-}
+}// namespace c2k::GLUtils

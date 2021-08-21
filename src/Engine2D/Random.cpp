@@ -4,4 +4,8 @@
 
 #include "Random.hpp"
 
-Random::Random() noexcept : mRandomEngine{ mRandomDevice() } { }
+namespace c2k {
+
+    Random::Random() noexcept : mRandomEngine{ mRandomDevice() } { }
+
+}// namespace c2k

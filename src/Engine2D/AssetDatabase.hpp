@@ -17,94 +17,98 @@
 #include <functional>
 #include <cassert>
 
-class AssetDatabase final {
-public:
-    AssetDatabase() noexcept;
-    void loadFromList(const AssetList& list) noexcept;
-    void loadFromList(const std::filesystem::path& path) noexcept;
+namespace c2k {
 
-    Texture& loadTexture(const std::filesystem::path& filename, GUID guid) noexcept {
-        return load<Texture>(
-                guid, [&filename]() { return Image::loadFromFile(filename).and_then(Texture::create); },
-                mDebugFallbackTexture);
-    }
+    class AssetDatabase final {
+    public:
+        AssetDatabase() noexcept;
+        void loadFromList(const AssetList& list) noexcept;
+        void loadFromList(const std::filesystem::path& path) noexcept;
 
-    ShaderProgram& loadShaderProgram(const std::filesystem::path& vertexShaderFilename,
-                                     const std::filesystem::path& fragmentShaderFilename,
-                                     GUID guid) noexcept {
-        return load<ShaderProgram>(
-                guid,
-                [&vertexShaderFilename, &fragmentShaderFilename]() {
-                    return ShaderProgram::generateFromFiles(vertexShaderFilename, fragmentShaderFilename);
-                },
-                mDebugFallbackShaderProgram);
-    }
+        Texture& loadTexture(const std::filesystem::path& filename, GUID guid) noexcept {
+            return load<Texture>(
+                    guid, [&filename]() { return Image::loadFromFile(filename).and_then(Texture::create); },
+                    mDebugFallbackTexture);
+        }
 
-    [[nodiscard]] const Texture& texture(GUID guid) const noexcept {
-        return get<Texture>(guid, mDebugFallbackTexture);
-    }
+        ShaderProgram& loadShaderProgram(const std::filesystem::path& vertexShaderFilename,
+                                         const std::filesystem::path& fragmentShaderFilename,
+                                         GUID guid) noexcept {
+            return load<ShaderProgram>(
+                    guid,
+                    [&vertexShaderFilename, &fragmentShaderFilename]() {
+                        return ShaderProgram::generateFromFiles(vertexShaderFilename, fragmentShaderFilename);
+                    },
+                    mDebugFallbackShaderProgram);
+        }
 
-    [[nodiscard]] ShaderProgram& shaderProgramMutable(GUID guid) noexcept {
-        return getMutable<ShaderProgram>(guid, mDebugFallbackShaderProgram);
-    }
+        [[nodiscard]] const Texture& texture(GUID guid) const noexcept {
+            return get<Texture>(guid, mDebugFallbackTexture);
+        }
 
-    [[nodiscard]] const ShaderProgram& shaderProgram(GUID guid) const noexcept {
-        return get<ShaderProgram>(guid, mDebugFallbackShaderProgram);
-    }
+        [[nodiscard]] ShaderProgram& shaderProgramMutable(GUID guid) noexcept {
+            return getMutable<ShaderProgram>(guid, mDebugFallbackShaderProgram);
+        }
 
-    [[nodiscard]] static auto assetPath() noexcept {
-        return std::filesystem::current_path() / "assets";
-    }
+        [[nodiscard]] const ShaderProgram& shaderProgram(GUID guid) const noexcept {
+            return get<ShaderProgram>(guid, mDebugFallbackShaderProgram);
+        }
 
-    [[nodiscard]] static auto directoryIterator(const std::filesystem::path& path) noexcept {
-        return std::filesystem::directory_iterator{ path };
-    }
+        [[nodiscard]] static auto assetPath() noexcept {
+            return std::filesystem::current_path() / "assets";
+        }
 
-    [[nodiscard]] static auto recursiveDirectoryIterator(const std::filesystem::path& path) noexcept {
-        return std::filesystem::recursive_directory_iterator{ path };
-    }
+        [[nodiscard]] static auto directoryIterator(const std::filesystem::path& path) noexcept {
+            return std::filesystem::directory_iterator{ path };
+        }
 
-private:
-    using Asset = std::variant<Texture, ShaderProgram>;
+        [[nodiscard]] static auto recursiveDirectoryIterator(const std::filesystem::path& path) noexcept {
+            return std::filesystem::recursive_directory_iterator{ path };
+        }
 
-private:
-    template<typename T, typename LoadFunc>
-    T& load(GUID guid, LoadFunc&& loadFunc, T& debugFallback) noexcept {
-        assert(!mAssets.contains(guid) && "This GUID is already taken.");
-        if (auto expected = loadFunc()) {
-            mAssets[guid] = std::move(expected.value());
+    private:
+        using Asset = std::variant<Texture, ShaderProgram>;
+
+    private:
+        template<typename T, typename LoadFunc>
+        T& load(GUID guid, LoadFunc&& loadFunc, T& debugFallback) noexcept {
+            assert(!mAssets.contains(guid) && "This GUID is already taken.");
+            if (auto expected = loadFunc()) {
+                mAssets[guid] = std::move(expected.value());
 #ifdef DEBUG_BUILD
-            spdlog::info("Loaded asset for GUID {}", guid);
+                spdlog::info("Loaded asset for GUID {}", guid);
 #endif
-            return std::get<T>(mAssets[guid]);
-        } else {
-            spdlog::error("Could not load asset for GUID {}", guid, expected.error());
-            return debugFallback;
+                return std::get<T>(mAssets[guid]);
+            } else {
+                spdlog::error("Could not load asset for GUID {}", guid, expected.error());
+                return debugFallback;
+            }
         }
-    }
 
-    template<typename T>
-    [[nodiscard]] const T& get(GUID guid, const T& debugFallback) const noexcept {
-        const auto findIterator = mAssets.find(guid);
-        if (findIterator == mAssets.end() || !std::holds_alternative<T>(findIterator->second)) {
-            spdlog::error("Unable to retrieve asset for GUID {}", guid);
-            return debugFallback;
+        template<typename T>
+        [[nodiscard]] const T& get(GUID guid, const T& debugFallback) const noexcept {
+            const auto findIterator = mAssets.find(guid);
+            if (findIterator == mAssets.end() || !std::holds_alternative<T>(findIterator->second)) {
+                spdlog::error("Unable to retrieve asset for GUID {}", guid);
+                return debugFallback;
+            }
+            return std::get<T>(findIterator->second);
         }
-        return std::get<T>(findIterator->second);
-    }
 
-    template<typename T>
-    [[nodiscard]] T& getMutable(GUID guid, T& debugFallback) noexcept {
-        const auto findIterator = mAssets.find(guid);
-        if (findIterator == mAssets.end() || !std::holds_alternative<T>(findIterator->second)) {
-            spdlog::error("Unable to retrieve asset for GUID {}", guid);
-            return debugFallback;
+        template<typename T>
+        [[nodiscard]] T& getMutable(GUID guid, T& debugFallback) noexcept {
+            const auto findIterator = mAssets.find(guid);
+            if (findIterator == mAssets.end() || !std::holds_alternative<T>(findIterator->second)) {
+                spdlog::error("Unable to retrieve asset for GUID {}", guid);
+                return debugFallback;
+            }
+            return std::get<T>(findIterator->second);
         }
-        return std::get<T>(findIterator->second);
-    }
 
-private:
-    std::unordered_map<GUID, Asset> mAssets;
-    Texture mDebugFallbackTexture;
-    ShaderProgram mDebugFallbackShaderProgram;
-};
+    private:
+        std::unordered_map<GUID, Asset> mAssets;
+        Texture mDebugFallbackTexture;
+        ShaderProgram mDebugFallbackShaderProgram;
+    };
+
+}// namespace c2k

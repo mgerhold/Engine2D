@@ -8,25 +8,29 @@
 #include "Renderer.hpp"
 #include "Component.hpp"
 
-namespace DynamicSpriteRenderer {
+namespace c2k {
 
-    inline void init(Renderer& renderer, const Transform& cameraTransform) noexcept {
-        renderer.beginFrame(Camera::viewMatrix(cameraTransform));
-    }
+    namespace DynamicSpriteRenderer {
 
-    inline void forEach(Renderer& renderer, Entity, const DynamicSprite& sprite, const Transform& transform) {
-        renderer.drawQuad(transform.position, transform.rotation, transform.scale, *sprite.shader, *sprite.texture,
-                          sprite.color);
-    }
+        inline void init(Renderer& renderer, const Transform& cameraTransform) noexcept {
+            renderer.beginFrame(Camera::viewMatrix(cameraTransform));
+        }
 
-    inline void finalize(Renderer& renderer) {
-        renderer.endFrame();
-    }
+        inline void forEach(Renderer& renderer, Entity, const DynamicSprite& sprite, const Transform& transform) {
+            renderer.drawQuad(transform.position, transform.rotation, transform.scale, *sprite.shader, *sprite.texture,
+                              sprite.color);
+        }
 
-}// namespace DynamicSpriteRenderer
+        inline void finalize(Renderer& renderer) {
+            renderer.endFrame();
+        }
 
-namespace ScreenClearer {
-    inline void init(Renderer& renderer, bool colorBuffer, bool depthBuffer) {
-        renderer.clear(colorBuffer, depthBuffer);
-    }
-}// namespace ScreenClearer
+    }// namespace DynamicSpriteRenderer
+
+    namespace ScreenClearer {
+        inline void init(Renderer& renderer, bool colorBuffer, bool depthBuffer) {
+            renderer.clear(colorBuffer, depthBuffer);
+        }
+    }// namespace ScreenClearer
+
+}
