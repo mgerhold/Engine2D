@@ -6,14 +6,18 @@
 
 #include "Application.hpp"
 
-class Sandbox final : public Application<Sandbox> {
-public:
-    using Application::Application;
+namespace c2k {
 
-private:
-    void setup() noexcept;
-    void update() noexcept;
+    class Sandbox final : public Application<Sandbox> {
+    public:
+        using Application::Application;
 
-private:
-    friend class Application;
-};
+    private:
+        void setup() noexcept;
+        void update() noexcept;
+
+    private:
+        friend class Application;
+    };
+
+}// namespace c2k
