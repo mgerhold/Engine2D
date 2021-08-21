@@ -19,6 +19,7 @@
 #include "AssetDatabase.hpp"
 #include "Renderer.hpp"
 #include "Time.hpp"
+#include "Random.hpp"
 
 #include <chrono>
 #include <vector>
@@ -48,6 +49,7 @@ protected:
     Registry mRegistry;
     Renderer mRenderer;
     Time mTime;
+    Random mRandom;
 };
 
 #include "Application.inc"

@@ -35,19 +35,22 @@ void Sandbox::setup() noexcept {
                            DynamicSprite{ .texture{ &mAssetDatabase.texture(textureGUID) },
                                           .shader{ &mAssetDatabase.shaderProgramMutable(shaderGUID) },
                                           .color{ 255, 40, 160 } });
-    std::random_device randomDevice;
-    std::mt19937 randomEngine{ randomDevice() };
-    std::uniform_int_distribution distribution{ -2000, 2000 };
     constexpr int numEntities = 500;
     for (auto _ : ranges::views::ints(0, numEntities)) {
-        const glm::vec3 position{ distribution(randomEngine), distribution(randomEngine), 0.0f };
+        const glm::vec3 position{ mRandom.range(-2000.0f, 2000.0f), mRandom.range(-2000.0f, 2000.0f), 0.0f };
         mRegistry.createEntity(Transform{ .position{ position }, .scale{ textureSize } },
                                DynamicSprite{ .texture{ &mAssetDatabase.texture(textureGUID) },
                                               .shader{ &mAssetDatabase.shaderProgramMutable(shaderGUID) },
                                               .color{ Color::white() } });
     }
     const auto cameraEntity = mRegistry.createEntity(Transform{}, Camera{});
-    const auto& cameraTransform = mRegistry.component<Transform>(cameraEntity).value();
+    mRegistry.emplaceSystem<Transform&, const DynamicSprite&>(
+            []() {},
+            [this](Entity, Transform& transform, const DynamicSprite&) {
+                transform.rotation += gsl::narrow_cast<float>(glm::radians(20.0f) * mTime.delta.count());
+            },
+            []() {});
+
     mRegistry.emplaceSystem<>([]() {},
                               [this]() {
                                   /* this system quits the application when the escape key
@@ -105,7 +108,7 @@ void Sandbox::setup() noexcept {
                 transform.position.y = worldPosition.y;
             });
     mRegistry.addScreenClearer(mRenderer, true, true);
-    mRegistry.addDynamicSpriteRenderer(mRenderer, cameraTransform);
+    mRegistry.addDynamicSpriteRenderer(mRenderer, mRegistry.component<Transform>(cameraEntity).value());
     mRegistry.addDynamicSpriteRenderer(mRenderer);// overlay
 }
 

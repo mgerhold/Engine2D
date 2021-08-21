@@ -18,5 +18,12 @@
       "fragmentShaderFilename": "shaders/default.frag",
       "group": ""
     }
+  ],
+  "scripts": [
+    {
+      "guid": "5874d6e9-5529-45bc-829b-d6002ef21d70",
+      "filename": "scripts/test.lua",
+      "group": "demonstration"
+    }
   ]
 }
