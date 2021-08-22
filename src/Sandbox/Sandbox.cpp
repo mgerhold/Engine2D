@@ -38,7 +38,7 @@ namespace c2k {
                                               .shader{ &mAssetDatabase.shaderProgramMutable(shaderGUID) },
                                               .color{ 255, 40, 160 } });
         constexpr int numEntities = 500;
-        for (auto _ : ranges::views::ints(0, numEntities)) {
+        for ([[maybe_unused]] auto _ : ranges::views::ints(0, numEntities)) {
             const glm::vec3 position{ mRandom.range(-2000.0f, 2000.0f), mRandom.range(-2000.0f, 2000.0f), 0.0f };
             mRegistry.createEntity(Transform{ .position{ position }, .scale{ textureSize } },
                                    DynamicSprite{ .texture{ &mAssetDatabase.texture(textureGUID) },
