@@ -40,7 +40,7 @@ namespace c2k {
             return mHeight;
         }
         [[nodiscard]] float widthToHeightRatio() const noexcept {
-            return static_cast<float>(mWidth) / mHeight;
+            return static_cast<float>(mWidth) / static_cast<float>(mHeight);
         }
         [[nodiscard]] int numChannels() const noexcept {
             return mNumChannels;
