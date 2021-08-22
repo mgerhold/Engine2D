@@ -49,7 +49,7 @@ public:
         return mAddress;
     }
 
-    [[nodiscard]] void const* operator*() const noexcept {
+    [[nodiscard]] const void* operator*() const noexcept {
         return mAddress;
     }
 };
