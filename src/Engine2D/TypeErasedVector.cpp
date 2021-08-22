@@ -4,7 +4,7 @@
 
 #include "TypeErasedVector.hpp"
 
-static std::size_t getPaddedSize(std::size_t size, std::size_t alignment) noexcept {
+static constexpr std::size_t getPaddedSize(std::size_t size, std::size_t alignment) noexcept {
     auto result{ alignment };
     while (result < size) {
         result += alignment;
