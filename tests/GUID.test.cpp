@@ -10,7 +10,7 @@ TEST(GUIDTests, NoDuplicates) {
     constexpr std::size_t numElements{ 1000 };// well...not that many tbh
     std::vector<c2k::GUID> guids;
     guids.reserve(numElements);
-    for (auto _ : ints(std::size_t{ 0 }, numElements)) {
+    for ([[maybe_unused]] auto _ : ints(std::size_t{ 0 }, numElements)) {
         guids.push_back(c2k::GUID::create());
     }
     auto firstNotUnique = std::unique(guids.begin(), guids.end());
