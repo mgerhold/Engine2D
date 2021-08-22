@@ -28,6 +28,8 @@ public:
     }
     template<typename T>
     [[nodiscard]] TypedIterator<T> end() noexcept {
+        assert(sizeof(T) == mElementSize);
+        assert(alignof(T) == mElementAlignment);
         return TypedIterator<T>{ static_cast<std::uint8_t*>(mData) + mSize * mElementSizePadded, mElementSizePadded };
     }
 
