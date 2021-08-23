@@ -4,7 +4,11 @@
 
 #pragma once
 
-template<typename T>
-struct Tag {
-    using type = T;
-};
+namespace c2k {
+
+    template<typename T>
+    struct Tag {
+        using type = T;
+    };
+
+}// namespace c2k
