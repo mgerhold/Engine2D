@@ -4,23 +4,27 @@
 
 #pragma once
 
-#include "pch.hpp"
+#include "pch.hpp"// TODO: delete include "pch.hpp" in all files since CMake force includes it
+#include "TypeErasedVector.hpp"
+#include "Tag.hpp"
+#include <list>
 
 namespace c2k {
 
-    template<typename T, std::unsigned_integral SparseIndex, SparseIndex invalidIndex>
+    template<std::unsigned_integral SparseIndex, SparseIndex invalidIndex>
     class SparseSet final {
     public:
-        using value_type = T;
-
-    public:
-        explicit SparseSet(SparseIndex initialSetSize, SparseIndex initialElementCapacity = SparseIndex{ 0 }) noexcept
-            : mSparseVector(initialSetSize, invalidIndex) {
+        template<typename T>
+        explicit SparseSet(Tag<T>,
+                           SparseIndex initialSetSize,
+                           SparseIndex initialElementCapacity = SparseIndex{ 0 }) noexcept
+            : mSparseVector{ initialSetSize, invalidIndex },
+              mElementVector{ TypeErasedVector::forType<T>() } {
             mDenseVector.reserve(initialElementCapacity);
             mElementVector.reserve(initialElementCapacity);
         }
 
-        template<std::convertible_to<T> Component>
+        template<typename Component>
         void add(SparseIndex index, Component&& element) noexcept {
             assert(index < mSparseVector.size() && "Invalid index id.");
             assert(!has(index));
@@ -36,7 +40,7 @@ namespace c2k {
             mSparseVector[mDenseVector.back()] = denseIndex;
             mDenseVector[denseIndex] = mDenseVector.back();
             mDenseVector.resize(mDenseVector.size() - 1);
-            mElementVector[denseIndex] = std::move(mElementVector.back());
+            mElementVector.swapElements(denseIndex, mElementVector.size() - 1);
             mElementVector.resize(mElementVector.size() - 1);
             assert(mDenseVector.size() == mElementVector.size());
         }
@@ -53,28 +57,49 @@ namespace c2k {
             const auto denseIndex = mSparseVector[index];
             return denseIndex < mDenseVector.size();
         }
+
+        template<typename T>
         [[nodiscard]] const T& get(SparseIndex index) const noexcept {
             assert(has(index) && "The given index doesn't have an instance of this element.");
-            return mElementVector[mSparseVector[index]];
+            return mElementVector.get<T>(mSparseVector[index]);
         }
+
+        template<typename T>
         [[nodiscard]] T& getMutable(SparseIndex index) noexcept {
             assert(has(index) && "The given index doesn't have an instance of this element.");
-            return mElementVector[mSparseVector[index]];
+            return mElementVector.get<T>(mSparseVector[index]);
         }
         [[nodiscard]] auto indices() const noexcept {
             return mDenseVector | ranges::views::all;
         }
+
+        /*template<std::assignable_from T>
+        struct S {
+
+        };*/
+
+        template<typename T>
         [[nodiscard]] auto elements() const noexcept {
-            return mElementVector | ranges::views::all;
+            const auto beginIterator = mElementVector.template begin<T>();
+            const auto endIterator = mElementVector.template end<T>();
+            /*S<decltype(beginIterator)> s{};
+            static_assert(std::is_object_v<decltype(beginIterator)>);
+            static_assert(std::is_lvalue_reference<decltype(beginIterator)>);
+
+            std::list<int> numbers{ 1, 2, 3 };*/
+            //return ranges::subrange(numbers.cbegin(), numbers.cend());
+            return ranges::make_subrange(beginIterator, endIterator);
         }
+
+        template<typename T>
         [[nodiscard]] auto elementsMutable() noexcept {
-            return mElementVector | ranges::views::all;
+            return ranges::iterator_range(mElementVector.begin<T>(), mElementVector.end<T>());
         }
 
     private:
         std::vector<SparseIndex> mSparseVector;
         std::vector<SparseIndex> mDenseVector;
-        std::vector<T> mElementVector;
+        TypeErasedVector mElementVector;
     };
 
 }// namespace c2k

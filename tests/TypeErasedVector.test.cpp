@@ -6,8 +6,13 @@
 #include <gtest/gtest.h>
 #include <pch.hpp>
 
+using namespace c2k;
+
 TEST(TypeErasedVectorTests, VectorOfIntegers) {
     auto numbers = TypeErasedVector::forType<int>();
+    auto floats = TypeErasedVector::forType<float>();
+    static_assert(std::is_same_v<decltype(numbers), decltype(floats)>);
+
     ASSERT_EQ(numbers.capacity(), 0);
     ASSERT_EQ(numbers.size(), 0);
     numbers.push_back(4);
@@ -81,4 +86,31 @@ TEST(TypeErasedVectorTests, VectorOfUniquePointers) {
     for (std::size_t i{ 0 }; i < pointers.size(); ++i) {
         ASSERT_EQ(42 + i, *pointers.get<std::unique_ptr<int>>(i));
     }
+}
+
+TEST(TypeErasedVectorTests, SwapElements) {
+    auto pointers = TypeErasedVector::forType<std::unique_ptr<int>>();
+    pointers.push_back(std::make_unique<int>(1));
+    pointers.push_back(std::make_unique<int>(2));
+    ASSERT_EQ(*pointers.get<std::unique_ptr<int>>(0), 1);
+    ASSERT_EQ(*pointers.get<std::unique_ptr<int>>(1), 2);
+    pointers.swapElements(0, 1);
+    ASSERT_EQ(*pointers.get<std::unique_ptr<int>>(0), 2);
+    ASSERT_EQ(*pointers.get<std::unique_ptr<int>>(1), 1);
+}
+
+struct S {
+    S() : x{ 42 } { }
+    int x;
+};
+
+TEST(TypeErasedVectorTests, Resize) {
+    auto objects = TypeErasedVector::forType<S>();
+    objects.resize(10);
+    int count{ 0 };
+    for (auto it = objects.begin<S>(); it != objects.end<S>(); ++it) {
+        ASSERT_EQ((*it).x, 42);// TODO: implement -> operator
+        ++count;
+    }
+    ASSERT_EQ(count, 9);
 }

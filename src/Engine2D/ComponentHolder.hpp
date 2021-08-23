@@ -14,8 +14,8 @@ namespace c2k {
     public:
         explicit ComponentHolder(std::size_t initialSetSize) noexcept : mSetSize{ initialSetSize } { }
         ~ComponentHolder() {
-            for (const auto& [address, destructor] : ranges::views::zip(mAddresses, mDestructors)) {
-                destructor(address);
+            for (const auto pointerToSet : mSparseSets) {
+                delete pointerToSet;
             }
         }
 
@@ -30,8 +30,10 @@ namespace c2k {
         void resize(std::size_t size) noexcept {
             using ranges::views::zip;
             assert(size >= mSetSize);
-            for (auto&& [resizeFunction, address] : zip(mResizeFunctions, mAddresses)) {
-                resizeFunction(address, size);
+            for (const auto pointerToSet : mSparseSets) {
+                if (pointerToSet != nullptr) {
+                    pointerToSet->resize(size);
+                }
             }
             mSetSize = size;
         }
@@ -47,7 +49,23 @@ namespace c2k {
         [[nodiscard]] auto getMutable() noexcept {
             using ranges::views::filter, ranges::views::transform, ranges::views::zip;
             return zip(getComponent<FirstComponent>().indices(),
-                       getComponentMutable<FirstComponent>().elementsMutable()) |
+                       getComponentMutable<FirstComponent>().template elementsMutable<FirstComponent>()) |
+                   // tuple is marked as maybe_unused in the next line because MSVC reports a warning
+                   filter([this]([[maybe_unused]] auto&& tuple) {
+                       return (has<Components>(std::get<0>(tuple)) && ...);
+                   }) |
+                   transform([this](auto&& tuple) {
+                       return std::forward_as_tuple(std::get<0>(tuple), std::get<1>(tuple),
+                                                    getComponentMutable<Components>().template getMutable<Components>(
+                                                            std::get<0>(tuple))...);
+                   });
+        }
+
+        template<typename FirstComponent, typename... Components>
+        [[nodiscard]] auto get() const noexcept {
+            using ranges::views::filter, ranges::views::transform, ranges::views::zip;
+            return zip(getComponent<FirstComponent>().indices(),
+                       getComponent<FirstComponent>().template elements<FirstComponent>()) |
                    // tuple is marked as maybe_unused in the next line because MSVC reports a warning
                    filter([this]([[maybe_unused]] auto&& tuple) {
                        return (has<Components>(std::get<0>(tuple)) && ...);
@@ -55,20 +73,7 @@ namespace c2k {
                    transform([this](auto&& tuple) {
                        return std::forward_as_tuple(
                                std::get<0>(tuple), std::get<1>(tuple),
-                               getComponentMutable<Components>().getMutable(std::get<0>(tuple))...);
-                   });
-        }
-        template<typename FirstComponent, typename... Components>
-        [[nodiscard]] auto get() const noexcept {
-            using ranges::views::filter, ranges::views::transform, ranges::views::zip;
-            return zip(getComponent<FirstComponent>().indices(), getComponent<FirstComponent>().elements()) |
-                   // tuple is marked as maybe_unused in the next line because MSVC reports a warning
-                   filter([this]([[maybe_unused]] auto&& tuple) {
-                       return (has<Components>(std::get<0>(tuple)) && ...);
-                   }) |
-                   transform([this](auto&& tuple) {
-                       return std::forward_as_tuple(std::get<0>(tuple), std::get<1>(tuple),
-                                                    getComponent<Components>().get(std::get<0>(tuple))...);
+                               getComponent<Components>().template get<Components>(std::get<0>(tuple))...);
                    });
         }
         template<typename Component>
@@ -85,51 +90,43 @@ namespace c2k {
         }
 
     private:
-        template<typename Component>
-        using ComponentSet = SparseSet<Component, SparseIndex, invalidEntity<SparseIndex>>;
+        using ComponentSet = SparseSet<SparseIndex, invalidEntity<SparseIndex>>;
 
     private:
         template<typename Component>
-        [[nodiscard]] decltype(auto) getComponentMutable() noexcept {
+        [[nodiscard]] ComponentSet& getComponentMutable() noexcept {
             const auto typeIdentifier = growIfNecessaryAndGetTypeIdentifier<Component>();
-            return *static_cast<ComponentSet<Component>*>(mAddresses[typeIdentifier]);
+            assert(typeIdentifier < mSparseSets.size());
+            return *mSparseSets[typeIdentifier];
         }
         template<typename Component>
-        [[nodiscard]] decltype(auto) getComponent() const noexcept {
+        [[nodiscard]] const ComponentSet& getComponent() const noexcept {
             const auto typeIdentifier = TypeIdentifier::template get<Component>();
-            assert(typeIdentifier < mAddresses.size());
-            return *static_cast<ComponentSet<Component>*>(mAddresses[typeIdentifier]);
+            assert(typeIdentifier < mSparseSets.size());
+            return *mSparseSets[typeIdentifier];
         }
         template<typename Component>
         std::size_t growIfNecessaryAndGetTypeIdentifier() noexcept {
-            using SetType = SparseSet<Component, SparseIndex, invalidEntity<SparseIndex>>;
+            using SetType = SparseSet<SparseIndex, invalidEntity<SparseIndex>>;
             const auto typeIdentifier = TypeIdentifier::template get<Component>();
-            const bool needsResizing = typeIdentifier >= mDestructors.size();
-            if (!needsResizing && mAddresses[typeIdentifier] != nullptr) {
+            const bool needsResizing = typeIdentifier >= mSparseSets.size();
+            if (!needsResizing && mSparseSets[typeIdentifier] != nullptr) {
                 return typeIdentifier;
             }
             if (needsResizing) {
-                mAddresses.resize(typeIdentifier + 1);
-                mResizeFunctions.resize(typeIdentifier + 1);
-                mDestructors.resize(typeIdentifier + 1);
+                mSparseSets.resize(typeIdentifier + 1, nullptr);
             }
-            mAddresses[typeIdentifier] = new SetType{ static_cast<SparseIndex>(mSetSize) };
-            mResizeFunctions[typeIdentifier] = [](void* address, std::size_t size) {
-                static_cast<SetType*>(address)->resize(size);
-            };
-            mDestructors[typeIdentifier] = [](void* address) { delete static_cast<SetType*>(address); };
+            mSparseSets[typeIdentifier] = new SetType{ Tag<Component>{}, static_cast<SparseIndex>(mSetSize) };
             return typeIdentifier;
         }
         template<typename Component>
         [[nodiscard]] bool doesExist() const noexcept {
             const auto typeIdentifier = TypeIdentifier::template get<Component>();
-            return typeIdentifier < mAddresses.size();
+            return typeIdentifier < mSparseSets.size();
         }
 
     private:
-        std::vector<void*> mAddresses;
-        std::vector<void (*)(void*)> mDestructors;
-        std::vector<void (*)(void*, std::size_t)> mResizeFunctions;
+        std::vector<ComponentSet*> mSparseSets;
         std::size_t mSetSize;
     };
 

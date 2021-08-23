@@ -110,7 +110,7 @@ namespace {
     TEST_F(RegistryComponentHolderGrowingFixture, CreateEntities_AttachComponents_IterateAndCheckOtherComponents) {
         using ranges::views::ints, ranges::views::enumerate;
         std::vector<Entity> entities;
-        for (auto i : ints(0, 10)) {
+        for ([[maybe_unused]] auto i : ints(0, 10)) {
             entities.push_back(registry.createEntity());
         }
         for (auto&& [i, entity] : entities | enumerate) {
