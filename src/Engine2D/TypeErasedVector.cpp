@@ -16,19 +16,22 @@ static constexpr std::size_t getPaddedSize(std::size_t size, std::size_t alignme
 namespace c2k {
 
     TypeErasedVector::~TypeErasedVector() {
-        for (const auto& element : *this) {
-            mDestructor(element);
+        using ranges::views::ints;
+        void* current{ mData };
+        for ([[maybe_unused]] auto _ : ints(std::size_t{ 0 }, mSize)) {
+            mDestructor(current);
+            current = static_cast<std::uint8_t*>(current) + mElementSizePadded;
         }
         ::operator delete[](mData, std::align_val_t{ mElementAlignment });
     }
 
-    TypeErasedVector::Iterator TypeErasedVector::begin() noexcept {
+    /*TypeErasedVector::Iterator TypeErasedVector::begin() noexcept {
         return Iterator{ mData, mElementSizePadded };
     }
 
     TypeErasedVector::Iterator TypeErasedVector::end() noexcept {
         return Iterator{ static_cast<std::uint8_t*>(mData) + mSize * mElementSizePadded, mElementSizePadded };
-    }
+    }*/
 
     void TypeErasedVector::swapElements(std::size_t firstIndex, std::size_t secondIndex) noexcept {
         void* const firstAddress = static_cast<std::uint8_t*>(mData) + firstIndex * mElementSizePadded;
@@ -78,14 +81,16 @@ namespace c2k {
           mSwap{ std::move(swap) } { }
 
     void TypeErasedVector::grow() noexcept {
+        using ranges::views::ints;
         const std::size_t newCapacity{ mCapacity > 0 ? 2 * mCapacity : 1 };
         void* const newBuffer =
                 ::operator new[](newCapacity* mElementSizePadded, std::align_val_t{ mElementAlignment });
-        void* current{ newBuffer };
-        for (auto element : *this) {
-            mPlacementNew(current, element);
-            mDestructor(element);
-            current = static_cast<std::uint8_t*>(current) + mElementSizePadded;
+        void* writePointer{ newBuffer };
+        void* readPointer{ mData };
+        for ([[maybe_unused]] auto _ : ints(std::size_t{ 0 }, mSize)) {
+            mPlacementNew(writePointer, readPointer);
+            readPointer = static_cast<std::uint8_t*>(readPointer) + mElementSizePadded;
+            writePointer = static_cast<std::uint8_t*>(writePointer) + mElementSizePadded;
         }
         if (mCapacity > 0) {
             ::operator delete[](mData, std::align_val_t{ mElementAlignment });

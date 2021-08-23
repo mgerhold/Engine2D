@@ -88,12 +88,13 @@ namespace c2k {
 
             std::list<int> numbers{ 1, 2, 3 };*/
             //return ranges::subrange(numbers.cbegin(), numbers.cend());
-            return ranges::make_subrange(beginIterator, endIterator);
+            return ranges::subrange(beginIterator, endIterator) | ranges::views::all;
         }
 
         template<typename T>
         [[nodiscard]] auto elementsMutable() noexcept {
-            return ranges::iterator_range(mElementVector.begin<T>(), mElementVector.end<T>());
+            return ranges::subrange(mElementVector.template begin<T>(), mElementVector.template end<T>()) |
+                   ranges::views::all;
         }
 
     private:

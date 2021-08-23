@@ -15,7 +15,7 @@ namespace c2k {
         const auto fileContents = FileUtils::readTextFile(path);
         auto json = nlohmann::json::parse(fileContents, nullptr, false);
         if (json.is_discarded()) {
-            spdlog::error("Failed to parse JSON file {}: {}", path.string());
+            spdlog::error("Failed to parse JSON file {}", path.string());
             return;
         }
         spdlog::info("Parsing asset list {}...", path.string());

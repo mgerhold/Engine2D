@@ -13,7 +13,7 @@ namespace c2k {
 #include "TypeErasedVectorIterator.inc"
 
     public:
-        using Iterator = TypeErasedVectorIterator;
+        //using Iterator = TypeErasedVectorIterator;
 
         template<std::default_initializable T>
         using TypedIterator = TypedTypeErasedVectorIterator<T>;
@@ -24,9 +24,9 @@ namespace c2k {
     public:
         ~TypeErasedVector();
 
-        [[nodiscard]] Iterator begin() noexcept;
+        /*[[nodiscard]] Iterator begin() noexcept;
 
-        [[nodiscard]] Iterator end() noexcept;
+        [[nodiscard]] Iterator end() noexcept;*/
 
         template<std::default_initializable T>
         [[nodiscard]] TypedIterator<T> begin() noexcept {
@@ -112,6 +112,21 @@ namespace c2k {
             const auto address{ static_cast<T*>(
                     static_cast<void*>(static_cast<std::uint8_t*>(mData) + mElementSizePadded * mSize)) };
             new (address) T{ element };
+            ++mSize;
+        }
+
+        template<std::default_initializable T>
+        void push_back(T&& element) noexcept {
+            /* Assert that element has the right data type.
+         * Because of the type erasure you can never be 100 % sure though! */
+            assert(sizeof(element) == mElementSize);
+            assert(alignof(T) == mElementAlignment);
+            if (mSize == mCapacity) {
+                grow();
+            }
+            const auto address{ static_cast<T*>(
+                    static_cast<void*>(static_cast<std::uint8_t*>(mData) + mElementSizePadded * mSize)) };
+            new (address) T{ std::move(element) };
             ++mSize;
         }
 
