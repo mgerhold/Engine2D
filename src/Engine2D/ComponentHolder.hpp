@@ -48,8 +48,11 @@ namespace c2k {
         template<typename FirstComponent, typename... Components>
         [[nodiscard]] auto getMutable() noexcept {
             using ranges::views::filter, ranges::views::transform, ranges::views::zip;
-            return zip(getComponent<FirstComponent>().indices(),
-                       getComponentMutable<FirstComponent>().template elementsMutable<FirstComponent>()) |
+            auto indices = getComponent<FirstComponent>().indices();
+            auto elements = getComponentMutable<FirstComponent>().template elementsMutable<FirstComponent>();
+            return zip(indices, elements);
+            /*getComponent<FirstComponent>().indices(),
+                       getComponentMutable<FirstComponent>().template elementsMutable<FirstComponent>() |
                    // tuple is marked as maybe_unused in the next line because MSVC reports a warning
                    filter([this]([[maybe_unused]] auto&& tuple) {
                        return (has<Components>(std::get<0>(tuple)) && ...);
@@ -58,7 +61,7 @@ namespace c2k {
                        return std::forward_as_tuple(std::get<0>(tuple), std::get<1>(tuple),
                                                     getComponentMutable<Components>().template getMutable<Components>(
                                                             std::get<0>(tuple))...);
-                   });
+                   });*/
         }
 
         template<typename FirstComponent, typename... Components>

@@ -1,21 +1,22 @@
-class TypeErasedVectorIteratorBase {
+
+class TypeErasedVectorIterator {
 public:
     using iterator_category = std::forward_iterator_tag;
     using difference_type = std::ptrdiff_t;
 
 public:
-    TypeErasedVectorIteratorBase() = default;
+    TypeErasedVectorIterator() = default;
 
-    TypeErasedVectorIteratorBase(const TypeErasedVectorIteratorBase& other) = default;
+    TypeErasedVectorIterator(const TypeErasedVectorIterator& other) = default;
 
-    TypeErasedVectorIteratorBase(TypeErasedVectorIteratorBase&& other) {
+    TypeErasedVectorIterator(TypeErasedVectorIterator&& other) {
         mAddress = other.mAddress;
         mStepSize = other.mStepSize;
         other.mAddress = nullptr;
         other.mStepSize = 0;
     }
 
-    TypeErasedVectorIteratorBase& operator=(const TypeErasedVectorIteratorBase& other) noexcept {
+    TypeErasedVectorIterator& operator=(const TypeErasedVectorIterator& other) noexcept {
         if (this == &other) {
             return *this;
         }
@@ -24,48 +25,56 @@ public:
         return *this;
     }
 
-    TypeErasedVectorIteratorBase& operator=(TypeErasedVectorIteratorBase&& other) noexcept {
+    TypeErasedVectorIterator& operator=(TypeErasedVectorIterator&& other) noexcept {
         swap(*this, other);
         return *this;
     }
 
-    [[nodiscard]] TypeErasedVectorIteratorBase operator+(std::size_t increment) noexcept {
-        return TypeErasedVectorIteratorBase{ static_cast<std::uint8_t*>(mAddress) + increment * mStepSize, mStepSize };
+    [[nodiscard]] TypeErasedVectorIterator operator+(std::size_t increment) noexcept {
+        return TypeErasedVectorIterator{ static_cast<std::uint8_t*>(mAddress) + increment * mStepSize, mStepSize };
     }
 
-    TypeErasedVectorIteratorBase operator++(int) noexcept {// postfix
+    TypeErasedVectorIterator operator++(int) noexcept {// postfix
         const auto copy{ *this };
         ++(*this);
         return copy;
     }
 
-    TypeErasedVectorIteratorBase& operator++() noexcept {// prefix
+    TypeErasedVectorIterator& operator++() noexcept {// prefix
         mAddress = (static_cast<std::uint8_t*>(mAddress) + mStepSize);
         return *this;
     }
 
-    difference_type operator-(const TypeErasedVectorIteratorBase& other) noexcept {
+    difference_type operator-(const TypeErasedVectorIterator& other) noexcept {
         return static_cast<difference_type>(static_cast<std::uint8_t*>(mAddress) -
                                             static_cast<std::uint8_t*>(other.mAddress)) /
                mStepSize;
     }
 
-    [[nodiscard]] bool operator==(const TypeErasedVectorIteratorBase& other) const noexcept {
+    [[nodiscard]] bool operator==(const TypeErasedVectorIterator& other) const noexcept {
         assert(mStepSize == other.mStepSize);
         return mAddress == other.mAddress;
     }
 
-    [[nodiscard]] bool operator!=(const TypeErasedVectorIteratorBase& other) const noexcept {
+    [[nodiscard]] bool operator!=(const TypeErasedVectorIterator& other) const noexcept {
         return !(*this == other);
     }
 
-    friend void swap(TypeErasedVectorIteratorBase& lhs, TypeErasedVectorIteratorBase& rhs) noexcept {
+    friend void swap(TypeErasedVectorIterator& lhs, TypeErasedVectorIterator& rhs) noexcept {
         std::swap(lhs.mAddress, rhs.mAddress);
         std::swap(lhs.mStepSize, rhs.mStepSize);
     }
 
+    [[nodiscard]] void* operator*() noexcept {
+        return mAddress;
+    }
+
+    [[nodiscard]] const void* operator*() const noexcept {
+        return mAddress;
+    }
+
 protected:
-    TypeErasedVectorIteratorBase(void* address, std::size_t stepSize) noexcept
+    TypeErasedVectorIterator(void* address, std::size_t stepSize) noexcept
         : mAddress{ address },
           mStepSize{ stepSize } { }
 
@@ -255,22 +264,4 @@ protected:
     std::size_t mStepSize{ 0 };
 
     friend class TypeErasedVector;
-};
-
-
-class TypeErasedVectorIterator : public TypeErasedVectorIteratorBase {
-public:
-    using typename TypeErasedVectorIteratorBase::difference_type;
-    using typename TypeErasedVectorIteratorBase::iterator_category;
-
-public:
-    using TypeErasedVectorIteratorBase::TypeErasedVectorIteratorBase;
-
-    [[nodiscard]] void* operator*() noexcept {
-        return mAddress;
-    }
-
-    [[nodiscard]] const void* operator*() const noexcept {
-        return mAddress;
-    }
 };
