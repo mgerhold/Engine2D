@@ -45,14 +45,12 @@ namespace c2k {
         [[nodiscard]] bool has(SparseIndex entity) const noexcept {
             return doesExist<Component>() && getComponent<Component>().has(entity);
         }
+
         template<typename FirstComponent, typename... Components>
         [[nodiscard]] auto getMutable() noexcept {
             using ranges::views::filter, ranges::views::transform, ranges::views::zip;
-            auto indices = getComponent<FirstComponent>().indices();
-            auto elements = getComponentMutable<FirstComponent>().template elementsMutable<FirstComponent>();
-            return zip(indices, elements);
-            /*getComponent<FirstComponent>().indices(),
-                       getComponentMutable<FirstComponent>().template elementsMutable<FirstComponent>() |
+            return zip(getComponent<FirstComponent>().indices(),
+                       getComponentMutable<FirstComponent>().template elementsMutable<FirstComponent>()) |
                    // tuple is marked as maybe_unused in the next line because MSVC reports a warning
                    filter([this]([[maybe_unused]] auto&& tuple) {
                        return (has<Components>(std::get<0>(tuple)) && ...);
@@ -61,7 +59,7 @@ namespace c2k {
                        return std::forward_as_tuple(std::get<0>(tuple), std::get<1>(tuple),
                                                     getComponentMutable<Components>().template getMutable<Components>(
                                                             std::get<0>(tuple))...);
-                   });*/
+                   });
         }
 
         template<typename FirstComponent, typename... Components>
@@ -81,11 +79,12 @@ namespace c2k {
         }
         template<typename Component>
         [[nodiscard]] Component& getMutable(SparseIndex entity) noexcept {
-            return getComponentMutable<Component>().getMutable(entity);
+            return getComponentMutable<Component>().template getMutable<Component>(entity);
         }
+
         template<typename Component>
         [[nodiscard]] const Component& get(SparseIndex entity) const noexcept {
-            return getComponent<Component>().get(entity);
+            return getComponent<Component>().template get<Component>(entity);
         }
         template<typename Component>
         [[nodiscard]] std::size_t typeIdentifier() const noexcept {

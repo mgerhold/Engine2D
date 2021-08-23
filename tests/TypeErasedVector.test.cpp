@@ -112,5 +112,5 @@ TEST(TypeErasedVectorTests, Resize) {
         ASSERT_EQ((*it).x, 42);// TODO: implement -> operator
         ++count;
     }
-    ASSERT_EQ(count, 9);
+    ASSERT_EQ(count, 10);
 }

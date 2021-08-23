@@ -5,6 +5,7 @@
 #pragma once
 
 #include "pch.hpp"
+#include <new>
 
 namespace c2k {
 
@@ -109,8 +110,7 @@ namespace c2k {
             if (mSize == mCapacity) {
                 grow();
             }
-            const auto address{ static_cast<T*>(
-                    static_cast<void*>(static_cast<std::uint8_t*>(mData) + mElementSizePadded * mSize)) };
+            auto address{ static_cast<void*>(static_cast<std::uint8_t*>(mData) + mElementSizePadded * mSize) };
             new (address) T{ element };
             ++mSize;
         }
@@ -118,15 +118,14 @@ namespace c2k {
         template<std::default_initializable T>
         void push_back(T&& element) noexcept {
             /* Assert that element has the right data type.
-         * Because of the type erasure you can never be 100 % sure though! */
+             * Because of the type erasure you can never be 100 % sure though! */
             assert(sizeof(element) == mElementSize);
             assert(alignof(T) == mElementAlignment);
             if (mSize == mCapacity) {
                 grow();
             }
-            const auto address{ static_cast<T*>(
-                    static_cast<void*>(static_cast<std::uint8_t*>(mData) + mElementSizePadded * mSize)) };
-            new (address) T{ std::move(element) };
+            auto address{ static_cast<void*>(static_cast<std::uint8_t*>(mData) + mElementSizePadded * mSize) };
+            new (address) T{ std::forward<T>(element) };
             ++mSize;
         }
 

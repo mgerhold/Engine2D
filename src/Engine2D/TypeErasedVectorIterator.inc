@@ -155,7 +155,7 @@ public:
         std::swap(lhs.mStepSize, rhs.mStepSize);
     }
 
-    [[nodiscard]] reference operator*() noexcept {
+    [[nodiscard]] reference operator*() const noexcept {
         return *static_cast<pointer>(mAddress);
     }
 

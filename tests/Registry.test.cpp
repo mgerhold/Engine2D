@@ -20,10 +20,10 @@ struct Velocity {
 namespace {
     class RegistryComponentHolderGrowingFixture : public ::testing::Test {
     protected:
-        Registry registry;
     };
 
     TEST_F(RegistryComponentHolderGrowingFixture, CreateEntity_CheckIfAlive) {
+        Registry registry;
         const auto entity = registry.createEntity();
         ASSERT_TRUE(registry.isEntityAlive(entity));
         ASSERT_EQ(entity, Entity{ 0 });
@@ -32,6 +32,7 @@ namespace {
     }
 
     TEST_F(RegistryComponentHolderGrowingFixture, CreateEntity_AttachComponent_CheckExistence) {
+        Registry registry;
         const auto entity = registry.createEntity();
         ASSERT_FALSE(registry.hasComponent<Position>(entity));
         registry.attachComponent<Position>(entity, { 1.0f, 2.0f });
@@ -48,6 +49,7 @@ namespace {
     }
 
     TEST_F(RegistryComponentHolderGrowingFixture, CreateEntity_AttachComponent_GetComponent) {
+        Registry registry;
         const auto entity = registry.createEntity();
         registry.attachComponent(entity, Position{ 1.0f, 2.0f });
         auto&& position = registry.component<Position>(entity);
@@ -57,6 +59,7 @@ namespace {
     }
 
     TEST_F(RegistryComponentHolderGrowingFixture, CreateEntities_AttachComponents_CountComponents) {
+        Registry registry;
         using ranges::views::ints, ranges::views::enumerate;
         std::vector<typename decltype(registry)::EntityType> entities;
         for ([[maybe_unused]] auto i : ints(0, 100)) {
@@ -89,6 +92,7 @@ namespace {
     }
 
     TEST_F(RegistryComponentHolderGrowingFixture, CreateEntities_AttachComponents_ModifyComponents) {
+        Registry registry;
         using ranges::views::ints, ranges::views::enumerate;
         std::vector<Entity> entities;
         for ([[maybe_unused]] auto i : ints(0, 100)) {
@@ -108,6 +112,7 @@ namespace {
     }
 
     TEST_F(RegistryComponentHolderGrowingFixture, CreateEntities_AttachComponents_IterateAndCheckOtherComponents) {
+        Registry registry;
         using ranges::views::ints, ranges::views::enumerate;
         std::vector<Entity> entities;
         for ([[maybe_unused]] auto i : ints(0, 10)) {
@@ -144,6 +149,7 @@ namespace {
     }
 
     TEST_F(RegistryComponentHolderGrowingFixture, TriggerTypeIdentifierCreation_UseInDifferentOrder) {
+        Registry registry;
         const auto positionID = registry.typeIdentifier<Position>();
         ASSERT_EQ(positionID, 0);
         const auto velocityID = registry.typeIdentifier<Velocity>();

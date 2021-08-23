@@ -18,7 +18,7 @@ namespace c2k {
         explicit SparseSet(Tag<T>,
                            SparseIndex initialSetSize,
                            SparseIndex initialElementCapacity = SparseIndex{ 0 }) noexcept
-            : mSparseVector{ initialSetSize, invalidIndex },
+            : mSparseVector(initialSetSize, invalidIndex),// <- no unified initialization because of ctor ambiguity
               mElementVector{ TypeErasedVector::forType<T>() } {
             mDenseVector.reserve(initialElementCapacity);
             mElementVector.reserve(initialElementCapacity);
@@ -30,8 +30,9 @@ namespace c2k {
             assert(!has(index));
             mSparseVector[index] = static_cast<SparseIndex>(mDenseVector.size());
             mDenseVector.push_back(index);
-            mElementVector.push_back(std::forward<Component>(element));
+            mElementVector.push_back(std::forward<decltype(element)>(element));
         }
+
         void remove(SparseIndex index) noexcept {
             using std::swap;
             assert(has(index) && "The given index doesn't have an instance of this element.");
@@ -44,13 +45,14 @@ namespace c2k {
             mElementVector.resize(mElementVector.size() - 1);
             assert(mDenseVector.size() == mElementVector.size());
         }
+
         void resize(std::size_t size) noexcept {
             assert(size >= mSparseVector.size());
             mSparseVector.resize(size, invalidIndex);
         }
 
         [[nodiscard]] std::size_t size() const noexcept {
-            return mElementVector.size();
+            return mSparseVector.size();
         }
         [[nodiscard]] bool has(SparseIndex index) const noexcept {
             assert(index < mSparseVector.size() && "Invalid index id.");
@@ -73,28 +75,14 @@ namespace c2k {
             return mDenseVector | ranges::views::all;
         }
 
-        /*template<std::assignable_from T>
-        struct S {
-
-        };*/
-
         template<typename T>
         [[nodiscard]] auto elements() const noexcept {
-            const auto beginIterator = mElementVector.template begin<T>();
-            const auto endIterator = mElementVector.template end<T>();
-            /*S<decltype(beginIterator)> s{};
-            static_assert(std::is_object_v<decltype(beginIterator)>);
-            static_assert(std::is_lvalue_reference<decltype(beginIterator)>);
-
-            std::list<int> numbers{ 1, 2, 3 };*/
-            //return ranges::subrange(numbers.cbegin(), numbers.cend());
-            return ranges::subrange(beginIterator, endIterator) | ranges::views::all;
+            return ranges::subrange(mElementVector.template begin<T>(), mElementVector.template end<T>());
         }
 
         template<typename T>
         [[nodiscard]] auto elementsMutable() noexcept {
-            return ranges::subrange(mElementVector.template begin<T>(), mElementVector.template end<T>()) |
-                   ranges::views::all;
+            return ranges::subrange(mElementVector.template begin<T>(), mElementVector.template end<T>());
         }
 
     private:
