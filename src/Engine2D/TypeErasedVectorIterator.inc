@@ -1,22 +1,24 @@
-
-class TypeErasedVectorIterator {
+class Iterator {
 public:
     using iterator_category = std::forward_iterator_tag;
     using difference_type = std::ptrdiff_t;
+    using value_type = void*;
+    using pointer = void* const*;
+    using reference = void* const&;
 
 public:
-    TypeErasedVectorIterator() = default;
+    Iterator() = default;
 
-    TypeErasedVectorIterator(const TypeErasedVectorIterator& other) = default;
+    Iterator(const Iterator& other) = default;
 
-    TypeErasedVectorIterator(TypeErasedVectorIterator&& other) {
+    Iterator(Iterator&& other) {
         mAddress = other.mAddress;
         mStepSize = other.mStepSize;
         other.mAddress = nullptr;
         other.mStepSize = 0;
     }
 
-    TypeErasedVectorIterator& operator=(const TypeErasedVectorIterator& other) noexcept {
+    Iterator& operator=(const Iterator& other) noexcept {
         if (this == &other) {
             return *this;
         }
@@ -25,68 +27,153 @@ public:
         return *this;
     }
 
-    TypeErasedVectorIterator& operator=(TypeErasedVectorIterator&& other) noexcept {
+    Iterator& operator=(Iterator&& other) noexcept {
         swap(*this, other);
         return *this;
     }
 
-    [[nodiscard]] TypeErasedVectorIterator operator+(std::size_t increment) noexcept {
-        return TypeErasedVectorIterator{ static_cast<std::uint8_t*>(mAddress) + increment * mStepSize, mStepSize };
+    [[nodiscard]] Iterator operator+(std::size_t increment) noexcept {
+        return Iterator{ static_cast<std::uint8_t*>(mAddress) + increment * mStepSize, mStepSize };
     }
 
-    TypeErasedVectorIterator operator++(int) noexcept {// postfix
+    Iterator operator++(int) noexcept {// postfix
         const auto copy{ *this };
         ++(*this);
         return copy;
     }
 
-    TypeErasedVectorIterator& operator++() noexcept {// prefix
+    Iterator& operator++() noexcept {// prefix
         mAddress = (static_cast<std::uint8_t*>(mAddress) + mStepSize);
         return *this;
     }
 
-    difference_type operator-(const TypeErasedVectorIterator& other) noexcept {
+    difference_type operator-(const Iterator& other) noexcept {
         return static_cast<difference_type>(static_cast<std::uint8_t*>(mAddress) -
                                             static_cast<std::uint8_t*>(other.mAddress)) /
                mStepSize;
     }
 
-    [[nodiscard]] bool operator==(const TypeErasedVectorIterator& other) const noexcept {
+    [[nodiscard]] bool operator==(const Iterator& other) const noexcept {
         assert(mStepSize == other.mStepSize);
         return mAddress == other.mAddress;
     }
 
-    [[nodiscard]] bool operator!=(const TypeErasedVectorIterator& other) const noexcept {
+    [[nodiscard]] bool operator!=(const Iterator& other) const noexcept {
         return !(*this == other);
     }
 
-    friend void swap(TypeErasedVectorIterator& lhs, TypeErasedVectorIterator& rhs) noexcept {
+    friend void swap(Iterator& lhs, Iterator& rhs) noexcept {
         std::swap(lhs.mAddress, rhs.mAddress);
         std::swap(lhs.mStepSize, rhs.mStepSize);
     }
 
-    [[nodiscard]] void* operator*() noexcept {
+    [[nodiscard]] reference operator*() const noexcept {
         return mAddress;
     }
 
-    [[nodiscard]] const void* operator*() const noexcept {
-        return mAddress;
+    pointer operator->() const {
+        return &mAddress;
     }
 
 protected:
-    TypeErasedVectorIterator(void* address, std::size_t stepSize) noexcept
-        : mAddress{ address },
-          mStepSize{ stepSize } { }
+    Iterator(void* address, std::size_t stepSize) noexcept : mAddress{ address }, mStepSize{ stepSize } { }
 
 protected:
     void* mAddress{ nullptr };
     std::size_t mStepSize{ 0 };
 
     friend class TypeErasedVector;
-};
+};// Iterator
 
-template<typename T>
-class TypedTypeErasedVectorIterator {
+class ConstIterator {
+public:
+    using iterator_category = std::forward_iterator_tag;
+    using difference_type = std::ptrdiff_t;
+    using value_type = void const*;
+    using pointer = void const* const*;
+    using reference = void const* const&;
+
+public:
+    ConstIterator() = default;
+
+    ConstIterator(const ConstIterator& other) = default;
+
+    ConstIterator(ConstIterator&& other) {
+        mAddress = other.mAddress;
+        mStepSize = other.mStepSize;
+        other.mAddress = nullptr;
+        other.mStepSize = 0;
+    }
+
+    ConstIterator& operator=(const ConstIterator& other) noexcept {
+        if (this == &other) {
+            return *this;
+        }
+        mAddress = other.mAddress;
+        mStepSize = other.mStepSize;
+        return *this;
+    }
+
+    ConstIterator& operator=(ConstIterator&& other) noexcept {
+        swap(*this, other);
+        return *this;
+    }
+
+    [[nodiscard]] ConstIterator operator+(std::size_t increment) noexcept {
+        return ConstIterator{ static_cast<std::uint8_t*>(mAddress) + increment * mStepSize, mStepSize };
+    }
+
+    ConstIterator operator++(int) noexcept {// postfix
+        const auto copy{ *this };
+        ++(*this);
+        return copy;
+    }
+
+    ConstIterator& operator++() noexcept {// prefix
+        mAddress = (static_cast<std::uint8_t*>(mAddress) + mStepSize);
+        return *this;
+    }
+
+    difference_type operator-(const ConstIterator& other) noexcept {
+        return static_cast<difference_type>(static_cast<std::uint8_t*>(mAddress) -
+                                            static_cast<std::uint8_t*>(other.mAddress)) /
+               mStepSize;
+    }
+
+    [[nodiscard]] bool operator==(const ConstIterator& other) const noexcept {
+        assert(mStepSize == other.mStepSize);
+        return mAddress == other.mAddress;
+    }
+
+    [[nodiscard]] bool operator!=(const ConstIterator& other) const noexcept {
+        return !(*this == other);
+    }
+
+    friend void swap(ConstIterator& lhs, ConstIterator& rhs) noexcept {
+        std::swap(lhs.mAddress, rhs.mAddress);
+        std::swap(lhs.mStepSize, rhs.mStepSize);
+    }
+
+    [[nodiscard]] reference operator*() const noexcept {
+        return mAddress;
+    }
+
+    pointer operator->() const {
+        return &mAddress;
+    }
+
+protected:
+    ConstIterator(void* address, std::size_t stepSize) noexcept : mAddress{ address }, mStepSize{ stepSize } { }
+
+protected:
+    void* mAddress{ nullptr };
+    std::size_t mStepSize{ 0 };
+
+    friend class TypeErasedVector;
+};// ConstIterator
+
+template<std::default_initializable T>
+class TypedIterator {
 public:
     using iterator_category = std::forward_iterator_tag;
     using difference_type = std::ptrdiff_t;
@@ -95,18 +182,18 @@ public:
     using reference = T&;
 
 public:
-    TypedTypeErasedVectorIterator() = default;
+    TypedIterator() = default;
 
-    TypedTypeErasedVectorIterator(const TypedTypeErasedVectorIterator& other) = default;
+    TypedIterator(const TypedIterator& other) = default;
 
-    TypedTypeErasedVectorIterator(TypedTypeErasedVectorIterator&& other) {
+    TypedIterator(TypedIterator&& other) {
         mAddress = other.mAddress;
         mStepSize = other.mStepSize;
         other.mAddress = nullptr;
         other.mStepSize = 0;
     }
 
-    TypedTypeErasedVectorIterator& operator=(const TypedTypeErasedVectorIterator& other) noexcept {
+    TypedIterator& operator=(const TypedIterator& other) noexcept {
         if (this == &other) {
             return *this;
         }
@@ -115,42 +202,42 @@ public:
         return *this;
     }
 
-    TypedTypeErasedVectorIterator& operator=(TypedTypeErasedVectorIterator&& other) noexcept {
+    TypedIterator& operator=(TypedIterator&& other) noexcept {
         swap(*this, other);
         return *this;
     }
 
-    [[nodiscard]] TypedTypeErasedVectorIterator operator+(std::size_t increment) noexcept {
-        return TypedTypeErasedVectorIterator{ static_cast<std::uint8_t*>(mAddress) + increment * mStepSize, mStepSize };
+    [[nodiscard]] TypedIterator operator+(std::size_t increment) noexcept {
+        return TypedIterator{ static_cast<std::uint8_t*>(mAddress) + increment * mStepSize, mStepSize };
     }
 
-    TypedTypeErasedVectorIterator operator++(int) noexcept {// postfix
+    TypedIterator operator++(int) noexcept {// postfix
         const auto copy{ *this };
         ++(*this);
         return copy;
     }
 
-    TypedTypeErasedVectorIterator& operator++() noexcept {// prefix
+    TypedIterator& operator++() noexcept {// prefix
         mAddress = (static_cast<std::uint8_t*>(mAddress) + mStepSize);
         return *this;
     }
 
-    difference_type operator-(const TypedTypeErasedVectorIterator& other) noexcept {
+    difference_type operator-(const TypedIterator& other) noexcept {
         return static_cast<difference_type>(static_cast<std::uint8_t*>(mAddress) -
                                             static_cast<std::uint8_t*>(other.mAddress)) /
                mStepSize;
     }
 
-    [[nodiscard]] bool operator==(const TypedTypeErasedVectorIterator& other) const noexcept {
+    [[nodiscard]] bool operator==(const TypedIterator& other) const noexcept {
         assert(mStepSize == other.mStepSize);
         return mAddress == other.mAddress;
     }
 
-    [[nodiscard]] bool operator!=(const TypedTypeErasedVectorIterator& other) const noexcept {
+    [[nodiscard]] bool operator!=(const TypedIterator& other) const noexcept {
         return !(*this == other);
     }
 
-    friend void swap(TypedTypeErasedVectorIterator& lhs, TypedTypeErasedVectorIterator& rhs) noexcept {
+    friend void swap(TypedIterator& lhs, TypedIterator& rhs) noexcept {
         std::swap(lhs.mAddress, rhs.mAddress);
         std::swap(lhs.mStepSize, rhs.mStepSize);
     }
@@ -164,19 +251,17 @@ public:
     }
 
 protected:
-    TypedTypeErasedVectorIterator(void* address, std::size_t stepSize) noexcept
-        : mAddress{ address },
-          mStepSize{ stepSize } { }
+    TypedIterator(void* address, std::size_t stepSize) noexcept : mAddress{ address }, mStepSize{ stepSize } { }
 
 protected:
     void* mAddress{ nullptr };
     std::size_t mStepSize{ 0 };
 
     friend class TypeErasedVector;
-};
+};// TypedIterator
 
-template<typename T>
-class ConstTypedTypeErasedVectorIterator {
+template<std::default_initializable T>
+class ConstTypedIterator {
 public:
     using iterator_category = std::forward_iterator_tag;
     using difference_type = std::ptrdiff_t;
@@ -185,18 +270,18 @@ public:
     using reference = T&;
 
 public:
-    ConstTypedTypeErasedVectorIterator() = default;
+    ConstTypedIterator() = default;
 
-    ConstTypedTypeErasedVectorIterator(const ConstTypedTypeErasedVectorIterator& other) = default;
+    ConstTypedIterator(const ConstTypedIterator& other) = default;
 
-    ConstTypedTypeErasedVectorIterator(ConstTypedTypeErasedVectorIterator&& other) {
+    ConstTypedIterator(ConstTypedIterator&& other) {
         mAddress = other.mAddress;
         mStepSize = other.mStepSize;
         other.mAddress = nullptr;
         other.mStepSize = 0;
     }
 
-    ConstTypedTypeErasedVectorIterator& operator=(const ConstTypedTypeErasedVectorIterator& other) noexcept {
+    ConstTypedIterator& operator=(const ConstTypedIterator& other) noexcept {
         if (this == &other) {
             return *this;
         }
@@ -205,43 +290,42 @@ public:
         return *this;
     }
 
-    ConstTypedTypeErasedVectorIterator& operator=(ConstTypedTypeErasedVectorIterator&& other) noexcept {
+    ConstTypedIterator& operator=(ConstTypedIterator&& other) noexcept {
         swap(*this, other);
         return *this;
     }
 
-    [[nodiscard]] ConstTypedTypeErasedVectorIterator operator+(std::size_t increment) noexcept {
-        return ConstTypedTypeErasedVectorIterator{ static_cast<std::uint8_t*>(mAddress) + increment * mStepSize,
-                                                   mStepSize };
+    [[nodiscard]] ConstTypedIterator operator+(std::size_t increment) noexcept {
+        return ConstTypedIterator{ static_cast<std::uint8_t*>(mAddress) + increment * mStepSize, mStepSize };
     }
 
-    ConstTypedTypeErasedVectorIterator operator++(int) noexcept {// postfix
+    ConstTypedIterator operator++(int) noexcept {// postfix
         const auto copy{ *this };
         ++(*this);
         return copy;
     }
 
-    ConstTypedTypeErasedVectorIterator& operator++() noexcept {// prefix
+    ConstTypedIterator& operator++() noexcept {// prefix
         mAddress = (static_cast<std::uint8_t*>(mAddress) + mStepSize);
         return *this;
     }
 
-    difference_type operator-(const ConstTypedTypeErasedVectorIterator& other) noexcept {
+    difference_type operator-(const ConstTypedIterator& other) noexcept {
         return static_cast<difference_type>(static_cast<std::uint8_t*>(mAddress) -
                                             static_cast<std::uint8_t*>(other.mAddress)) /
                mStepSize;
     }
 
-    [[nodiscard]] bool operator==(const ConstTypedTypeErasedVectorIterator& other) const noexcept {
+    [[nodiscard]] bool operator==(const ConstTypedIterator& other) const noexcept {
         assert(mStepSize == other.mStepSize);
         return mAddress == other.mAddress;
     }
 
-    [[nodiscard]] bool operator!=(const ConstTypedTypeErasedVectorIterator& other) const noexcept {
+    [[nodiscard]] bool operator!=(const ConstTypedIterator& other) const noexcept {
         return !(*this == other);
     }
 
-    friend void swap(ConstTypedTypeErasedVectorIterator& lhs, ConstTypedTypeErasedVectorIterator& rhs) noexcept {
+    friend void swap(ConstTypedIterator& lhs, ConstTypedIterator& rhs) noexcept {
         std::swap(lhs.mAddress, rhs.mAddress);
         std::swap(lhs.mStepSize, rhs.mStepSize);
     }
@@ -255,13 +339,11 @@ public:
     }
 
 protected:
-    ConstTypedTypeErasedVectorIterator(void* address, std::size_t stepSize) noexcept
-        : mAddress{ address },
-          mStepSize{ stepSize } { }
+    ConstTypedIterator(void* address, std::size_t stepSize) noexcept : mAddress{ address }, mStepSize{ stepSize } { }
 
 protected:
     void* mAddress{ nullptr };
     std::size_t mStepSize{ 0 };
 
     friend class TypeErasedVector;
-};
+};// ConstTypedIterator

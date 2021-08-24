@@ -10,24 +10,19 @@
 namespace c2k {
 
     class TypeErasedVector final {
-    private:
-#include "TypeErasedVectorIterator.inc"
-
     public:
-        //using Iterator = TypeErasedVectorIterator;
-
-        template<std::default_initializable T>
-        using TypedIterator = TypedTypeErasedVectorIterator<T>;
-
-        template<std::default_initializable T>
-        using ConstTypedIterator = ConstTypedTypeErasedVectorIterator<T>;
+#include "TypeErasedVectorIterator.inc"
 
     public:
         ~TypeErasedVector();
 
-        /*[[nodiscard]] Iterator begin() noexcept;
+        [[nodiscard]] Iterator begin() noexcept;
+        [[nodiscard]] ConstIterator begin() const noexcept;
+        [[nodiscard]] ConstIterator cbegin() const noexcept;
 
-        [[nodiscard]] Iterator end() noexcept;*/
+        [[nodiscard]] Iterator end() noexcept;
+        [[nodiscard]] ConstIterator end() const noexcept;
+        [[nodiscard]] ConstIterator cend() const noexcept;
 
         template<std::default_initializable T>
         [[nodiscard]] TypedIterator<T> begin() noexcept {

@@ -25,13 +25,29 @@ namespace c2k {
         ::operator delete[](mData, std::align_val_t{ mElementAlignment });
     }
 
-    /*TypeErasedVector::Iterator TypeErasedVector::begin() noexcept {
+    TypeErasedVector::Iterator TypeErasedVector::begin() noexcept {
         return Iterator{ mData, mElementSizePadded };
+    }
+
+    TypeErasedVector::ConstIterator TypeErasedVector::begin() const noexcept {
+        return ConstIterator{ mData, mElementSizePadded };
+    }
+
+    TypeErasedVector::ConstIterator TypeErasedVector::cbegin() const noexcept {
+        return begin();
     }
 
     TypeErasedVector::Iterator TypeErasedVector::end() noexcept {
         return Iterator{ static_cast<std::uint8_t*>(mData) + mSize * mElementSizePadded, mElementSizePadded };
-    }*/
+    }
+
+    TypeErasedVector::ConstIterator TypeErasedVector::end() const noexcept {
+        return ConstIterator{ static_cast<std::uint8_t*>(mData) + mSize * mElementSizePadded, mElementSizePadded };
+    }
+
+    TypeErasedVector::ConstIterator TypeErasedVector::cend() const noexcept {
+        return end();
+    }
 
     void TypeErasedVector::swapElements(std::size_t firstIndex, std::size_t secondIndex) noexcept {
         void* const firstAddress = static_cast<std::uint8_t*>(mData) + firstIndex * mElementSizePadded;

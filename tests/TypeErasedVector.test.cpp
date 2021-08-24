@@ -114,3 +114,44 @@ TEST(TypeErasedVectorTests, Resize) {
     }
     ASSERT_EQ(count, 10);
 }
+
+TEST(TypeErasedVectorTests, TypeErasedIteration) {
+    auto numbers = TypeErasedVector::forType<int>();
+    numbers.reserve(5);
+    ASSERT_EQ(numbers.size(), 0);
+    ASSERT_GE(numbers.capacity(), 5);
+    for (int i = 0; i < 5; ++i) {
+        numbers.push_back(i);
+    }
+    ASSERT_EQ(numbers.size(), 5);
+    ASSERT_GE(numbers.capacity(), 5);
+    int counter{ 0 };
+    for (auto it{ numbers.begin() }; it != numbers.end(); ++it) {
+        ASSERT_EQ(counter, *static_cast<int*>(*it));
+        ++counter;
+    }
+    counter = 0;
+    for (auto ptr : ranges::subrange(numbers.begin(), numbers.end())) {
+        ASSERT_EQ(counter, *static_cast<int*>(ptr));
+        ++counter;
+    }
+    for (auto it{ numbers.begin() }; it != numbers.end(); ++it) {
+        (*static_cast<int*>(*it))++;
+    }
+    counter = 0;
+    for (auto it{ numbers.begin() }; it != numbers.end(); ++it) {
+        ASSERT_EQ(counter + 1, *static_cast<int*>(*it));
+        ++counter;
+    }
+    counter = 0;
+    for (auto it{ numbers.cbegin() }; it != numbers.cend(); ++it) {
+        ASSERT_EQ(counter + 1, *static_cast<int const*>(*it));
+        ++counter;
+    }
+    using ranges::views::zip, ranges::subrange, ranges::views::transform, ranges::views::ints;
+    for (auto pair : zip(ints(1, gsl::narrow_cast<int>(numbers.size() + 1)),
+                         subrange(numbers.cbegin(), numbers.cend()) |
+                                 transform([](auto ptr) { return *static_cast<int const*>(ptr); }))) {
+        ASSERT_EQ(pair.first, pair.second);
+    }
+}
