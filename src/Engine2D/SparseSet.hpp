@@ -24,6 +24,46 @@ namespace c2k {
             mElementVector.reserve(initialElementCapacity);
         }
 
+        [[nodiscard]] auto begin() noexcept {
+            return mElementVector.begin();
+        }
+
+        [[nodiscard]] auto begin() const noexcept {
+            return mElementVector.cbegin();
+        }
+
+        [[nodiscard]] auto cbegin() const noexcept {
+            return mElementVector.cbegin();
+        }
+
+        [[nodiscard]] auto end() noexcept {
+            return mElementVector.end();
+        }
+
+        [[nodiscard]] auto end() const noexcept {
+            return mElementVector.cend();
+        }
+
+        [[nodiscard]] auto cend() const noexcept {
+            return mElementVector.cend();
+        }
+
+        [[nodiscard]] auto indicesBegin() noexcept {
+            return mDenseVector.begin();
+        }
+
+        [[nodiscard]] auto indicesBegin() const noexcept {
+            return mDenseVector.cbegin();
+        }
+
+        [[nodiscard]] auto indicesEnd() noexcept {
+            return mDenseVector.end();
+        }
+
+        [[nodiscard]] auto indicesEnd() const noexcept {
+            return mDenseVector.cend();
+        }
+
         template<typename Component>
         void add(SparseIndex index, Component&& element) noexcept {
             assert(index < mSparseVector.size() && "Invalid index id.");
@@ -69,9 +109,14 @@ namespace c2k {
             return mElementVector.get<T>(mSparseVector[index]);
         }
 
+        [[nodiscard]] void* getTypeErasedMutable(SparseIndex index) noexcept {
+            assert(has(index) && "The given index doesn't have an instance of this element.");
+            return mElementVector[mSparseVector[index]];
+        }
+
         [[nodiscard]] const void* getTypeErased(SparseIndex index) const noexcept {
             assert(has(index) && "The given index doesn't have an instance of this element.");
-            return mElementVector[index];
+            return mElementVector[mSparseVector[index]];
         }
 
         template<typename T>

@@ -7,6 +7,7 @@
 #include "Entity.hpp"
 #include "SparseSet.hpp"
 #include "TypeIdentifier.hpp"
+#include "ComponentHolderPairIterator.hpp"
 
 namespace c2k {
 
@@ -64,15 +65,75 @@ namespace c2k {
             const auto minIndex{ firstSmaller ? typeIdentifier0 : typeIdentifier1 };
             const auto maxIndex{ firstSmaller ? typeIdentifier1 : typeIdentifier0 };
             return zip(mSparseSets[minIndex]->indices(), mSparseSets[minIndex]->typeErasedElements()) |
-                   filter([minIndex, maxIndex, this](auto&& tuple) {
-                       return mSparseSets[maxIndex]->has(tuple.first);
-                   }) |
+                   filter([maxIndex, this](auto&& tuple) { return mSparseSets[maxIndex]->has(tuple.first); }) |
                    transform([firstSmaller, minIndex, maxIndex, this](auto&& tuple) {
-                       return std::forward_as_tuple(
+                       return std::tuple(
                                tuple.first,
                                firstSmaller ? tuple.second : mSparseSets[maxIndex]->getTypeErased(tuple.first),
                                firstSmaller ? mSparseSets[maxIndex]->getTypeErased(tuple.first) : tuple.second);
                    });
+        }
+
+        [[nodiscard]] auto getTypeErasedMutable(auto typeIdentifiersBegin, auto typeIdentifiersEnd) const noexcept {
+            using SetIterator = decltype(mSparseSets.front()->indicesBegin());
+            const auto predicate = [=, this](Entity entity) {
+                for (auto it = typeIdentifiersBegin; it != typeIdentifiersEnd; ++it) {
+                    if (!(mSparseSets[*it]->has(entity))) {
+                        return false;
+                    }
+                }
+                return true;
+            };
+            const auto numTypes{ gsl::narrow_cast<std::size_t>(
+                    std::distance(typeIdentifiersBegin, typeIdentifiersEnd)) };
+            const auto getPointersFunc = [=, this](Entity entity) {
+                std::vector<void*> pointers;
+                pointers.reserve(numTypes);
+                for (auto it = typeIdentifiersBegin; it != typeIdentifiersEnd; ++it) {
+                    pointers.push_back(mSparseSets[*it]->getTypeErasedMutable(entity));
+                }
+                return pointers;
+            };
+            using PairIterator =
+                    ComponentHolderPairIterator<SetIterator, decltype(predicate), decltype(getPointersFunc)>;
+            const auto indicesBegin{ mSparseSets[*typeIdentifiersBegin]->indicesBegin() };
+            const auto indicesEnd{ mSparseSets[*typeIdentifiersBegin]->indicesEnd() };
+            const auto indicesCount{ gsl::narrow_cast<std::size_t>(std::distance(indicesBegin, indicesEnd)) };
+            auto beginIterator = PairIterator{ indicesBegin, indicesEnd, predicate, getPointersFunc };
+            auto endIterator = PairIterator{ indicesBegin, indicesEnd, predicate, getPointersFunc, indicesCount };
+
+            return std::make_pair(beginIterator, endIterator);
+        }
+
+        [[nodiscard]] auto getTypeErased(auto typeIdentifiersBegin, auto typeIdentifiersEnd) const noexcept {
+            using SetIterator = decltype(mSparseSets.front()->indicesBegin());
+            const auto predicate = [=, this](Entity entity) {
+                for (auto it = typeIdentifiersBegin; it != typeIdentifiersEnd; ++it) {
+                    if (!(mSparseSets[*it]->has(entity))) {
+                        return false;
+                    }
+                }
+                return true;
+            };
+            const auto numTypes{ gsl::narrow_cast<std::size_t>(
+                    std::distance(typeIdentifiersBegin, typeIdentifiersEnd)) };
+            const auto getPointersFunc = [=, this](Entity entity) {
+                std::vector<const void*> pointers;
+                pointers.reserve(numTypes);
+                for (auto it = typeIdentifiersBegin; it != typeIdentifiersEnd; ++it) {
+                    pointers.push_back(mSparseSets[*it]->getTypeErased(entity));
+                }
+                return pointers;
+            };
+            using PairIterator =
+                    ConstComponentHolderPairIterator<SetIterator, decltype(predicate), decltype(getPointersFunc)>;
+            const auto indicesBegin{ mSparseSets[*typeIdentifiersBegin]->indicesBegin() };
+            const auto indicesEnd{ mSparseSets[*typeIdentifiersBegin]->indicesEnd() };
+            const auto indicesCount{ gsl::narrow_cast<std::size_t>(std::distance(indicesBegin, indicesEnd)) };
+            auto beginIterator = PairIterator{ indicesBegin, indicesEnd, predicate, getPointersFunc };
+            auto endIterator = PairIterator{ indicesBegin, indicesEnd, predicate, getPointersFunc, indicesCount };
+
+            return std::make_pair(beginIterator, endIterator);
         }
 
         template<typename FirstComponent, typename... Components>

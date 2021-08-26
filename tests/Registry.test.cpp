@@ -203,3 +203,67 @@ namespace {
         ASSERT_EQ(registry.numEntitiesDead(), 0);
     }
 }// namespace
+
+struct Health {
+    int value;
+};
+
+struct Mana {
+    int value;
+};
+
+TEST(RegistryTests, TypeErasedIterating) {
+    Registry registry;
+    std::vector<Entity> entities;
+    for (auto i : ranges::views::ints(0, 6)) {
+        if (i % 2 == 0) {
+            entities.push_back(registry.createEntity(Health{ 100 + i }, Mana{ 500 + i }));
+        } else {
+            entities.push_back(registry.createEntity(Health{ 100 + i }));
+        }
+    }
+    std::array<std::size_t, 2> typeIdentifiers{ registry.typeIdentifier<Health>(), registry.typeIdentifier<Mana>() };
+    {
+        auto&& [begin, end] = registry.componentsTypeErased(std::begin(typeIdentifiers), std::end(typeIdentifiers));
+        auto count{ 0 };
+        for (auto it = begin; it != end; ++it) {
+            const auto index = static_cast<std::size_t>(2 * count);// only even indices
+            ASSERT_EQ((*it).index(), entities[index]);
+            ASSERT_EQ(static_cast<const Health*>((*it).get(0))->value, 100 + index);
+            ASSERT_EQ(static_cast<const Mana*>((*it).get(1))->value, 500 + index);
+            ++count;
+        }
+        ASSERT_EQ(3, count);
+    }
+    {
+        auto&& [begin, end] =
+                registry.componentsTypeErasedMutable(std::begin(typeIdentifiers), std::end(typeIdentifiers));
+        for (auto it = begin; it != end; ++it) {
+            static_cast<Health*>((*it).get(0))->value += 10;
+        }
+    }
+    {
+        auto&& [begin, end] = registry.componentsTypeErased(std::begin(typeIdentifiers), std::end(typeIdentifiers));
+        auto count{ 0 };
+        for (auto it = begin; it != end; ++it) {
+            const auto index = static_cast<std::size_t>(2 * count);// only even indices
+            ASSERT_EQ((*it).index(), entities[index]);
+            ASSERT_EQ(static_cast<const Health*>((*it).get(0))->value, 100 + index + 10 /* ! */);
+            ASSERT_EQ(static_cast<const Mana*>((*it).get(1))->value, 500 + index);
+            ++count;
+        }
+        ASSERT_EQ(3, count);
+    }
+    {
+        std::array<std::size_t, 1> otherTypeIdentifiers{ registry.typeIdentifier<Health>() };
+        auto&& [begin, end] =
+                registry.componentsTypeErased(std::begin(otherTypeIdentifiers), std::end(otherTypeIdentifiers));
+        auto count{ 0 };
+        for (auto it = begin; it != end; ++it) {
+            ASSERT_EQ((*it).index(), entities[count]);
+            ASSERT_EQ(static_cast<const Health*>((*it).get(0))->value, 100 + count + (count % 2 == 0 ? 10 : 0));
+            ++count;
+        }
+        ASSERT_EQ(6, count);
+    }
+}

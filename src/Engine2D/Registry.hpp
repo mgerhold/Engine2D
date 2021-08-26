@@ -41,6 +41,7 @@ namespace c2k {
         [[nodiscard]] bool hasComponent(Entity entity) const noexcept {
             return mComponentHolder.template has<Component>(getIdentifierBitsFromEntity(entity));
         }
+
         template<typename Component>
         [[nodiscard]] tl::optional<const Component&> component(Entity entity) const noexcept {
             if (!hasComponent<Component>(entity)) {
@@ -48,6 +49,7 @@ namespace c2k {
             }
             return mComponentHolder.template get<Component>(getIdentifierBitsFromEntity(entity));
         }
+
         template<typename Component>
         [[nodiscard]] tl::optional<Component&> componentMutable(Entity entity) noexcept {
             if (!hasComponent<Component>(entity)) {
@@ -55,6 +57,7 @@ namespace c2k {
             }
             return mComponentHolder.template getMutable<Component>(getIdentifierBitsFromEntity(entity));
         }
+
         template<typename... Components>
         [[nodiscard]] auto componentsMutable() noexcept {
             using ranges::views::transform;
@@ -66,6 +69,7 @@ namespace c2k {
                                tuple);
                    });
         }
+
         template<typename... Components>
         [[nodiscard]] auto components() const noexcept {
             using ranges::views::transform;
@@ -76,6 +80,24 @@ namespace c2k {
                                },
                                tuple);
                    });
+        }
+
+        template<typename Iterator>
+        [[nodiscard]] auto componentsTypeErasedMutable(Iterator typeIdentifiersBegin, Iterator typeIdentifiersEnd) {
+            auto&& [begin, end] = mComponentHolder.getTypeErasedMutable(typeIdentifiersBegin, typeIdentifiersEnd);
+            const auto transformerFunc = [this](std::size_t index) { return mEntities[index]; };
+            begin.setIndexTransformerFunc(transformerFunc);
+            end.setIndexTransformerFunc(transformerFunc);
+            return std::pair(begin, end);
+        }
+
+        template<typename Iterator>
+        [[nodiscard]] auto componentsTypeErased(Iterator typeIdentifiersBegin, Iterator typeIdentifiersEnd) {
+            auto&& [begin, end] = mComponentHolder.getTypeErased(typeIdentifiersBegin, typeIdentifiersEnd);
+            const auto transformerFunc = [this](std::size_t index) { return mEntities[index]; };
+            begin.setIndexTransformerFunc(transformerFunc);
+            end.setIndexTransformerFunc(transformerFunc);
+            return std::pair(begin, end);
         }
 
         template<typename... Components>

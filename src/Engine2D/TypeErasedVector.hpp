@@ -4,14 +4,19 @@
 
 #pragma once
 
-#include "pch.hpp"
+#include "Iterators.hpp"
 #include <new>
 
 namespace c2k {
 
     class TypeErasedVector final {
     public:
-#include "TypeErasedVectorIterator.inc"
+        using Iterator = Iterators::Iterator;
+        using ConstIterator = Iterators::ConstIterator;
+        template<typename T>
+        using TypedIterator = Iterators::TypedIterator<T>;
+        template<typename T>
+        using ConstTypedIterator = Iterators::ConstTypedIterator<T>;
 
     public:
         ~TypeErasedVector();

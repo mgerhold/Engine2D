@@ -5,7 +5,6 @@
 #include <Entity.hpp>
 #include <SparseSet.hpp>
 #include <gtest/gtest.h>
-#include <pch.hpp>
 
 using namespace c2k;
 
@@ -38,3 +37,20 @@ namespace {
     }
 
 }// namespace
+
+struct Health {
+    int value;
+};
+
+TEST(SparseSetTests, TypeErasedIteration) {
+    SparseSet<Entity, invalidEntity<Entity>> healthValues{ Tag<Health>{}, 100 };
+    healthValues.add(20, Health{ 100 });
+    healthValues.add(10, Health{ 101 });
+    healthValues.add(40, Health{ 102 });
+    int counter{ 0 };
+    for (auto& ptr : healthValues.typeErasedElements()) {
+        ASSERT_EQ(static_cast<const Health*>(ptr)->value, 100 + counter);
+        ++counter;
+    }
+    ASSERT_EQ(static_cast<const Health*>(healthValues.getTypeErased(10))->value, 101);
+}
