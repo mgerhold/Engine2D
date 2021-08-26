@@ -32,7 +32,8 @@ namespace c2k {
         }
 
         template<typename... Components>
-        void attachComponents(Entity entity, const Components&... components) noexcept {
+        void attachComponents([[maybe_unused]] Entity entity, const Components&... components) noexcept {
+            // entity is marked as maybe_unused because GCC reports a false-positive on this one
             (attachComponent(entity, components), ...);
         }
 
@@ -193,7 +194,7 @@ namespace c2k {
         static constexpr std::size_t generationBits = sizeof(Entity) * 8 - identifierBits;
         static constexpr Entity generationMask = std::numeric_limits<Entity>::max() >> identifierBits;
         static constexpr Entity identifierMask = std::numeric_limits<Entity>::max() << generationBits;
-        ComponentHolder<Identifier, TypeIdentifier<struct componentTypeIdentifier>> mComponentHolder;
+        ComponentHolder<Identifier> mComponentHolder;
         SystemHolder<Entity, decltype(mComponentHolder)> mSystemHolder;
         std::vector<Entity> mEntities;
         std::size_t mNumRecyclableEntities{ 0 };

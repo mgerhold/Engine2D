@@ -1,4 +1,4 @@
-add_executable(Tests SparseSet.test.cpp Main.test.cpp Registry.test.cpp GUID.test.cpp TypeErasedVector.test.cpp)
+add_executable(Tests SparseSet.test.cpp Main.test.cpp Registry.test.cpp GUID.test.cpp TypeErasedVector.test.cpp ComponentHolder.test.cpp)
 
 find_package(GTest CONFIG REQUIRED)
 target_link_libraries(Tests PRIVATE GTest::gmock GTest::gtest GTest::gmock_main GTest::gtest_main)

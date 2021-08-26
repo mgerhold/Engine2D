@@ -6,10 +6,11 @@
 
 #include "Entity.hpp"
 #include "SparseSet.hpp"
+#include "TypeIdentifier.hpp"
 
 namespace c2k {
 
-    template<std::unsigned_integral SparseIndex, typename TypeIdentifier>
+    template<std::unsigned_integral SparseIndex>
     class ComponentHolder final {
     public:
         explicit ComponentHolder(std::size_t initialSetSize) noexcept : mSetSize{ initialSetSize } { }
@@ -44,6 +45,34 @@ namespace c2k {
         template<typename Component>
         [[nodiscard]] bool has(SparseIndex entity) const noexcept {
             return doesExist<Component>() && getComponent<Component>().has(entity);
+        }
+
+        [[nodiscard]] auto getTypeErased(typename TypeIdentifier::UnderlyingType typeIdentifier) const noexcept {
+            using ranges::subrange, ranges::views::zip;
+            assert(typeIdentifier < mSparseSets.size());
+            const auto& sparseSet = *mSparseSets[typeIdentifier];
+            return zip(sparseSet.indices(), sparseSet.typeErasedElements());
+        }
+
+        [[nodiscard]] auto getTypeErased(const typename TypeIdentifier::UnderlyingType typeIdentifier0,
+                                         const typename TypeIdentifier::UnderlyingType typeIdentifier1) const noexcept {
+            using ranges::subrange, ranges::views::zip, ranges::views::transform, ranges::views::filter;
+            assert(typeIdentifier0 < mSparseSets.size());
+            assert(typeIdentifier1 < mSparseSets.size());
+            const bool firstSmaller{ mSparseSets[typeIdentifier0]->elementCount() <
+                                     mSparseSets[typeIdentifier1]->elementCount() };
+            const auto minIndex{ firstSmaller ? typeIdentifier0 : typeIdentifier1 };
+            const auto maxIndex{ firstSmaller ? typeIdentifier1 : typeIdentifier0 };
+            return zip(mSparseSets[minIndex]->indices(), mSparseSets[minIndex]->typeErasedElements()) |
+                   filter([minIndex, maxIndex, this](auto&& tuple) {
+                       return mSparseSets[maxIndex]->has(tuple.first);
+                   }) |
+                   transform([firstSmaller, minIndex, maxIndex, this](auto&& tuple) {
+                       return std::forward_as_tuple(
+                               tuple.first,
+                               firstSmaller ? tuple.second : mSparseSets[maxIndex]->getTypeErased(tuple.first),
+                               firstSmaller ? mSparseSets[maxIndex]->getTypeErased(tuple.first) : tuple.second);
+                   });
         }
 
         template<typename FirstComponent, typename... Components>
@@ -101,16 +130,18 @@ namespace c2k {
             assert(typeIdentifier < mSparseSets.size());
             return *mSparseSets[typeIdentifier];
         }
+
         template<typename Component>
         [[nodiscard]] const ComponentSet& getComponent() const noexcept {
             const auto typeIdentifier = TypeIdentifier::template get<Component>();
             assert(typeIdentifier < mSparseSets.size());
             return *mSparseSets[typeIdentifier];
         }
+
         template<typename Component>
         std::size_t growIfNecessaryAndGetTypeIdentifier() noexcept {
             using SetType = SparseSet<SparseIndex, invalidEntity<SparseIndex>>;
-            const auto typeIdentifier = TypeIdentifier::template get<Component>();
+            const auto typeIdentifier = TypeIdentifier::template get<std::remove_cvref_t<Component>>();
             const bool needsResizing = typeIdentifier >= mSparseSets.size();
             if (!needsResizing && mSparseSets[typeIdentifier] != nullptr) {
                 return typeIdentifier;
@@ -121,6 +152,7 @@ namespace c2k {
             mSparseSets[typeIdentifier] = new SetType{ Tag<Component>{}, static_cast<SparseIndex>(mSetSize) };
             return typeIdentifier;
         }
+
         template<typename Component>
         [[nodiscard]] bool doesExist() const noexcept {
             const auto typeIdentifier = TypeIdentifier::template get<Component>();

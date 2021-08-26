@@ -54,6 +54,9 @@ namespace c2k {
         [[nodiscard]] std::size_t size() const noexcept {
             return mSparseVector.size();
         }
+        [[nodiscard]] std::size_t elementCount() const noexcept {
+            return mElementVector.size();
+        }
         [[nodiscard]] bool has(SparseIndex index) const noexcept {
             assert(index < mSparseVector.size() && "Invalid index id.");
             const auto denseIndex = mSparseVector[index];
@@ -64,6 +67,11 @@ namespace c2k {
         [[nodiscard]] const T& get(SparseIndex index) const noexcept {
             assert(has(index) && "The given index doesn't have an instance of this element.");
             return mElementVector.get<T>(mSparseVector[index]);
+        }
+
+        [[nodiscard]] const void* getTypeErased(SparseIndex index) const noexcept {
+            assert(has(index) && "The given index doesn't have an instance of this element.");
+            return mElementVector[index];
         }
 
         template<typename T>
@@ -83,6 +91,10 @@ namespace c2k {
         template<typename T>
         [[nodiscard]] auto elementsMutable() noexcept {
             return ranges::subrange(mElementVector.template begin<T>(), mElementVector.template end<T>());
+        }
+
+        [[nodiscard]] auto typeErasedElements() const noexcept {
+            return ranges::subrange(mElementVector.cbegin(), mElementVector.cend());
         }
 
     private:
