@@ -27,6 +27,10 @@ namespace c2k {
             loadShaderProgram(assets / shaderProgramDescription.vertexShaderFilename,
                               assets / shaderProgramDescription.fragmentShaderFilename, shaderProgramDescription.guid);
         }
+        for (const auto& spriteSheetDescription : list.spriteSheetDescriptions()) {
+            loadSpriteSheet(assets / spriteSheetDescription.filename, spriteSheetDescription.guid,
+                            texture(spriteSheetDescription.texture));
+        }
     }
 
     void AssetDatabase::loadFromList(const std::filesystem::path& path) noexcept {

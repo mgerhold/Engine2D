@@ -18,7 +18,7 @@ namespace c2k {
 
         inline void forEach(Renderer& renderer, Entity, const DynamicSprite& sprite, const Transform& transform) {
             renderer.drawQuad(transform.position, transform.rotation, transform.scale, *sprite.shader, *sprite.texture,
-                              sprite.color);
+                              sprite.textureRect, sprite.color);
         }
 
         inline void finalize(Renderer& renderer) {
@@ -33,4 +33,4 @@ namespace c2k {
         }
     }// namespace ScreenClearer
 
-}
+}// namespace c2k

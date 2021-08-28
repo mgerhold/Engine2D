@@ -9,6 +9,11 @@
       "guid": "dff006d0-3c6e-4a22-99ff-2b2af8fdc770",
       "filename": "textures/nojava.png",
       "group": ""
+    },
+    {
+      "guid": "c22764c9-9750-4749-810e-10f4c6f50123",
+      "filename": "textures/fire.png",
+      "group": ""
     }
   ],
   "shaderPrograms": [
@@ -24,6 +29,14 @@
       "guid": "5874d6e9-5529-45bc-829b-d6002ef21d70",
       "filename": "scripts/test.lua",
       "group": "demonstration"
+    }
+  ],
+  "spriteSheets": [
+    {
+      "guid": "c15111ea-7ba8-4e65-8f24-40c868498d5b",
+      "filename": "spritesheets/fire.json",
+      "group": "demonstration",
+      "texture": "c22764c9-9750-4749-810e-10f4c6f50123"
     }
   ]
 }

@@ -9,7 +9,7 @@
 #include "Texture.hpp"
 #include "Color.hpp"
 #include "Window.hpp"
-#include "pch.hpp"
+#include "Rect.hpp"
 
 namespace c2k {
 
@@ -48,11 +48,13 @@ namespace c2k {
                       const glm::vec2& scale,
                       ShaderProgram& shader,
                       const Texture& texture,
+                      const Rect& textureRect = Rect::unit(),
                       const Color& color = Color::white()) noexcept;
         template<typename T = glm::mat4>
         void drawQuad(T&& transform,
                       ShaderProgram& shader,
                       const Texture& texture,
+                      const Rect& textureRect = Rect::unit(),
                       const Color& color = Color::white()) noexcept;
         [[nodiscard]] const RenderStats& stats() const {
             return mRenderStats;
@@ -63,6 +65,7 @@ namespace c2k {
     private:
         struct RenderCommand {
             glm::mat4 transform;
+            Rect textureRect;
             Color color;
             ShaderProgram* shader;
             const Texture* texture;

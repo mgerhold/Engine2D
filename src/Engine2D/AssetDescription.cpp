@@ -3,19 +3,16 @@
 //
 
 #include "AssetDescription.hpp"
+#include "JSONUtils.hpp"
 
 namespace c2k {
-
-    template<typename... Keys>
-    [[nodiscard]] bool validate(const nlohmann::json& json, Keys... keys) {
-        return (json.contains(keys) && ...);
-    }
 
     nlohmann::json TextureAssetDescription::serialize() noexcept {
         return nlohmann::json{ { "guid", guid.string() }, { "group", group }, { "filename", filename.string() } };
     }
 
     std::optional<TextureAssetDescription> TextureAssetDescription::deserialize(const nlohmann::json& json) noexcept {
+        using namespace JSONUtils;
         if (!validate(json, "guid", "group", "filename")) {
             return {};
         }
@@ -33,6 +30,7 @@ namespace c2k {
 
     std::optional<ShaderProgramAssetDescription> ShaderProgramAssetDescription::deserialize(
             const nlohmann::json& json) noexcept {
+        using namespace JSONUtils;
         if (!validate(json, "guid", "group", "vertexShaderFilename", "fragmentShaderFilename")) {
             return {};
         }
@@ -44,4 +42,15 @@ namespace c2k {
         };
     }
 
+    std::optional<SpriteSheetAssetDescription> SpriteSheetAssetDescription::deserialize(
+            const nlohmann::json& json) noexcept {
+        using namespace JSONUtils;
+        if (!validate(json, "guid", "group", "filename", "texture")) {
+            return {};
+        }
+        return SpriteSheetAssetDescription{ .guid{ GUID::fromString(json["guid"].get<std::string>()) },
+                                            .group{ json["group"].get<std::string>() },
+                                            .filename{ std::filesystem::path{ json["filename"].get<std::string>() } },
+                                            .texture{ GUID::fromString(json["texture"].get<std::string>()) } };
+    }
 }// namespace c2k

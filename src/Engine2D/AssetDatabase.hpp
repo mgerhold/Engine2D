@@ -7,6 +7,7 @@
 #include "GUID.hpp"
 #include "Texture.hpp"
 #include "ShaderProgram.hpp"
+#include "SpriteSheet.hpp"
 #include "AssetList.hpp"
 
 #include <spdlog/spdlog.h>
@@ -42,6 +43,18 @@ namespace c2k {
                     mDebugFallbackShaderProgram);
         }
 
+        SpriteSheet& loadSpriteSheet(const std::filesystem::path& filename,
+                                     GUID guid,
+                                     const Texture& texture) noexcept {
+            return load<SpriteSheet>(
+                    guid, [&filename, &texture]() { return SpriteSheet::loadFromFile(filename, texture); },
+                    mDebugFallbackSpriteSheet);
+        }
+
+        [[nodiscard]] Texture& textureMutable(GUID guid) noexcept {
+            return getMutable<Texture>(guid, mDebugFallbackTexture);
+        }
+
         [[nodiscard]] const Texture& texture(GUID guid) const noexcept {
             return get<Texture>(guid, mDebugFallbackTexture);
         }
@@ -52,6 +65,10 @@ namespace c2k {
 
         [[nodiscard]] const ShaderProgram& shaderProgram(GUID guid) const noexcept {
             return get<ShaderProgram>(guid, mDebugFallbackShaderProgram);
+        }
+
+        [[nodiscard]] const SpriteSheet& spriteSheet(GUID guid) const noexcept {
+            return get<SpriteSheet>(guid, mDebugFallbackSpriteSheet);
         }
 
         [[nodiscard]] static auto assetPath() noexcept {
@@ -67,7 +84,7 @@ namespace c2k {
         }
 
     private:
-        using Asset = std::variant<Texture, ShaderProgram>;
+        using Asset = std::variant<Texture, ShaderProgram, SpriteSheet>;
 
     private:
         template<typename T, typename LoadFunc>
@@ -108,7 +125,8 @@ namespace c2k {
     private:
         std::unordered_map<GUID, Asset> mAssets;
         Texture mDebugFallbackTexture;
-        ShaderProgram mDebugFallbackShaderProgram;
+        ShaderProgram mDebugFallbackShaderProgram;// TODO: set
+        SpriteSheet mDebugFallbackSpriteSheet;    // TODO: set
     };
 
 }// namespace c2k

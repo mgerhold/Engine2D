@@ -21,6 +21,9 @@ namespace c2k {
         [[nodiscard]] const auto& shaderProgramDescriptions() const noexcept {
             return mShaderProgramDescriptions;
         }
+        [[nodiscard]] const auto& spriteSheetDescriptions() const noexcept {
+            return mSpriteSheetAssetDescriptions;
+        }
 
     private:
         template<typename AssetDescription>
@@ -50,6 +53,7 @@ namespace c2k {
     private:
         std::vector<TextureAssetDescription> mTextureDescriptions;
         std::vector<ShaderProgramAssetDescription> mShaderProgramDescriptions;
+        std::vector<SpriteSheetAssetDescription> mSpriteSheetAssetDescriptions;
     };
 
 }

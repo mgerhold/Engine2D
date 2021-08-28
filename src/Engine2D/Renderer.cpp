@@ -48,20 +48,28 @@ namespace c2k {
                             const glm::vec2& scale,
                             ShaderProgram& shader,
                             const Texture& texture,
+                            const Rect& textureRect,
                             const Color& color) noexcept {
         drawQuad(glm::scale(glm::rotate(glm::translate(glm::mat4{ 1.0f }, translation), rotationAngle,
                                         glm::vec3{ 0.0f, 0.0f, 1.0f }),
                             glm::vec3{ scale.x, scale.y, 1.0f }),
-                 shader, texture, color);
+                 shader, texture, textureRect, color);
     }
 
     template<typename T>
-    void Renderer::drawQuad(T&& transform, ShaderProgram& shader, const Texture& texture, const Color& color) noexcept {
+    void Renderer::drawQuad(T&& transform,
+                            ShaderProgram& shader,
+                            const Texture& texture,
+                            const Rect& textureRect,
+                            const Color& color) noexcept {
         if (mCommandIterator == mCommandBuffer.end()) {
             flushCommandBuffer();
         }
-        *mCommandIterator++ =
-                RenderCommand{ .transform{ transform }, .color{ color }, .shader{ &shader }, .texture{ &texture } };
+        *mCommandIterator++ = RenderCommand{ .transform{ transform },
+                                             .textureRect{ textureRect },
+                                             .color{ color },
+                                             .shader{ &shader },
+                                             .texture{ &texture } };
     }
 
     void Renderer::flushCommandBuffer() noexcept {
@@ -158,8 +166,12 @@ namespace c2k {
                                                       glm::vec4{ 1.0f, -1.0f, 0.0f, 1.0f },
                                                       glm::vec4{ 1.0f, 1.0f, 0.0f, 1.0f },
                                                       glm::vec4{ -1.0f, 1.0f, 0.0f, 1.0f } };
-        constexpr std::array<glm::vec2, 4> texCoords{ glm::vec2{ 0.0f, 0.0f }, glm::vec2{ 1.0f, 0.0f },
-                                                      glm::vec2{ 1.0f, 1.0f }, glm::vec2{ 0.0f, 1.0f } };
+        const std::array<glm::vec2, 4> texCoords{
+            glm::vec2{ renderCommand.textureRect.left, renderCommand.textureRect.bottom },
+            glm::vec2{ renderCommand.textureRect.right, renderCommand.textureRect.bottom },
+            glm::vec2{ renderCommand.textureRect.right, renderCommand.textureRect.top },
+            glm::vec2{ renderCommand.textureRect.left, renderCommand.textureRect.top }
+        };
         const auto color = renderCommand.color.normalized(); /* TODO: change members of Color struct to float
                                                                   to avoid normalization */
         for (std::size_t i = 0; i < 4; ++i) {

@@ -26,26 +26,55 @@ namespace c2k {
 #endif
         mAssetDatabase.loadFromList(AssetDatabase::assetPath() / "scenes" / "assets.json");
 
+        const auto spriteSheetGUID{ GUID::fromString("c15111ea-7ba8-4e65-8f24-40c868498d5b") };
+        const auto fireTextureGUID{ GUID::fromString("c22764c9-9750-4749-810e-10f4c6f50123") };
         const auto textureGUID{ GUID::fromString("9043b452-363c-4917-bfde-592a72077e37") };
         const auto shaderGUID{ GUID::fromString("b520f0eb-1756-41e0-ac07-66c3338bc594") };
+
+        mAssetDatabase.textureMutable(fireTextureGUID).setFiltering(Texture::Filtering::Nearest);
 
         // generate game scene
         constexpr float textureHeight = 40.0f;
         const glm::vec2 textureSize{ textureHeight * mAssetDatabase.texture(textureGUID).widthToHeightRatio(),
                                      textureHeight };
-        mRegistry.createEntity(Transform{ .scale{ textureSize } },
-                               DynamicSprite{ .texture{ &mAssetDatabase.texture(textureGUID) },
-                                              .shader{ &mAssetDatabase.shaderProgramMutable(shaderGUID) },
-                                              .color{ 255, 40, 160 } });
+        const glm::vec2 fireTextureSize{
+            textureHeight * mAssetDatabase.spriteSheet(spriteSheetGUID).frames[0].getWidthToHeightRatio(), textureHeight
+        };
+        mRegistry.createEntity(Transform{ .scale{ fireTextureSize } },
+                               DynamicSprite{
+                                       .textureRect{ mAssetDatabase.spriteSheet(spriteSheetGUID).frames[0].rect },
+                                       .color{ Color::white() },
+                                       .texture{ mAssetDatabase.spriteSheet(spriteSheetGUID).texture },
+                                       .shader{ &mAssetDatabase.shaderProgramMutable(shaderGUID) },
+                               },
+                               SpriteSheetAnimation{ .spriteSheet{ &mAssetDatabase.spriteSheet(spriteSheetGUID) },
+                                                     .lastFrameChange{ mTime.elapsed.count() },
+                                                     .frameTime{ 1.0 / 50.0 },
+                                                     .currentFrame{ 0 } });
         constexpr int numEntities = 500;
         for ([[maybe_unused]] auto _ : ranges::views::ints(0, numEntities)) {
             const glm::vec3 position{ mRandom.range(-2000.0f, 2000.0f), mRandom.range(-2000.0f, 2000.0f), 0.0f };
             mRegistry.createEntity(Transform{ .position{ position }, .scale{ textureSize } },
-                                   DynamicSprite{ .texture{ &mAssetDatabase.texture(textureGUID) },
-                                                  .shader{ &mAssetDatabase.shaderProgramMutable(shaderGUID) },
-                                                  .color{ Color::white() } });
+                                   DynamicSprite{
+                                           .textureRect{ Rect::unit() },
+                                           .color{ Color::white() },
+                                           .texture{ &mAssetDatabase.texture(textureGUID) },
+                                           .shader{ &mAssetDatabase.shaderProgramMutable(shaderGUID) },
+                                   });
         }
         const auto cameraEntity = mRegistry.createEntity(Transform{}, Camera{});
+        mRegistry.emplaceSystem<DynamicSprite&, SpriteSheetAnimation&>(
+                []() {},
+                [this](Entity, DynamicSprite& sprite, SpriteSheetAnimation& animation) {
+                    const double nextFrameChange = animation.lastFrameChange + animation.frameTime;
+                    if (mTime.elapsed.count() >= nextFrameChange) {
+                        animation.currentFrame = (animation.currentFrame + 1) %
+                                                 gsl::narrow_cast<int>(animation.spriteSheet->frames.size());
+                        sprite.textureRect = animation.spriteSheet->frames[animation.currentFrame].rect;
+                        animation.lastFrameChange = nextFrameChange;
+                    }
+                },
+                []() {});
         mRegistry.emplaceSystem<Transform&, const DynamicSprite&>(
                 []() {},
                 [this](Entity, Transform& transform, const DynamicSprite&) {

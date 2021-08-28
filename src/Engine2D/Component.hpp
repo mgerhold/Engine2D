@@ -7,7 +7,8 @@
 #include "Texture.hpp"
 #include "ShaderProgram.hpp"
 #include "WindowSize.hpp"
-#include "pch.hpp"
+#include "SpriteSheet.hpp"
+#include "Rect.hpp"
 
 namespace c2k {
 
@@ -28,9 +29,17 @@ namespace c2k {
     };
 
     struct DynamicSprite {
+        Rect textureRect;
+        Color color;
         const Texture* texture;
         ShaderProgram* shader;
-        Color color;
+    };
+
+    struct SpriteSheetAnimation {
+        const SpriteSheet* spriteSheet;
+        double lastFrameChange;
+        double frameTime;
+        int currentFrame;
     };
 
     struct Camera {

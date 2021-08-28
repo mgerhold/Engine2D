@@ -21,6 +21,7 @@ namespace c2k {
         spdlog::info("Parsing asset list {}...", path.string());
         parseCategory(json, "textures", mTextureDescriptions);
         parseCategory(json, "shaderPrograms", mShaderProgramDescriptions);
+        parseCategory(json, "spriteSheets", mSpriteSheetAssetDescriptions);
     }
 
 }

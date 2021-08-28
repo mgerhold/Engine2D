@@ -9,6 +9,7 @@
 namespace c2k {
 
     struct Time {
+        std::chrono::duration<double, std::ratio<1, 1>> elapsed{ std::chrono::milliseconds{ 1000 / 60 } };
         std::chrono::duration<double, std::ratio<1, 1>> delta{ std::chrono::milliseconds{ 1000 / 60 } };
     };
 

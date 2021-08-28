@@ -30,6 +30,7 @@ void Application<DerivedType>::run() noexcept {
         ++numFramesDuringOutputInterval;
         const auto currentTime = std::chrono::high_resolution_clock::now();
         mTime.delta = currentTime - lastTime;
+        mTime.elapsed += mTime.delta;
         lastTime = currentTime;
         if (currentTime >= lastFrameTimeOutput + frameTimeOutputInterval) {
             const double framesPerSecond =

@@ -77,7 +77,7 @@ add_library(Engine2D STATIC
         src/Engine2D/TypeErasedVector.cpp
         src/Engine2D/TypeErasedVector.hpp
         src/Engine2D/Tag.hpp
-        src/Engine2D/ComponentHolderPairIterator.hpp)
+        src/Engine2D/ComponentHolderPairIterator.hpp src/Engine2D/SpriteSheet.hpp src/Engine2D/SpriteSheet.cpp src/Engine2D/JSONUtils.hpp src/Engine2D/Rect.hpp)
 add_executable(Sandbox src/Sandbox/main.cpp src/Sandbox/Sandbox.hpp src/Sandbox/Sandbox.cpp)
 target_include_directories(Sandbox PUBLIC ${PROJECT_SOURCE_DIR}/src/Engine2D)
 add_dependencies(Sandbox Engine2D)

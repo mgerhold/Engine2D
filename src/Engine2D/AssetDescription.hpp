@@ -29,4 +29,14 @@ namespace c2k {
                 const nlohmann::json& json) noexcept;
     };
 
+    struct SpriteSheetAssetDescription {
+        GUID guid;
+        std::string group;
+        std::filesystem::path filename;
+        GUID texture;
+
+        [[nodiscard]] static std::optional<SpriteSheetAssetDescription> deserialize(
+                const nlohmann::json& json) noexcept;
+    };
+
 }// namespace c2k
