@@ -5,24 +5,58 @@
 #pragma once
 
 #include "GUID.hpp"
-#include "AssetDescription.hpp"
-#include "pch.hpp"
+#include "JSONUtils.hpp"
 
 namespace c2k {
+
+    namespace AssetDescriptions {
+        struct TextureDescription {
+            GUID guid;
+            std::filesystem::path filename;
+            std::string group;
+        };
+
+        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(TextureDescription, guid, filename, group);
+
+        struct ShaderProgramDescription {
+            GUID guid;
+            std::filesystem::path vertexShaderFilename;
+            std::filesystem::path fragmentShaderFilename;
+            std::string group;
+        };
+
+        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ShaderProgramDescription,
+                                           guid,
+                                           vertexShaderFilename,
+                                           fragmentShaderFilename,
+                                           group);
+
+        struct SpriteSheetDescription {
+            GUID guid;
+            std::filesystem::path filename;
+            std::string group;
+            GUID texture;
+        };
+
+        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(SpriteSheetDescription, guid, filename, group, texture);
+
+        struct List {
+            std::vector<TextureDescription> textures;
+            std::vector<ShaderProgramDescription> shaderPrograms;
+            std::vector<SpriteSheetDescription> spriteSheets;
+        };
+
+        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(List, textures, shaderPrograms, spriteSheets);
+
+    }// namespace AssetDescriptions
 
     class AssetList {
     public:
         AssetList() = default;
         explicit AssetList(const std::filesystem::path& path) noexcept;
         void fromFile(const std::filesystem::path& path) noexcept;
-        [[nodiscard]] const auto& textureDescriptions() const noexcept {
-            return mTextureDescriptions;
-        }
-        [[nodiscard]] const auto& shaderProgramDescriptions() const noexcept {
-            return mShaderProgramDescriptions;
-        }
-        [[nodiscard]] const auto& spriteSheetDescriptions() const noexcept {
-            return mSpriteSheetAssetDescriptions;
+        [[nodiscard]] const AssetDescriptions::List& assetDescriptions() const noexcept {
+            return mAssetDescriptions;
         }
 
     private:
@@ -51,9 +85,7 @@ namespace c2k {
         }
 
     private:
-        std::vector<TextureAssetDescription> mTextureDescriptions;
-        std::vector<ShaderProgramAssetDescription> mShaderProgramDescriptions;
-        std::vector<SpriteSheetAssetDescription> mSpriteSheetAssetDescriptions;
+        AssetDescriptions::List mAssetDescriptions;
     };
 
-}
+}// namespace c2k

@@ -9,6 +9,8 @@
 namespace c2k {
 
     struct GUID : public boost::uuids::uuid {
+        GUID() = default;
+
         GUID(const GUID& other) noexcept {
             std::copy(std::begin(other.data), std::end(other.data), std::begin(data));
         }
@@ -36,8 +38,6 @@ namespace c2k {
         }
 
     private:
-        GUID() = default;
-
         template<typename Generator, typename... Args>
         [[nodiscard]] static GUID fromGenerator(Args... args) noexcept {
             using namespace boost::uuids;
@@ -48,6 +48,10 @@ namespace c2k {
             return result;
         }
     };
+
+    void to_json(nlohmann::json& j, const GUID& guid);
+
+    void from_json(const nlohmann::json& j, GUID& guid);
 
 }// namespace c2k
 

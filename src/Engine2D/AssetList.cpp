@@ -18,10 +18,9 @@ namespace c2k {
             spdlog::error("Failed to parse JSON file {}", path.string());
             return;
         }
-        spdlog::info("Parsing asset list {}...", path.string());
-        parseCategory(json, "textures", mTextureDescriptions);
-        parseCategory(json, "shaderPrograms", mShaderProgramDescriptions);
-        parseCategory(json, "spriteSheets", mSpriteSheetAssetDescriptions);
+        mAssetDescriptions = json.get<AssetDescriptions::List>();
+        spdlog::info("Parsed {} textures, {} shader programs, {} sprite sheets", mAssetDescriptions.textures.size(),
+                     mAssetDescriptions.shaderPrograms.size(), mAssetDescriptions.spriteSheets.size());
     }
 
-}
+}// namespace c2k

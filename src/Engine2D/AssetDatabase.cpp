@@ -20,14 +20,14 @@ namespace c2k {
 
     void AssetDatabase::loadFromList(const AssetList& list) noexcept {
         const auto assets = assetPath();
-        for (const auto& textureDescription : list.textureDescriptions()) {
+        for (const auto& textureDescription : list.assetDescriptions().textures) {
             loadTexture(assets / textureDescription.filename, textureDescription.guid);
         }
-        for (const auto& shaderProgramDescription : list.shaderProgramDescriptions()) {
+        for (const auto& shaderProgramDescription : list.assetDescriptions().shaderPrograms) {
             loadShaderProgram(assets / shaderProgramDescription.vertexShaderFilename,
                               assets / shaderProgramDescription.fragmentShaderFilename, shaderProgramDescription.guid);
         }
-        for (const auto& spriteSheetDescription : list.spriteSheetDescriptions()) {
+        for (const auto& spriteSheetDescription : list.assetDescriptions().spriteSheets) {
             loadSpriteSheet(assets / spriteSheetDescription.filename, spriteSheetDescription.guid,
                             texture(spriteSheetDescription.texture));
         }
