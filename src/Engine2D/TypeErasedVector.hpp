@@ -14,9 +14,9 @@ namespace c2k {
         using Iterator = Iterators::Iterator;
         using ConstIterator = Iterators::ConstIterator;
         template<typename T>
-        using TypedIterator = Iterators::TypedIterator<T>;
+        using TypedIterator = T*;
         template<typename T>
-        using ConstTypedIterator = Iterators::ConstTypedIterator<T>;
+        using ConstTypedIterator = const T*;
 
     public:
         ~TypeErasedVector();
@@ -33,14 +33,14 @@ namespace c2k {
         [[nodiscard]] TypedIterator<T> begin() noexcept {
             assert(sizeof(T) == mElementSize);
             assert(alignof(T) == mElementAlignment);
-            return TypedIterator<T>{ mData, mElementSizePadded };
+            return static_cast<TypedIterator<T>>(mData);
         }
 
         template<std::default_initializable T>
         [[nodiscard]] ConstTypedIterator<T> begin() const noexcept {
             assert(sizeof(T) == mElementSize);
             assert(alignof(T) == mElementAlignment);
-            return ConstTypedIterator<T>{ mData, mElementSizePadded };
+            return static_cast<ConstTypedIterator<T>>(mData);
         }
 
         template<std::default_initializable T>
@@ -52,16 +52,14 @@ namespace c2k {
         [[nodiscard]] TypedIterator<T> end() noexcept {
             assert(sizeof(T) == mElementSize);
             assert(alignof(T) == mElementAlignment);
-            return TypedIterator<T>{ static_cast<std::uint8_t*>(mData) + mSize * mElementSizePadded,
-                                     mElementSizePadded };
+            return static_cast<TypedIterator<T>>(mData) + mSize;
         }
 
         template<std::default_initializable T>
         [[nodiscard]] ConstTypedIterator<T> end() const noexcept {
             assert(sizeof(T) == mElementSize);
             assert(alignof(T) == mElementAlignment);
-            return ConstTypedIterator<T>{ static_cast<std::uint8_t*>(mData) + mSize * mElementSizePadded,
-                                          mElementSizePadded };
+            return static_cast<ConstTypedIterator<T>>(mData) + mSize;
         }
 
         template<std::default_initializable T>
