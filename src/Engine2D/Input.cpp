@@ -3,7 +3,6 @@
 //
 
 #include "Input.hpp"
-#include "pch.hpp"
 
 namespace c2k {
 

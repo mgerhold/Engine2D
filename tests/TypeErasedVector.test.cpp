@@ -4,7 +4,6 @@
 
 #include <TypeErasedVector.hpp>
 #include <gtest/gtest.h>
-#include <pch.hpp>
 
 using namespace c2k;
 

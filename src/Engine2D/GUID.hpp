@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include "pch.hpp"
-
 namespace c2k {
 
     struct GUID : public boost::uuids::uuid {

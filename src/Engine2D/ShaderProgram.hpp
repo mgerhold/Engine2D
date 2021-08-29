@@ -6,8 +6,6 @@
 
 #include "expected/expected.hpp"
 
-#include "pch.hpp"
-
 namespace c2k {
 
     class ShaderProgram final {

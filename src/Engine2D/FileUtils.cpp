@@ -4,8 +4,6 @@
 
 #include "FileUtils.hpp"
 
-#include "pch.hpp"
-
 namespace c2k::FileUtils {
 
     std::string readTextFile(const std::filesystem::path& path) noexcept {

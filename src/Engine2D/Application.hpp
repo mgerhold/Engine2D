@@ -17,8 +17,6 @@
 #include "Time.hpp"
 #include "Random.hpp"
 
-#include "pch.hpp"
-
 namespace c2k {
 
     template<typename DerivedType>

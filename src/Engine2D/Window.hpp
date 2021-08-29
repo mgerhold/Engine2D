@@ -7,8 +7,6 @@
 #include "WindowSize.hpp"
 #include "OpenGLVersion.hpp"
 
-#include "pch.hpp"
-
 namespace c2k {
 
     class Input;

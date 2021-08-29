@@ -116,6 +116,7 @@ endforeach ()
 
 # precompiled headers
 target_precompile_headers(Engine2D PRIVATE "src/Engine2D/pch.hpp")
+target_precompile_headers(Sandbox PRIVATE "src/Engine2D/pch.hpp")
 
 find_package(glfw3 CONFIG REQUIRED)
 target_link_libraries(Engine2D PRIVATE glfw)

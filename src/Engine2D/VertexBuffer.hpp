@@ -8,8 +8,6 @@
 #include "GLDataUsagePattern.hpp"
 #include "GlUtils.hpp"
 
-#include "pch.hpp"
-
 namespace c2k {
 
     class VertexBuffer {

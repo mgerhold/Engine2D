@@ -8,8 +8,6 @@
 #include "ScopedTimer.hpp"
 #include "hash/hash.hpp"
 
-#include "pch.hpp"
-
 namespace c2k {
 
     Renderer::Renderer(const Window& window)

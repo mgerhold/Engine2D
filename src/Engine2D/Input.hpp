@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include "pch.hpp"
-
 namespace c2k {
 
     enum class Key : std::size_t {

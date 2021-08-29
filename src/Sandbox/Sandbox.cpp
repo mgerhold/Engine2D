@@ -10,11 +10,6 @@
 #include "ScopedTimer.hpp"
 #include "SystemHolder.hpp"
 #include "AssetList.hpp"
-#include <gsl/gsl>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <random>
-#include <filesystem>
 
 namespace c2k {
 

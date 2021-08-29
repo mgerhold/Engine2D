@@ -10,7 +10,6 @@
 #include "TypeIdentifier.hpp"
 #include "SystemHolder.hpp"
 #include "PredefinedSystems.hpp"
-#include "pch.hpp"
 
 namespace c2k {
 

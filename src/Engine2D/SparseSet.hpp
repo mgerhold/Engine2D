@@ -4,10 +4,8 @@
 
 #pragma once
 
-#include "pch.hpp"// TODO: delete include "pch.hpp" in all files since CMake force includes it
 #include "TypeErasedVector.hpp"
 #include "Tag.hpp"
-#include <list>
 
 namespace c2k {
 

@@ -4,8 +4,6 @@
 
 #include "Texture.hpp"
 
-#include "pch.hpp"
-
 namespace c2k {
 
     tl::expected<Texture, std::string> Texture::create(const Image& image) noexcept {

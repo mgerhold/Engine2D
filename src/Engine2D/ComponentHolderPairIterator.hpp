@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include <vector>
-
 namespace c2k {
 
     template<typename Iterator, typename Predicate, typename GetPointersFunc>

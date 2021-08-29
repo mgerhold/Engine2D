@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include "pch.hpp"
-
 namespace c2k {
 
     template<std::unsigned_integral Entity,

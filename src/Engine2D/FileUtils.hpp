@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include "pch.hpp"
-
 namespace c2k::FileUtils {
 
     [[nodiscard]] std::string readTextFile(const std::filesystem::path& path) noexcept;

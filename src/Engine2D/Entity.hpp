@@ -5,7 +5,6 @@
 #pragma once
 
 #include "strong_type/strong_type.hpp"
-#include "pch.hpp"
 
 namespace c2k {
 

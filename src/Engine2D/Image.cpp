@@ -3,7 +3,6 @@
 //
 
 #include "Image.hpp"
-#include "pch.hpp"
 
 namespace c2k {
 

@@ -13,9 +13,12 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <nlohmann/json.hpp>
+#pragma warning(push)
+#pragma warning(disable : 4201)
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#pragma warning(pop)
 #include <range/v3/all.hpp>
 #include <stb_image.h>
 #include <gsl/gsl>
@@ -33,6 +36,7 @@
 #include <iterator>
 #include <limits>
 #include <memory>
+#include <new>
 #include <numeric>
 #include <optional>
 #include <ratio>
@@ -45,6 +49,7 @@
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include <cassert>

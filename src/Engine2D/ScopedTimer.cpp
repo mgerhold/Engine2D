@@ -4,8 +4,6 @@
 
 #include "ScopedTimer.hpp"
 
-#include "pch.hpp"
-
 namespace c2k {
 
     ScopedTimer::ScopedTimer(const char* name, std::source_location sourceLocation) noexcept

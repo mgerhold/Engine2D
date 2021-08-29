@@ -10,14 +10,6 @@
 #include "SpriteSheet.hpp"
 #include "AssetList.hpp"
 
-#include <spdlog/spdlog.h>
-
-#include <unordered_map>
-#include <variant>
-#include <filesystem>
-#include <functional>
-#include <cassert>
-
 namespace c2k {
 
     class AssetDatabase final {

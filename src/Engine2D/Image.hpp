@@ -6,7 +6,6 @@
 
 #include "expected/expected.hpp"
 #include "Color.hpp"
-#include "pch.hpp"
 
 namespace c2k {
 

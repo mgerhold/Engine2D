@@ -7,8 +7,6 @@
 #include "System.hpp"
 #include "ComponentHolder.hpp"
 
-#include "pch.hpp"
-
 namespace c2k {
 
     template<std::unsigned_integral Entity, typename ComponentHolderType>

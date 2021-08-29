@@ -1,5 +1,4 @@
 #include "Sandbox.hpp"
-#include <cstdlib>
 
 int main() {
     using namespace c2k;

@@ -5,8 +5,6 @@
 #include "ShaderProgram.hpp"
 #include "hash/hash.hpp"
 
-#include "pch.hpp"
-
 namespace c2k {
 
     GLuint ShaderProgram::sCurrentlyBoundName{ 0U };

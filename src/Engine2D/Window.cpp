@@ -5,8 +5,6 @@
 #include "Window.hpp"
 #include "Input.hpp"
 
-#include "pch.hpp"
-
 namespace c2k {
 
     Window::Window(const std::string& title, WindowSize size, OpenGLVersion version, Input& input) noexcept

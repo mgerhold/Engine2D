@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include "pch.hpp"
-
 #ifndef ENABLE_PROFILING
 #define ENABLE_PROFILING 0
 #endif
@@ -31,8 +29,8 @@ namespace c2k {
     class ScopedTimer {
     public:
         struct Measurement {
-            uint64_t count;
-            uint64_t depth;
+            std::uint64_t count;
+            std::uint64_t depth;
             double minDuration;
             double maxDuration;
             double totalDuration;
