@@ -60,7 +60,7 @@ namespace {
     TEST_F(RegistryComponentHolderGrowingFixture, CreateEntities_AttachComponents_CountComponents) {
         Registry registry;
         using ranges::views::ints, ranges::views::enumerate;
-        std::vector<typename decltype(registry)::EntityType> entities;
+        std::vector<Entity> entities;
         for ([[maybe_unused]] auto i : ints(0, 100)) {
             entities.push_back(registry.createEntity());
         }

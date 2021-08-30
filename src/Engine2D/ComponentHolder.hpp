@@ -182,7 +182,7 @@ namespace c2k {
         }
 
     private:
-        using ComponentSet = SparseSet<SparseIndex, invalidEntity<SparseIndex>>;
+        using ComponentSet = SparseSet<SparseIndex, invalidEntity>;
 
     private:
         template<typename Component>
@@ -201,7 +201,7 @@ namespace c2k {
 
         template<typename Component>
         std::size_t growIfNecessaryAndGetTypeIdentifier() noexcept {
-            using SetType = SparseSet<SparseIndex, invalidEntity<SparseIndex>>;
+            using SetType = SparseSet<SparseIndex, invalidEntity>;
             const auto typeIdentifier = TypeIdentifier::template get<std::remove_cvref_t<Component>>();
             const bool needsResizing = typeIdentifier >= mSparseSets.size();
             if (!needsResizing && mSparseSets[typeIdentifier] != nullptr) {

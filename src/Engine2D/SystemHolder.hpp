@@ -6,6 +6,7 @@
 
 #include "System.hpp"
 #include "ComponentHolder.hpp"
+#include "ApplicationContext.hpp"
 
 namespace c2k {
 

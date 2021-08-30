@@ -13,13 +13,9 @@
 
 namespace c2k {
 
-    template<std::unsigned_integral Entity, std::size_t identifierBits = sizeof(Entity) * 8 * 20 / 32>
-    class RegistryBase final {
+    class Registry final {
     public:
-        using EntityType = Entity;
-
-    public:
-        explicit RegistryBase(std::size_t initialEntityCapacity = 0)
+        explicit Registry(std::size_t initialEntityCapacity = 0)
             : mComponentHolder{ initialEntityCapacity },
               mSystemHolder{ mComponentHolder } {
             mEntities.reserve(initialEntityCapacity);
@@ -159,22 +155,35 @@ namespace c2k {
         }
         template<typename... Components, typename SetupFunction, typename ForEachFunction, typename FinalizeFunction>
         void emplaceSystem(SetupFunction&& setup, ForEachFunction&& forEach, FinalizeFunction&& finalize) noexcept {
-            mSystemHolder.template emplace<Components...>(std::forward<SetupFunction>(setup),
-                                                          std::forward<ForEachFunction>(forEach),
-                                                          std::forward<FinalizeFunction>(finalize));
+            mSystemHolder.emplace<Components...>(std::forward<SetupFunction>(setup),
+                                                 std::forward<ForEachFunction>(forEach),
+                                                 std::forward<FinalizeFunction>(finalize));
         }
-        void addDynamicSpriteRenderer(Renderer& renderer,
+        void addDynamicSpriteRenderer(const ApplicationContext& appContext,
                                       const Transform& cameraTransform = Transform::identity()) noexcept {
-            emplaceSystem<const DynamicSprite&, const Transform&>(
-                    [&renderer, &cameraTransform]() { DynamicSpriteRenderer::init(renderer, cameraTransform); },
-                    [&renderer](Entity entity, const auto& sprite, const Transform& transform) {
-                        DynamicSpriteRenderer::forEach(renderer, entity, sprite, transform);
+            emplaceSystem<const RootComponent&, const DynamicSprite&, const Transform&>(
+                    [&appContext, &cameraTransform]() {
+                        DynamicSpriteRenderer::RootEntities::init(appContext, cameraTransform);
                     },
-                    [&renderer]() { DynamicSpriteRenderer::finalize(renderer); });
+                    [&appContext](Entity entity, const RootComponent& root, const auto& sprite,
+                                  const Transform& transform) {
+                        DynamicSpriteRenderer::RootEntities::forEach(appContext, entity, root, sprite, transform);
+                    },
+                    [&appContext]() { DynamicSpriteRenderer::RootEntities::finalize(appContext); });
+            emplaceSystem<const Relationship&, const DynamicSprite&, const Transform&>(
+                    [&appContext, &cameraTransform]() {
+                        DynamicSpriteRenderer::RelationshipEntities::init(appContext, cameraTransform);
+                    },
+                    [&appContext](Entity entity, const Relationship& relationship, const auto& sprite,
+                                  const Transform& transform) {
+                        DynamicSpriteRenderer::RelationshipEntities::forEach(appContext, entity, relationship, sprite,
+                                                                             transform);
+                    },
+                    [&appContext]() { DynamicSpriteRenderer::RelationshipEntities::finalize(appContext); });
         }
-        void addScreenClearer(Renderer& renderer, bool colorBuffer, bool depthBuffer) {
-            emplaceSystem<>([&renderer, colorBuffer, depthBuffer]() {
-                ScreenClearer::init(renderer, colorBuffer, depthBuffer);
+        void addScreenClearer(const ApplicationContext& appContext, bool colorBuffer, bool depthBuffer) {
+            emplaceSystem<>([&appContext, colorBuffer, depthBuffer]() {
+                ScreenClearer::init(appContext, colorBuffer, depthBuffer);
             });
         }
         void runSystems() noexcept {
@@ -212,6 +221,7 @@ namespace c2k {
         }
 
     private:
+        static constexpr std::size_t identifierBits = sizeof(Entity) * 8 * 20 / 32;
         static constexpr std::size_t generationBits = sizeof(Entity) * 8 - identifierBits;
         static constexpr Entity generationMask = std::numeric_limits<Entity>::max() >> identifierBits;
         static constexpr Entity identifierMask = std::numeric_limits<Entity>::max() << generationBits;
@@ -219,9 +229,7 @@ namespace c2k {
         SystemHolder<Entity, decltype(mComponentHolder)> mSystemHolder;
         std::vector<Entity> mEntities;
         std::size_t mNumRecyclableEntities{ 0 };
-        Entity mNextRecyclableEntity{ invalidEntity<Entity> };
+        Entity mNextRecyclableEntity{ invalidEntity };
     };
-
-    using Registry = RegistryBase<Entity>;
 
 }// namespace c2k

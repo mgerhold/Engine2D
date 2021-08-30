@@ -19,13 +19,13 @@ struct Position {
 using Entity = uint32_t;
 
 TEST(SparseSetTests, CreateInstance) {
-    SparseSet<Entity, invalidEntity<Entity>> positions{ Tag<Position>{}, 100 };
+    SparseSet<Entity, invalidEntity> positions{ Tag<Position>{}, 100 };
 }
 
 namespace {
     class SparseSetInsertionTest : public ::testing::Test {
     protected:
-        SparseSet<Entity, invalidEntity<Entity>> positions{ Tag<Position>{}, 100 };
+        SparseSet<Entity, invalidEntity> positions{ Tag<Position>{}, 100 };
     };
 
     TEST_F(SparseSetInsertionTest, InsertingValue_ReadValue) {
@@ -43,7 +43,7 @@ struct Health {
 };
 
 TEST(SparseSetTests, TypeErasedIteration) {
-    SparseSet<Entity, invalidEntity<Entity>> healthValues{ Tag<Health>{}, 100 };
+    SparseSet<Entity, invalidEntity> healthValues{ Tag<Health>{}, 100 };
     healthValues.add(20, Health{ 100 });
     healthValues.add(10, Health{ 101 });
     healthValues.add(40, Health{ 102 });

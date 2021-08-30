@@ -4,16 +4,9 @@
 
 #pragma once
 
-#include "strong_type/strong_type.hpp"
-
 namespace c2k {
 
-    template<typename Entity>
-    static constexpr Entity invalidEntity = std::numeric_limits<typename strong::underlying_type<Entity>::type>::max();
+    using Entity = std::uint32_t;
+    constexpr Entity invalidEntity = std::numeric_limits<Entity>::max();
 
-    template<typename Entity>
-    using EntityBase = Entity;
-
-    using Entity = EntityBase<std::uint32_t>;
-
-}
+}// namespace c2k

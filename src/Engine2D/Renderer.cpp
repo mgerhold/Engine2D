@@ -54,8 +54,7 @@ namespace c2k {
                  shader, texture, textureRect, color);
     }
 
-    template<typename T>
-    void Renderer::drawQuad(T&& transform,
+    void Renderer::drawQuad(const glm::mat4& transformMatrix,
                             ShaderProgram& shader,
                             const Texture& texture,
                             const Rect& textureRect,
@@ -63,7 +62,7 @@ namespace c2k {
         if (mCommandIterator == mCommandBuffer.end()) {
             flushCommandBuffer();
         }
-        *mCommandIterator++ = RenderCommand{ .transform{ transform },
+        *mCommandIterator++ = RenderCommand{ .transformMatrix{ transformMatrix },
                                              .textureRect{ textureRect },
                                              .color{ color },
                                              .shader{ &shader },
@@ -173,7 +172,7 @@ namespace c2k {
         const auto color = renderCommand.color.normalized(); /* TODO: change members of Color struct to float
                                                                   to avoid normalization */
         for (std::size_t i = 0; i < 4; ++i) {
-            mVertexIterator->position = renderCommand.transform * positions[i];
+            mVertexIterator->position = renderCommand.transformMatrix * positions[i];
             mVertexIterator->color = color;
             mVertexIterator->texCoords = texCoords[i];
             mVertexIterator->texIndex = textureIndex;

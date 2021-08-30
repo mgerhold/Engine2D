@@ -9,8 +9,15 @@
 #include "WindowSize.hpp"
 #include "SpriteSheet.hpp"
 #include "Rect.hpp"
+#include "Entity.hpp"
 
 namespace c2k {
+
+    struct RootComponent { };
+
+    struct Relationship {
+        Entity parent;
+    };
 
     struct Transform {
         glm::vec3 position{ 0.0f };
@@ -68,4 +75,4 @@ namespace c2k {
         }
     };
 
-}
+}// namespace c2k

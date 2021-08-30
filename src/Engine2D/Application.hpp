@@ -40,6 +40,7 @@ namespace c2k {
         Renderer mRenderer;
         Time mTime;
         Random mRandom;
+        ApplicationContext mAppContext;
     };
 
 #include "Application.inc"
