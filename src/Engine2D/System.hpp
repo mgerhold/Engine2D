@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "ApplicationContext.hpp"
+
 namespace c2k {
 
     template<std::unsigned_integral Entity,

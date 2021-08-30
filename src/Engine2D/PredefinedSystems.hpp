@@ -7,30 +7,41 @@
 #include "Entity.hpp"
 #include "Renderer.hpp"
 #include "Component.hpp"
+#include "ApplicationContext.hpp"
 
 namespace c2k {
 
     namespace DynamicSpriteRenderer {
+        namespace RootEntities {
 
-        inline void init(Renderer& renderer, const Transform& cameraTransform) noexcept {
-            renderer.beginFrame(Camera::viewMatrix(cameraTransform));
-        }
+            void init(const ApplicationContext& appContext, const Transform& cameraTransform) noexcept;
+            void forEach(const ApplicationContext& appContext,
+                         Entity,
+                         const RootComponent&,
+                         const DynamicSprite& sprite,
+                         const Transform& transform);
+            void finalize(const ApplicationContext& appContext);
 
-        inline void forEach(Renderer& renderer, Entity, const DynamicSprite& sprite, const Transform& transform) {
-            renderer.drawQuad(transform.position, transform.rotation, transform.scale, *sprite.shader, *sprite.texture,
-                              sprite.textureRect, sprite.color);
-        }
+        }// namespace RootEntities
 
-        inline void finalize(Renderer& renderer) {
-            renderer.endFrame();
-        }
+        namespace RelationshipEntities {
+
+            void init(const ApplicationContext& appContext, const Transform& cameraTransform) noexcept;
+            void forEach(const ApplicationContext& appContext,
+                         Entity,
+                         const Relationship& relationship,
+                         const DynamicSprite& sprite,
+                         const Transform& transform);
+            void finalize(const ApplicationContext& appContext);
+
+        }// namespace RelationshipEntities
+
 
     }// namespace DynamicSpriteRenderer
 
     namespace ScreenClearer {
-        inline void init(Renderer& renderer, bool colorBuffer, bool depthBuffer) {
-            renderer.clear(colorBuffer, depthBuffer);
-        }
-    }// namespace ScreenClearer
 
+        void init(const ApplicationContext& appContext, bool colorBuffer, bool depthBuffer);
+
+    }// namespace ScreenClearer
 }// namespace c2k

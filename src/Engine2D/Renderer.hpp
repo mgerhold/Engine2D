@@ -50,8 +50,7 @@ namespace c2k {
                       const Texture& texture,
                       const Rect& textureRect = Rect::unit(),
                       const Color& color = Color::white()) noexcept;
-        template<typename T = glm::mat4>
-        void drawQuad(T&& transform,
+        void drawQuad(const glm::mat4& transformMatrix,
                       ShaderProgram& shader,
                       const Texture& texture,
                       const Rect& textureRect = Rect::unit(),
@@ -64,7 +63,7 @@ namespace c2k {
 
     private:
         struct RenderCommand {
-            glm::mat4 transform;
+            glm::mat4 transformMatrix;
             Rect textureRect;
             Color color;
             ShaderProgram* shader;
