@@ -210,7 +210,8 @@ namespace c2k {
             if (needsResizing) {
                 mSparseSets.resize(typeIdentifier + 1, nullptr);
             }
-            mSparseSets[typeIdentifier] = new SetType{ Tag<Component>{}, static_cast<SparseIndex>(mSetSize) };
+            mSparseSets[typeIdentifier] =
+                    new SetType{ std::type_identity<Component>{}, static_cast<SparseIndex>(mSetSize) };
             return typeIdentifier;
         }
 

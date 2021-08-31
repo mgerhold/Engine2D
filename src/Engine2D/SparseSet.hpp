@@ -5,7 +5,6 @@
 #pragma once
 
 #include "TypeErasedVector.hpp"
-#include "Tag.hpp"
 
 namespace c2k {
 
@@ -13,7 +12,7 @@ namespace c2k {
     class SparseSet final {
     public:
         template<typename T>
-        explicit SparseSet(Tag<T>,
+        explicit SparseSet(std::type_identity<T>,
                            SparseIndex initialSetSize,
                            SparseIndex initialElementCapacity = SparseIndex{ 0 }) noexcept
             : mSparseVector(initialSetSize, invalidIndex),// <- no unified initialization because of ctor ambiguity

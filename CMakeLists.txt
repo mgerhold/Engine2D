@@ -74,7 +74,6 @@ add_library(Engine2D STATIC
         src/Engine2D/pch.hpp
         src/Engine2D/TypeErasedVector.cpp
         src/Engine2D/TypeErasedVector.hpp
-        src/Engine2D/Tag.hpp
         src/Engine2D/ComponentHolderPairIterator.hpp
         src/Engine2D/SpriteSheet.hpp
         src/Engine2D/SpriteSheet.cpp
