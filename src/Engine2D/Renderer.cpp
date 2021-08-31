@@ -78,8 +78,8 @@ namespace c2k {
             SCOPED_TIMER_NAMED("Sorting");
             std::sort(mCommandBuffer.begin(), mCommandIterator, [](const RenderCommand& lhs, const RenderCommand& rhs) {
                 // TODO: sort differently for transparent shaders
-                return (lhs.shader->mName < rhs.shader->mName) ||
-                       (lhs.shader->mName == rhs.shader->mName && lhs.texture->mName < rhs.texture->mName);
+                return std::tie(lhs.shader->mName, lhs.texture->mName) <
+                       std::tie(rhs.shader->mName, rhs.texture->mName);
             });
         }
         auto currentStartIt = mCommandBuffer.begin();
