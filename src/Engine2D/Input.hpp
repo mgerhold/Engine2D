@@ -148,7 +148,7 @@ namespace c2k {
         LastButton = Button8,
     };
 
-    class Input {
+    class Input final {
     public:
         Input() noexcept;
 
