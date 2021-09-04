@@ -189,7 +189,7 @@ namespace c2k {
                 });
         mRegistry.emplaceSystem<const Components::Script&>(
                 []() {},
-                [this](Entity entity, const Components::Script& scriptComponent) {
+                [](Entity entity, const Components::Script& scriptComponent) {
                     scriptComponent.script->invoke("update", entity);
                 },
                 []() {});
