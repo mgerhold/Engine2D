@@ -27,15 +27,20 @@
   "scripts": [
     {
       "guid": "5874d6e9-5529-45bc-829b-d6002ef21d70",
-      "filename": "scripts/test.lua",
-      "group": "demonstration"
+      "filename": "scripts/test01.lua",
+      "group": ""
+    },
+    {
+      "guid": "88cc0c19-cda5-4633-9e25-70635437a368",
+      "filename": "scripts/test02.lua",
+      "group": ""
     }
   ],
   "spriteSheets": [
     {
       "guid": "c15111ea-7ba8-4e65-8f24-40c868498d5b",
       "filename": "spritesheets/fire.json",
-      "group": "demonstration",
+      "group": "",
       "texture": "c22764c9-9750-4749-810e-10f4c6f50123"
     }
   ]

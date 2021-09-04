@@ -7,6 +7,7 @@
 namespace c2k::FileUtils {
 
     std::string readTextFile(const std::filesystem::path& path) noexcept {
+        // TODO: error checking
         std::ifstream inputFileStream{ path };
         return std::string{ std::istreambuf_iterator<char>{ inputFileStream }, {} };
     }

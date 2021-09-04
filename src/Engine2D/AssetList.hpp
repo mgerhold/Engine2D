@@ -40,13 +40,22 @@ namespace c2k {
 
         NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(SpriteSheetDescription, guid, filename, group, texture);
 
+        struct ScriptDescription {
+            GUID guid;
+            std::filesystem::path filename;
+            std::string group;
+        };
+
+        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ScriptDescription, guid, filename, group);
+
         struct List {
             std::vector<TextureDescription> textures;
             std::vector<ShaderProgramDescription> shaderPrograms;
             std::vector<SpriteSheetDescription> spriteSheets;
+            std::vector<ScriptDescription> scripts;
         };
 
-        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(List, textures, shaderPrograms, spriteSheets);
+        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(List, textures, shaderPrograms, spriteSheets, scripts);
 
     }// namespace AssetDescriptions
 

@@ -23,6 +23,7 @@
 #include <stb_image.h>
 #include <gsl/gsl>
 #include <gsl/gsl_util>
+#include <sol/sol.hpp>
 
 #include <algorithm>
 #include <array>

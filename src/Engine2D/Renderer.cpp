@@ -33,7 +33,8 @@ namespace c2k {
         mVertexIterator = mVertexData.begin();
         mIndexIterator = mIndexData.begin();
         mRenderStats = RenderStats{};
-        mCurrentViewProjectionMatrix = Camera::projectionMatrix(mWindow.framebufferSize()) * viewMatrix;
+        mCurrentViewProjectionMatrix =
+                c2k::Components::Camera::projectionMatrix(mWindow.framebufferSize()) * viewMatrix;
     }
 
     void Renderer::endFrame() noexcept {

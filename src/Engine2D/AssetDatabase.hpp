@@ -9,6 +9,7 @@
 #include "ShaderProgram.hpp"
 #include "SpriteSheet.hpp"
 #include "AssetList.hpp"
+#include "Script.hpp"
 
 namespace c2k {
 
@@ -43,6 +44,11 @@ namespace c2k {
                     mDebugFallbackSpriteSheet);
         }
 
+        Script& loadScript(const std::filesystem::path& filename, GUID guid) noexcept {
+            return load<Script>(
+                    guid, [&filename]() { return Script::loadFromFile(filename); }, mDebugFallbackScript);
+        }
+
         [[nodiscard]] Texture& textureMutable(GUID guid) noexcept {
             return getMutable<Texture>(guid, mDebugFallbackTexture);
         }
@@ -63,6 +69,10 @@ namespace c2k {
             return get<SpriteSheet>(guid, mDebugFallbackSpriteSheet);
         }
 
+        [[nodiscard]] Script& scriptMutable(GUID guid) noexcept {
+            return getMutable<Script>(guid, mDebugFallbackScript);
+        }
+
         [[nodiscard]] static auto assetPath() noexcept {
             return std::filesystem::current_path() / "assets";
         }
@@ -76,7 +86,7 @@ namespace c2k {
         }
 
     private:
-        using Asset = std::variant<Texture, ShaderProgram, SpriteSheet>;
+        using Asset = std::variant<Texture, ShaderProgram, SpriteSheet, Script>;
 
     private:
         template<typename T, typename LoadFunc>
@@ -119,6 +129,7 @@ namespace c2k {
         Texture mDebugFallbackTexture;
         ShaderProgram mDebugFallbackShaderProgram;// TODO: set
         SpriteSheet mDebugFallbackSpriteSheet;    // TODO: set
+        Script mDebugFallbackScript;              // TODO: set
     };
 
 }// namespace c2k

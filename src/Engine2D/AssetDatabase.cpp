@@ -6,7 +6,7 @@
 
 namespace c2k {
 
-    AssetDatabase::AssetDatabase() noexcept {
+    AssetDatabase::AssetDatabase() noexcept : mDebugFallbackScript{ "" } {// TODO: load actual fallback script
         auto expectedDebugTexture = Texture::createFromFillColor(1, 1, 3, Color{ .r{ 255 }, .g{ 0 }, .b{ 255 } });
         if (expectedDebugTexture) {
             mDebugFallbackTexture = std::move(expectedDebugTexture.value());
@@ -30,6 +30,9 @@ namespace c2k {
         for (const auto& spriteSheetDescription : list.assetDescriptions().spriteSheets) {
             loadSpriteSheet(assets / spriteSheetDescription.filename, spriteSheetDescription.guid,
                             texture(spriteSheetDescription.texture));
+        }
+        for (const auto& scriptDescription : list.assetDescriptions().scripts) {
+            loadScript(assets / scriptDescription.filename, scriptDescription.guid);
         }
     }
 

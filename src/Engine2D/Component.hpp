@@ -10,8 +10,9 @@
 #include "SpriteSheet.hpp"
 #include "Rect.hpp"
 #include "Entity.hpp"
+#include "Script.hpp"
 
-namespace c2k {
+namespace c2k::Components {
 
     struct RootComponent { };
 
@@ -75,4 +76,8 @@ namespace c2k {
         }
     };
 
-}// namespace c2k
+    struct Script {
+        ::c2k::Script* script;
+    };
+
+}// namespace c2k::Components

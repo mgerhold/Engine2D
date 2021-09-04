@@ -108,6 +108,11 @@ namespace c2k {
             writePointer = static_cast<std::uint8_t*>(writePointer) + mElementSizePadded;
         }
         if (mCapacity > 0) {
+            void* current{ mData };
+            for ([[maybe_unused]] auto _ : ints(std::size_t{ 0 }, mSize)) {
+                mDestructor(current);
+                current = static_cast<std::uint8_t*>(current) + mElementSizePadded;
+            }
             ::operator delete[](mData, std::align_val_t{ mElementAlignment });
         }
         mData = newBuffer;

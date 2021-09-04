@@ -79,7 +79,7 @@ add_library(Engine2D STATIC
         src/Engine2D/SpriteSheet.cpp
         src/Engine2D/JSONUtils.hpp
         src/Engine2D/Rect.hpp
-        src/Engine2D/GUID.cpp src/Engine2D/ApplicationContext.hpp src/Engine2D/PredefinedSystems.cpp)
+        src/Engine2D/GUID.cpp src/Engine2D/ApplicationContext.hpp src/Engine2D/PredefinedSystems.cpp src/Engine2D/Script.cpp src/Engine2D/Script.hpp)
 add_executable(Sandbox src/Sandbox/main.cpp src/Sandbox/Sandbox.hpp src/Sandbox/Sandbox.cpp)
 target_include_directories(Sandbox PUBLIC ${PROJECT_SOURCE_DIR}/src/Engine2D)
 add_dependencies(Sandbox Engine2D)
@@ -145,6 +145,14 @@ target_include_directories(Engine2D PRIVATE ${Boost_INCLUDE_DIRS})
 
 find_package(nlohmann_json CONFIG REQUIRED)
 target_link_libraries(Engine2D PRIVATE nlohmann_json nlohmann_json::nlohmann_json)
+
+include(FindLua)
+find_package(Lua REQUIRED)
+target_link_libraries(Engine2D PRIVATE ${LUA_LIBRARIES})
+target_include_directories(Engine2D PRIVATE ${LUA_INCLUDE_DIR})
+
+find_package(sol2 CONFIG REQUIRED)
+target_link_libraries(Engine2D PRIVATE sol2::sol2)
 
 target_link_libraries(Sandbox PRIVATE spdlog::spdlog spdlog::spdlog_header_only)
 target_link_libraries(Sandbox PRIVATE Engine2D)
