@@ -11,16 +11,15 @@ namespace c2k {
 
         namespace RootEntities {
 
-            void init(const ApplicationContext& appContext,
-                      const c2k::Components::Transform& cameraTransform) noexcept {
-                appContext.renderer.beginFrame(c2k::Components::Camera::viewMatrix(cameraTransform));
+            void init(const ApplicationContext& appContext, const TransformComponent& cameraTransform) noexcept {
+                appContext.renderer.beginFrame(CameraComponent::viewMatrix(cameraTransform));
             }
 
             void forEach(const ApplicationContext& appContext,
                          Entity,
-                         const c2k::Components::RootComponent&,
-                         const c2k::Components::DynamicSprite& sprite,
-                         const c2k::Components::Transform& transform) {
+                         const RootComponent&,
+                         const DynamicSpriteComponent& sprite,
+                         const TransformComponent& transform) {
                 appContext.renderer.drawQuad(transform.position, transform.rotation, transform.scale, *sprite.shader,
                                              *sprite.texture, sprite.textureRect, sprite.color);
             }
@@ -32,25 +31,23 @@ namespace c2k {
         }// namespace RootEntities
 
         namespace RelationshipEntities {
-            void init(const ApplicationContext& appContext,
-                      const c2k::Components::Transform& cameraTransform) noexcept {
-                appContext.renderer.beginFrame(c2k::Components::Camera::viewMatrix(cameraTransform));
+            void init(const ApplicationContext& appContext, const TransformComponent& cameraTransform) noexcept {
+                appContext.renderer.beginFrame(CameraComponent::viewMatrix(cameraTransform));
             }
 
             void forEach(const ApplicationContext& appContext,
                          Entity,
-                         const c2k::Components::Relationship& relationship,
-                         const c2k::Components::DynamicSprite& sprite,
-                         const c2k::Components::Transform& transform) {
+                         const RelationshipComponent& relationship,
+                         const DynamicSpriteComponent& sprite,
+                         const TransformComponent& transform) {
                 auto transformMatrix = transform.matrix();
                 Entity current = relationship.parent;
-                transformMatrix = appContext.registry.component<c2k::Components::Transform>(current).value().matrix() *
-                                  transformMatrix;
-                while (appContext.registry.hasComponent<c2k::Components::Relationship>(current)) {
-                    current = appContext.registry.component<c2k::Components::Relationship>(current)->parent;
-                    transformMatrix =
-                            appContext.registry.component<c2k::Components::Transform>(current).value().matrix() *
-                            transformMatrix;
+                transformMatrix =
+                        appContext.registry.component<TransformComponent>(current).value().matrix() * transformMatrix;
+                while (appContext.registry.hasComponent<RelationshipComponent>(current)) {
+                    current = appContext.registry.component<RelationshipComponent>(current)->parent;
+                    transformMatrix = appContext.registry.component<TransformComponent>(current).value().matrix() *
+                                      transformMatrix;
                 }
                 appContext.renderer.drawQuad(transformMatrix, *sprite.shader, *sprite.texture, sprite.textureRect,
                                              sprite.color);

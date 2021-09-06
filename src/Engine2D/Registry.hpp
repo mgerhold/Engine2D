@@ -162,24 +162,22 @@ namespace c2k {
         }
         void addDynamicSpriteRenderer(
                 const ApplicationContext& appContext,
-                const c2k::Components::Transform& cameraTransform = c2k::Components::Transform::identity()) noexcept {
-            emplaceSystem<const c2k::Components::RootComponent&, const c2k::Components::DynamicSprite&,
-                          const c2k::Components::Transform&>(
+                const TransformComponent& cameraTransform = TransformComponent::identity()) noexcept {
+            emplaceSystem<const RootComponent&, const DynamicSpriteComponent&, const TransformComponent&>(
                     [&appContext, &cameraTransform]() {
                         DynamicSpriteRenderer::RootEntities::init(appContext, cameraTransform);
                     },
-                    [&appContext](Entity entity, const c2k::Components::RootComponent& root, const auto& sprite,
-                                  const c2k::Components::Transform& transform) {
+                    [&appContext](Entity entity, const RootComponent& root, const auto& sprite,
+                                  const TransformComponent& transform) {
                         DynamicSpriteRenderer::RootEntities::forEach(appContext, entity, root, sprite, transform);
                     },
                     [&appContext]() { DynamicSpriteRenderer::RootEntities::finalize(appContext); });
-            emplaceSystem<const c2k::Components::Relationship&, const c2k::Components::DynamicSprite&,
-                          const c2k::Components::Transform&>(
+            emplaceSystem<const RelationshipComponent&, const DynamicSpriteComponent&, const TransformComponent&>(
                     [&appContext, &cameraTransform]() {
                         DynamicSpriteRenderer::RelationshipEntities::init(appContext, cameraTransform);
                     },
-                    [&appContext](Entity entity, const c2k::Components::Relationship& relationship, const auto& sprite,
-                                  const c2k::Components::Transform& transform) {
+                    [&appContext](Entity entity, const RelationshipComponent& relationship, const auto& sprite,
+                                  const TransformComponent& transform) {
                         DynamicSpriteRenderer::RelationshipEntities::forEach(appContext, entity, relationship, sprite,
                                                                              transform);
                     },

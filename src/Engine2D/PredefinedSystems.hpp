@@ -14,24 +14,24 @@ namespace c2k {
     namespace DynamicSpriteRenderer {
         namespace RootEntities {
 
-            void init(const ApplicationContext& appContext, const c2k::Components::Transform& cameraTransform) noexcept;
+            void init(const ApplicationContext& appContext, const TransformComponent& cameraTransform) noexcept;
             void forEach(const ApplicationContext& appContext,
                          Entity,
-                         const c2k::Components::RootComponent&,
-                         const c2k::Components::DynamicSprite& sprite,
-                         const c2k::Components::Transform& transform);
+                         const RootComponent&,
+                         const DynamicSpriteComponent& sprite,
+                         const TransformComponent& transform);
             void finalize(const ApplicationContext& appContext);
 
         }// namespace RootEntities
 
         namespace RelationshipEntities {
 
-            void init(const ApplicationContext& appContext, const c2k::Components::Transform& cameraTransform) noexcept;
+            void init(const ApplicationContext& appContext, const TransformComponent& cameraTransform) noexcept;
             void forEach(const ApplicationContext& appContext,
                          Entity,
-                         const c2k::Components::Relationship& relationship,
-                         const c2k::Components::DynamicSprite& sprite,
-                         const c2k::Components::Transform& transform);
+                         const RelationshipComponent& relationship,
+                         const DynamicSpriteComponent& sprite,
+                         const TransformComponent& transform);
             void finalize(const ApplicationContext& appContext);
 
         }// namespace RelationshipEntities

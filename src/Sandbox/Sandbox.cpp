@@ -36,67 +36,67 @@ namespace c2k {
         const glm::vec2 fireTextureSize{
             textureHeight * mAssetDatabase.spriteSheet(spriteSheetGUID).frames[0].getWidthToHeightRatio(), textureHeight
         };
-        const auto anchor = mRegistry.createEntity(c2k::Components::Transform{}, c2k::Components::RootComponent{});
+        const auto anchor = mRegistry.createEntity(TransformComponent{}, RootComponent{});
         mRegistry.createEntity(
-                Components::Transform{ .scale{ fireTextureSize * 2.0f } },
-                Components::DynamicSprite{
+                TransformComponent{ .scale{ fireTextureSize * 2.0f } },
+                DynamicSpriteComponent{
                         .textureRect{ mAssetDatabase.spriteSheet(spriteSheetGUID).frames[0].rect },
                         .color{ Color::white() },
                         .texture{ mAssetDatabase.spriteSheet(spriteSheetGUID).texture },
                         .shader{ &mAssetDatabase.shaderProgramMutable(shaderGUID) },
                 },
-                Components::SpriteSheetAnimation{ .spriteSheet{ &mAssetDatabase.spriteSheet(spriteSheetGUID) },
-                                                  .lastFrameChange{ mTime.elapsed.count() },
-                                                  .frameTime{ 1.0 / 50.0 },
-                                                  .currentFrame{ 0 } },
-                Components::Relationship{ .parent{ anchor } });
+                SpriteSheetAnimationComponent{ .spriteSheet{ &mAssetDatabase.spriteSheet(spriteSheetGUID) },
+                                               .lastFrameChange{ mTime.elapsed.count() },
+                                               .frameTime{ 1.0 / 50.0 },
+                                               .currentFrame{ 0 } },
+                RelationshipComponent{ .parent{ anchor } });
         const auto secondFlame = mRegistry.createEntity(
-                Components::Transform{ .position{ 200.0f, 0.0f, 0.0f }, .scale{ fireTextureSize } },
-                Components::DynamicSprite{
+                TransformComponent{ .position{ 200.0f, 0.0f, 0.0f }, .scale{ fireTextureSize } },
+                DynamicSpriteComponent{
                         .textureRect{ mAssetDatabase.spriteSheet(spriteSheetGUID).frames[0].rect },
                         .color{ Color::white() },
                         .texture{ mAssetDatabase.spriteSheet(spriteSheetGUID).texture },
                         .shader{ &mAssetDatabase.shaderProgramMutable(shaderGUID) },
                 },
-                Components::SpriteSheetAnimation{ .spriteSheet{ &mAssetDatabase.spriteSheet(spriteSheetGUID) },
-                                                  .lastFrameChange{ mTime.elapsed.count() },
-                                                  .frameTime{ 1.0 / 50.0 },
-                                                  .currentFrame{ 0 } },
-                Components::Relationship{ .parent{ anchor } });
+                SpriteSheetAnimationComponent{ .spriteSheet{ &mAssetDatabase.spriteSheet(spriteSheetGUID) },
+                                               .lastFrameChange{ mTime.elapsed.count() },
+                                               .frameTime{ 1.0 / 50.0 },
+                                               .currentFrame{ 0 } },
+                RelationshipComponent{ .parent{ anchor } });
         mRegistry.createEntity(
-                Components::Transform{ .position{ 5.0f, 0.0f, 0.0f }, .scale{ 0.5f, 0.5f } },
-                Components::DynamicSprite{
+                TransformComponent{ .position{ 5.0f, 0.0f, 0.0f }, .scale{ 0.5f, 0.5f } },
+                DynamicSpriteComponent{
                         .textureRect{ mAssetDatabase.spriteSheet(spriteSheetGUID).frames[0].rect },
                         .color{ Color::white() },
                         .texture{ mAssetDatabase.spriteSheet(spriteSheetGUID).texture },
                         .shader{ &mAssetDatabase.shaderProgramMutable(shaderGUID) },
                 },
-                Components::SpriteSheetAnimation{ .spriteSheet{ &mAssetDatabase.spriteSheet(spriteSheetGUID) },
-                                                  .lastFrameChange{ mTime.elapsed.count() },
-                                                  .frameTime{ 1.0 / 50.0 },
-                                                  .currentFrame{ 0 } },
-                Components::Relationship{ .parent{ secondFlame } });
+                SpriteSheetAnimationComponent{ .spriteSheet{ &mAssetDatabase.spriteSheet(spriteSheetGUID) },
+                                               .lastFrameChange{ mTime.elapsed.count() },
+                                               .frameTime{ 1.0 / 50.0 },
+                                               .currentFrame{ 0 } },
+                RelationshipComponent{ .parent{ secondFlame } });
 
         constexpr int numEntities = 500;
         for ([[maybe_unused]] auto _ : ranges::views::ints(0, numEntities)) {
             const glm::vec3 position{ mRandom.range(-2000.0f, 2000.0f), mRandom.range(-2000.0f, 2000.0f), 0.0f };
-            mRegistry.createEntity(Components::Transform{ .position{ position }, .scale{ textureSize } },
-                                   Components::DynamicSprite{
+            mRegistry.createEntity(TransformComponent{ .position{ position }, .scale{ textureSize } },
+                                   DynamicSpriteComponent{
                                            .textureRect{ Rect::unit() },
                                            .color{ Color::white() },
                                            .texture{ &mAssetDatabase.texture(textureGUID) },
                                            .shader{ &mAssetDatabase.shaderProgramMutable(shaderGUID) },
                                    },
-                                   Components::RootComponent{});
+                                   RootComponent{});
         }
-        mRegistry.createEntity(Components::Script{
+        mRegistry.createEntity(ScriptComponent{
                 .script = &mAssetDatabase.scriptMutable(GUID::fromString("5874d6e9-5529-45bc-829b-d6002ef21d70")) });
-        mRegistry.createEntity(Components::Script{
+        mRegistry.createEntity(ScriptComponent{
                 .script = &mAssetDatabase.scriptMutable(GUID::fromString("88cc0c19-cda5-4633-9e25-70635437a368")) });
-        const auto cameraEntity = mRegistry.createEntity(Components::Transform{}, Components::Camera{});
-        mRegistry.emplaceSystem<Components::DynamicSprite&, Components::SpriteSheetAnimation&>(
+        const auto cameraEntity = mRegistry.createEntity(TransformComponent{}, CameraComponent{});
+        mRegistry.emplaceSystem<DynamicSpriteComponent&, SpriteSheetAnimationComponent&>(
                 []() {},
-                [this](Entity, Components::DynamicSprite& sprite, Components::SpriteSheetAnimation& animation) {
+                [this](Entity, DynamicSpriteComponent& sprite, SpriteSheetAnimationComponent& animation) {
                     const double nextFrameChange = animation.lastFrameChange + animation.frameTime;
                     if (mTime.elapsed.count() >= nextFrameChange) {
                         animation.currentFrame = (animation.currentFrame + 1) %
@@ -108,9 +108,9 @@ namespace c2k {
                 []() {});
         mRegistry.emplaceSystem<>([]() {},
                                   [this, anchor, secondFlame]() {
-                                      mRegistry.componentMutable<Components::Transform>(anchor).value().rotation +=
+                                      mRegistry.componentMutable<TransformComponent>(anchor).value().rotation +=
                                               gsl::narrow_cast<float>(glm::radians(20.0f) * mTime.delta.count());
-                                      mRegistry.componentMutable<Components::Transform>(secondFlame).value().rotation +=
+                                      mRegistry.componentMutable<TransformComponent>(secondFlame).value().rotation +=
                                               gsl::narrow_cast<float>(glm::radians(20.0f) * mTime.delta.count());
                                   },
                                   []() {});
@@ -136,8 +136,8 @@ namespace c2k {
                     constexpr double translationPerSecond{ 100.0 };
                     constexpr double zoomFactorPerSecond{ 1.2 };
                     constexpr double rotationRadiansPerSecond{ glm::radians(30.0) };
-                    auto& cameraTransform = std::get<Components::Transform&>(
-                            mRegistry.componentsMutable<Components::Camera, Components::Transform>().front());
+                    auto& cameraTransform = std::get<TransformComponent&>(
+                            mRegistry.componentsMutable<CameraComponent, TransformComponent>().front());
                     if (mInput.keyDown(Key::A)) {
                         cameraTransform.position.x -=
                                 gsl::narrow_cast<float>(translationPerSecond * mTime.delta.count());
@@ -178,24 +178,22 @@ namespace c2k {
                  * position of the mouse every frame */
                     /*auto& transform =
                             std::get<Transform&>(mRegistry.componentsMutable<DynamicSprite, Transform>().front());*/
-                    auto& cameraTransform = std::get<Components::Transform&>(
-                            mRegistry.componentsMutable<Components::Camera, Components::Transform>().front());
+                    auto& cameraTransform = std::get<TransformComponent&>(
+                            mRegistry.componentsMutable<CameraComponent, TransformComponent>().front());
 
-                    auto& transform = mRegistry.componentMutable<Components::Transform>(anchor).value();
+                    auto& transform = mRegistry.componentMutable<TransformComponent>(anchor).value();
                     const auto mousePosition = mInput.mousePosition();
-                    const auto worldPosition = Components::Camera::screenToWorldPoint(mousePosition, cameraTransform);
+                    const auto worldPosition = CameraComponent::screenToWorldPoint(mousePosition, cameraTransform);
                     transform.position.x = worldPosition.x;
                     transform.position.y = worldPosition.y;
                 });
-        mRegistry.emplaceSystem<const Components::Script&>(
-                []() {},
-                [](Entity entity, const Components::Script& scriptComponent) {
-                    scriptComponent.script->invoke("update", entity);
-                },
-                []() {});
+        mRegistry.emplaceSystem<const ScriptComponent&>([]() {},
+                                                        [](Entity entity, const ScriptComponent& scriptComponent) {
+                                                            scriptComponent.script->invoke("update", entity);
+                                                        },
+                                                        []() {});
         mRegistry.addScreenClearer(mAppContext, true, true);
-        mRegistry.addDynamicSpriteRenderer(mAppContext,
-                                           mRegistry.component<Components::Transform>(cameraEntity).value());
+        mRegistry.addDynamicSpriteRenderer(mAppContext, mRegistry.component<TransformComponent>(cameraEntity).value());
         mRegistry.addDynamicSpriteRenderer(mAppContext);// overlay
     }
 
