@@ -6,6 +6,7 @@
 
 #include "FileUtils.hpp"
 #include "expected/expected.hpp"
+#include "ApplicationContext.hpp"
 
 namespace c2k {
 
@@ -16,16 +17,26 @@ namespace c2k {
         [[nodiscard]] static tl::expected<Script, std::string> loadFromFile(
                 const std::filesystem::path& filename) noexcept;
 
+        static void setApplicationContext(ApplicationContext& context) noexcept;
+
         template<typename... Args>
         void invoke(const std::string& functionName, Args... args) noexcept {
-            auto result = mLuaState[functionName](args...);
+            sol::protected_function function = mLuaState->get<sol::protected_function>(functionName);
+            if (!function.valid()) {
+                spdlog::error("{} is not a valid function", functionName);
+                return;
+            }
+            sol::protected_function_result result = function(args...);
             if (!result.valid()) {
-                spdlog::error("Error while invoking function {}", functionName);
+                sol::error error = result;
+                spdlog::error("Error while invoking function {}: {}", functionName, error.what());
+                return;
             }
         }
 
     private:
-        sol::state mLuaState;
+        std::unique_ptr<sol::state> mLuaState{ std::make_unique<sol::state>() };// indirection to keep references valid
+        static inline ApplicationContext* sApplicationContext{ nullptr };
     };
 
 }// namespace c2k

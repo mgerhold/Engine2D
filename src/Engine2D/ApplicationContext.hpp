@@ -10,6 +10,8 @@ namespace c2k {
     class Registry;
 
     struct ApplicationContext {
+        ApplicationContext(Renderer& renderer, Registry& registry) noexcept;
+
         Renderer& renderer;
         Registry& registry;
     };

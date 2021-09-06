@@ -182,18 +182,15 @@ namespace c2k {
         }
 
     private:
-        using ComponentSet = SparseSet<SparseIndex, invalidEntity>;
-
-    private:
         template<typename Component>
-        [[nodiscard]] ComponentSet& getComponentMutable() noexcept {
+        [[nodiscard]] SparseSet& getComponentMutable() noexcept {
             const auto typeIdentifier = growIfNecessaryAndGetTypeIdentifier<Component>();
             assert(typeIdentifier < mSparseSets.size());
             return *mSparseSets[typeIdentifier];
         }
 
         template<typename Component>
-        [[nodiscard]] const ComponentSet& getComponent() const noexcept {
+        [[nodiscard]] const SparseSet& getComponent() const noexcept {
             const auto typeIdentifier = TypeIdentifier::template get<Component>();
             assert(typeIdentifier < mSparseSets.size());
             return *mSparseSets[typeIdentifier];
@@ -201,7 +198,6 @@ namespace c2k {
 
         template<typename Component>
         std::size_t growIfNecessaryAndGetTypeIdentifier() noexcept {
-            using SetType = SparseSet<SparseIndex, invalidEntity>;
             const auto typeIdentifier = TypeIdentifier::template get<std::remove_cvref_t<Component>>();
             const bool needsResizing = typeIdentifier >= mSparseSets.size();
             if (!needsResizing && mSparseSets[typeIdentifier] != nullptr) {
@@ -211,7 +207,7 @@ namespace c2k {
                 mSparseSets.resize(typeIdentifier + 1, nullptr);
             }
             mSparseSets[typeIdentifier] =
-                    new SetType{ std::type_identity<Component>{}, static_cast<SparseIndex>(mSetSize) };
+                    new SparseSet{ std::type_identity<Component>{}, static_cast<SparseIndex>(mSetSize) };
             return typeIdentifier;
         }
 
@@ -222,7 +218,7 @@ namespace c2k {
         }
 
     private:
-        std::vector<ComponentSet*> mSparseSets;
+        std::vector<SparseSet*> mSparseSets;
         std::size_t mSetSize;
     };
 

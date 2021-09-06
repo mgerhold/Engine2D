@@ -77,7 +77,7 @@ namespace c2k {
     };
 
     struct ScriptComponent {
-        ::c2k::Script* script;
+        Script* script;
     };
 
 }// namespace c2k::Components

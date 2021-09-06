@@ -3,13 +3,9 @@
 //
 
 #include "Sandbox.hpp"
-#include "System.hpp"
 #include "Image.hpp"
 #include "Texture.hpp"
 #include "hash/hash.hpp"
-#include "ScopedTimer.hpp"
-#include "SystemHolder.hpp"
-#include "AssetList.hpp"
 #include "Component.hpp"
 
 namespace c2k {
@@ -87,12 +83,14 @@ namespace c2k {
                                            .texture{ &mAssetDatabase.texture(textureGUID) },
                                            .shader{ &mAssetDatabase.shaderProgramMutable(shaderGUID) },
                                    },
-                                   RootComponent{});
+                                   RootComponent{},
+                                   ScriptComponent{ .script = &mAssetDatabase.scriptMutable(GUID::fromString(
+                                                            "5874d6e9-5529-45bc-829b-d6002ef21d70")) });
         }
-        mRegistry.createEntity(ScriptComponent{
+        /*mRegistry.createEntity(ScriptComponent{
                 .script = &mAssetDatabase.scriptMutable(GUID::fromString("5874d6e9-5529-45bc-829b-d6002ef21d70")) });
         mRegistry.createEntity(ScriptComponent{
-                .script = &mAssetDatabase.scriptMutable(GUID::fromString("88cc0c19-cda5-4633-9e25-70635437a368")) });
+                .script = &mAssetDatabase.scriptMutable(GUID::fromString("88cc0c19-cda5-4633-9e25-70635437a368")) });*/
         const auto cameraEntity = mRegistry.createEntity(TransformComponent{}, CameraComponent{});
         mRegistry.emplaceSystem<DynamicSpriteComponent&, SpriteSheetAnimationComponent&>(
                 []() {},

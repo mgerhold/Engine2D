@@ -22,27 +22,64 @@ namespace c2k {
     template<typename DerivedType>
     class Application {
     public:
-        Application(const std::string& title, WindowSize size, OpenGLVersion version) noexcept;
+        Application(const std::string& title, WindowSize size, OpenGLVersion version) noexcept
+            : mWindow{ title, size, version, mInput },
+              mRenderer{ mWindow },
+              mAppContext{ mRenderer, mRegistry } { }
         Application(const Application&) = delete;
         Application(Application&&) = delete;
-        virtual ~Application();
+        virtual ~Application() {
+            ScopedTimer::logResults();
+        }
         Application& operator=(const Application&) = delete;
         Application& operator=(Application&&) = delete;
+        void run() noexcept {
+            using namespace std::chrono_literals;
 
-        void run() noexcept;
-        void quit() noexcept;
+            static_cast<DerivedType*>(this)->setup();
+
+            const auto frameTimeOutputInterval = 500ms;
+            auto lastFrameTimeOutput = std::chrono::high_resolution_clock::now() - frameTimeOutputInterval;
+            auto lastTime = std::chrono::high_resolution_clock::now();
+            unsigned long numFramesDuringOutputInterval = 0UL;
+            while (!glfwWindowShouldClose(mWindow.getGLFWWindowPointer())) {
+                static_cast<DerivedType*>(this)->update();
+                mRegistry.runSystems();
+                glfwSwapBuffers(mWindow.getGLFWWindowPointer());
+                mInput.nextFrame();
+                glfwPollEvents();
+                ++numFramesDuringOutputInterval;
+                const auto currentTime = std::chrono::high_resolution_clock::now();
+                mTime.delta = currentTime - lastTime;
+                mTime.elapsed += mTime.delta;
+                lastTime = currentTime;
+                if (currentTime >= lastFrameTimeOutput + frameTimeOutputInterval) {
+                    const double framesPerSecond =
+                            static_cast<double>(numFramesDuringOutputInterval) /
+                            std::chrono::duration<double, std::ratio<1, 1>>(currentTime - lastFrameTimeOutput).count();
+                    lastFrameTimeOutput = currentTime;
+                    glfwSetWindowTitle(
+                            mWindow.getGLFWWindowPointer(),
+                            fmt::format("{:.2f} ms ({:.2f} fps)", 1000.0 / framesPerSecond, framesPerSecond).c_str());
+                    numFramesDuringOutputInterval = 0UL;
+                }
+            }
+        }
+
+        void quit() noexcept {
+            glfwSetWindowShouldClose(mWindow.getGLFWWindowPointer(), true);
+        }
+
 
     protected:
         Input mInput;
         Window mWindow;
-        AssetDatabase mAssetDatabase;
         Registry mRegistry;
         Renderer mRenderer;
+        ApplicationContext mAppContext;
+        AssetDatabase mAssetDatabase;
         Time mTime;
         Random mRandom;
-        ApplicationContext mAppContext;
     };
-
-#include "Application.inc"
 
 }// namespace c2k

@@ -22,7 +22,6 @@ set(TARGET_LIST
 
 add_library(Engine2D STATIC
         src/Engine2D/Application.hpp
-        src/Engine2D/Application.inc
         src/Engine2D/strong_type/strong_type.hpp
         src/Engine2D/WindowSize.hpp
         src/Engine2D/OpenGLVersion.hpp
@@ -56,7 +55,6 @@ add_library(Engine2D STATIC
         src/Engine2D/optional/optional.hpp
         src/Engine2D/Component.hpp
         src/Engine2D/System.hpp
-        src/Engine2D/SystemHolder.hpp
         src/Engine2D/AssetDatabase.cpp
         src/Engine2D/AssetDatabase.hpp
         src/Engine2D/GUID.hpp
@@ -79,7 +77,16 @@ add_library(Engine2D STATIC
         src/Engine2D/SpriteSheet.cpp
         src/Engine2D/JSONUtils.hpp
         src/Engine2D/Rect.hpp
-        src/Engine2D/GUID.cpp src/Engine2D/ApplicationContext.hpp src/Engine2D/PredefinedSystems.cpp src/Engine2D/Script.cpp src/Engine2D/Script.hpp)
+        src/Engine2D/GUID.cpp
+        src/Engine2D/ApplicationContext.hpp
+        src/Engine2D/PredefinedSystems.cpp
+        src/Engine2D/Script.cpp
+        src/Engine2D/Script.hpp
+        src/Engine2D/ScriptUtils.cpp
+        src/Engine2D/ScriptUtils.hpp
+        src/Engine2D/ApplicationContext.cpp
+        src/Engine2D/Registry.cpp
+        src/Engine2D/SparseSet.cpp)
 add_executable(Sandbox src/Sandbox/main.cpp src/Sandbox/Sandbox.hpp src/Sandbox/Sandbox.cpp)
 target_include_directories(Sandbox PUBLIC ${PROJECT_SOURCE_DIR}/src/Engine2D)
 add_dependencies(Sandbox Engine2D)

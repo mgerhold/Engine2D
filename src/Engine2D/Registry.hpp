@@ -8,17 +8,44 @@
 #include "optional/optional.hpp"
 #include "Entity.hpp"
 #include "TypeIdentifier.hpp"
-#include "SystemHolder.hpp"
 #include "PredefinedSystems.hpp"
 #include "Component.hpp"
+#include "System.hpp"
 
 namespace c2k {
+
+    class Registry;
+
+    class SystemHolder final {// this class is inside this file because of circular dependency with class Registry
+    public:
+        explicit SystemHolder(Registry& registry);
+
+        ~SystemHolder();
+
+        void run() noexcept;
+
+        template<typename... Components, typename SetupFunction, typename ForEachFunction, typename FinalizeFunction>
+        void emplace(SetupFunction&& setup, ForEachFunction&& forEach, FinalizeFunction&& finalize) noexcept;
+
+    private:
+        struct SystemContext {
+            void* address{ nullptr };
+            void (*setupFunction)(void*){ nullptr };
+            void (*forEachFunction)(void*, SystemHolder*){ nullptr };
+            void (*finalizeFunction)(void*){ nullptr };
+        };
+
+    private:
+        std::vector<SystemContext> mSystemContexts;
+        std::vector<void (*)(void*)> mDestructors;
+        Registry& mRegistry;
+    };
 
     class Registry final {
     public:
         explicit Registry(std::size_t initialEntityCapacity = 0)
             : mComponentHolder{ initialEntityCapacity },
-              mSystemHolder{ mComponentHolder } {
+              mSystemHolder{ *this } {
             mEntities.reserve(initialEntityCapacity);
         }
 
@@ -228,10 +255,35 @@ namespace c2k {
         static constexpr Entity generationMask = std::numeric_limits<Entity>::max() >> identifierBits;
         static constexpr Entity identifierMask = std::numeric_limits<Entity>::max() << generationBits;
         ComponentHolder<Identifier> mComponentHolder;
-        SystemHolder<Entity, decltype(mComponentHolder)> mSystemHolder;
+        SystemHolder mSystemHolder;
         std::vector<Entity> mEntities;
         std::size_t mNumRecyclableEntities{ 0 };
         Entity mNextRecyclableEntity{ invalidEntity };
     };
+
+    template<typename... Components, typename SetupFunction, typename ForEachFunction, typename FinalizeFunction>
+    void SystemHolder::emplace(SetupFunction&& setup, ForEachFunction&& forEach, FinalizeFunction&& finalize) noexcept {
+        using SystemType = System<Entity, std::remove_cvref_t<decltype(setup)>, std::remove_cvref_t<decltype(forEach)>,
+                                  std::remove_cvref_t<decltype(finalize)>, Components...>;
+        constexpr auto numComponents = sizeof...(Components);
+        const auto forEachFunction = []() {
+            if constexpr (numComponents == 0) {
+                return [](void* address, SystemHolder*) { static_cast<SystemType*>(address)->forEach(); };
+            } else {
+                return [](void* address, SystemHolder* self) {
+                    static_cast<SystemType*>(address)->forEach(
+                            self->mRegistry.template componentsMutable<std::remove_cvref_t<Components>...>());
+                };
+            }
+        }();
+        mSystemContexts.push_back(SystemContext{
+                .address{ new SystemType{ std::forward<decltype(setup)>(setup),
+                                          std::forward<decltype(forEach)>(forEach),
+                                          std::forward<decltype(finalize)>(finalize) } },
+                .setupFunction{ [](void* address) { static_cast<SystemType*>(address)->setup(); } },
+                .forEachFunction{ forEachFunction },
+                .finalizeFunction{ [](void* address) { static_cast<SystemType*>(address)->finalize(); } } });
+        mDestructors.push_back([](void* address) { delete static_cast<SystemType*>(address); });
+    }
 
 }// namespace c2k
