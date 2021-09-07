@@ -9,13 +9,15 @@ namespace c2k {
     class Renderer;
     class Registry;
     struct Time;
+    class Input;
 
     struct ApplicationContext {
-        ApplicationContext(Renderer& renderer, Registry& registry, Time& time) noexcept;
+        ApplicationContext(Renderer& renderer, Registry& registry, Time& time, Input& input) noexcept;
 
         Renderer& renderer;
         Registry& registry;
         Time& time;
+        Input& input;
     };
 
 }// namespace c2k

@@ -161,6 +161,9 @@ target_include_directories(Engine2D PRIVATE ${LUA_INCLUDE_DIR})
 find_package(sol2 CONFIG REQUIRED)
 target_link_libraries(Engine2D PRIVATE sol2::sol2)
 
+find_package(magic_enum CONFIG REQUIRED)
+target_link_libraries(Engine2D PRIVATE magic_enum::magic_enum)
+
 target_link_libraries(Sandbox PRIVATE spdlog::spdlog spdlog::spdlog_header_only)
 target_link_libraries(Sandbox PRIVATE Engine2D)
 

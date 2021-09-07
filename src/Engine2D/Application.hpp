@@ -25,7 +25,7 @@ namespace c2k {
         Application(const std::string& title, WindowSize size, OpenGLVersion version) noexcept
             : mWindow{ title, size, version, mInput },
               mRenderer{ mWindow },
-              mAppContext{ mRenderer, mRegistry, mTime } { }
+              mAppContext{ mRenderer, mRegistry, mTime, mInput } { }
         Application(const Application&) = delete;
         Application(Application&&) = delete;
         virtual ~Application() {
