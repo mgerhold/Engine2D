@@ -42,7 +42,7 @@ namespace c2k {
                         .shader{ &mAssetDatabase.shaderProgramMutable(shaderGUID) },
                 },
                 SpriteSheetAnimationComponent{ .spriteSheet{ &mAssetDatabase.spriteSheet(spriteSheetGUID) },
-                                               .lastFrameChange{ mTime.elapsed.count() },
+                                               .lastFrameChange{ mTime.elapsed },
                                                .frameTime{ 1.0 / 50.0 },
                                                .currentFrame{ 0 } },
                 RelationshipComponent{ .parent{ anchor } });
@@ -55,7 +55,7 @@ namespace c2k {
                         .shader{ &mAssetDatabase.shaderProgramMutable(shaderGUID) },
                 },
                 SpriteSheetAnimationComponent{ .spriteSheet{ &mAssetDatabase.spriteSheet(spriteSheetGUID) },
-                                               .lastFrameChange{ mTime.elapsed.count() },
+                                               .lastFrameChange{ mTime.elapsed },
                                                .frameTime{ 1.0 / 50.0 },
                                                .currentFrame{ 0 } },
                 RelationshipComponent{ .parent{ anchor } });
@@ -68,7 +68,7 @@ namespace c2k {
                         .shader{ &mAssetDatabase.shaderProgramMutable(shaderGUID) },
                 },
                 SpriteSheetAnimationComponent{ .spriteSheet{ &mAssetDatabase.spriteSheet(spriteSheetGUID) },
-                                               .lastFrameChange{ mTime.elapsed.count() },
+                                               .lastFrameChange{ mTime.elapsed },
                                                .frameTime{ 1.0 / 50.0 },
                                                .currentFrame{ 0 } },
                 RelationshipComponent{ .parent{ secondFlame } });
@@ -96,7 +96,7 @@ namespace c2k {
                 []() {},
                 [this](Entity, DynamicSpriteComponent& sprite, SpriteSheetAnimationComponent& animation) {
                     const double nextFrameChange = animation.lastFrameChange + animation.frameTime;
-                    if (mTime.elapsed.count() >= nextFrameChange) {
+                    if (mTime.elapsed >= nextFrameChange) {
                         animation.currentFrame = (animation.currentFrame + 1) %
                                                  gsl::narrow_cast<int>(animation.spriteSheet->frames.size());
                         sprite.textureRect = animation.spriteSheet->frames[animation.currentFrame].rect;
@@ -107,9 +107,9 @@ namespace c2k {
         mRegistry.emplaceSystem<>([]() {},
                                   [this, anchor, secondFlame]() {
                                       mRegistry.componentMutable<TransformComponent>(anchor).value().rotation +=
-                                              gsl::narrow_cast<float>(glm::radians(20.0f) * mTime.delta.count());
+                                              gsl::narrow_cast<float>(glm::radians(20.0f) * mTime.delta);
                                       mRegistry.componentMutable<TransformComponent>(secondFlame).value().rotation +=
-                                              gsl::narrow_cast<float>(glm::radians(20.0f) * mTime.delta.count());
+                                              gsl::narrow_cast<float>(glm::radians(20.0f) * mTime.delta);
                                   },
                                   []() {});
         /*mRegistry.emplaceSystem<const DynamicSprite&, Transform&>(
@@ -137,36 +137,30 @@ namespace c2k {
                     auto& cameraTransform = std::get<TransformComponent&>(
                             mRegistry.componentsMutable<CameraComponent, TransformComponent>().front());
                     if (mInput.keyDown(Key::A)) {
-                        cameraTransform.position.x -=
-                                gsl::narrow_cast<float>(translationPerSecond * mTime.delta.count());
+                        cameraTransform.position.x -= gsl::narrow_cast<float>(translationPerSecond * mTime.delta);
                     }
                     if (mInput.keyDown(Key::D)) {
-                        cameraTransform.position.x +=
-                                gsl::narrow_cast<float>(translationPerSecond * mTime.delta.count());
+                        cameraTransform.position.x += gsl::narrow_cast<float>(translationPerSecond * mTime.delta);
                     }
                     if (mInput.keyDown(Key::W)) {
-                        cameraTransform.position.y +=
-                                gsl::narrow_cast<float>(translationPerSecond * mTime.delta.count());
+                        cameraTransform.position.y += gsl::narrow_cast<float>(translationPerSecond * mTime.delta);
                     }
                     if (mInput.keyDown(Key::S)) {
-                        cameraTransform.position.y -=
-                                gsl::narrow_cast<float>(translationPerSecond * mTime.delta.count());
+                        cameraTransform.position.y -= gsl::narrow_cast<float>(translationPerSecond * mTime.delta);
                     }
                     if (mInput.keyDown(Key::E)) {
-                        cameraTransform.rotation -=
-                                gsl::narrow_cast<float>(rotationRadiansPerSecond * mTime.delta.count());
+                        cameraTransform.rotation -= gsl::narrow_cast<float>(rotationRadiansPerSecond * mTime.delta);
                     }
                     if (mInput.keyDown(Key::Q)) {
-                        cameraTransform.rotation +=
-                                gsl::narrow_cast<float>(rotationRadiansPerSecond * mTime.delta.count());
+                        cameraTransform.rotation += gsl::narrow_cast<float>(rotationRadiansPerSecond * mTime.delta);
                     }
                     if (mInput.keyDown(Key::NumpadAdd)) {
                         cameraTransform.scale /=
-                                gsl::narrow_cast<float>((zoomFactorPerSecond - 1.0) * mTime.delta.count() + 1.0);
+                                gsl::narrow_cast<float>((zoomFactorPerSecond - 1.0) * mTime.delta + 1.0);
                     }
                     if (mInput.keyDown(Key::NumpadSubtract)) {
                         cameraTransform.scale *=
-                                gsl::narrow_cast<float>((zoomFactorPerSecond - 1.0) * mTime.delta.count() + 1.0);
+                                gsl::narrow_cast<float>((zoomFactorPerSecond - 1.0) * mTime.delta + 1.0);
                     }
                 });
         mRegistry.emplaceSystem<>(

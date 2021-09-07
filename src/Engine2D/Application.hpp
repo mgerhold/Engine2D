@@ -50,7 +50,7 @@ namespace c2k {
                 glfwPollEvents();
                 ++numFramesDuringOutputInterval;
                 const auto currentTime = std::chrono::high_resolution_clock::now();
-                mTime.delta = currentTime - lastTime;
+                mTime.delta = std::chrono::duration<double>(currentTime - lastTime).count();
                 mTime.elapsed += mTime.delta;
                 lastTime = currentTime;
                 if (currentTime >= lastFrameTimeOutput + frameTimeOutputInterval) {
