@@ -6,6 +6,7 @@
 #include "Component.hpp"
 #include "Entity.hpp"
 #include "Registry.hpp"
+#include "Time.hpp"
 
 namespace c2k::ScriptUtils {
 
@@ -14,6 +15,8 @@ namespace c2k::ScriptUtils {
         luaState.new_usertype<glm::vec2>("Vec2", "x", &glm::vec2::x, "y", &glm::vec2::y);
         luaState.new_usertype<TransformComponent>("Transform", "position", &TransformComponent::position, "rotation",
                                                   &TransformComponent::rotation, "scale", &TransformComponent::scale);
+        luaState.new_usertype<Time>("Time", "elapsed", sol::readonly(&Time::elapsed), "delta",
+                                    sol::readonly(&Time::delta));
     }
 
     void provideAPI(ApplicationContext& applicationContext, sol::state& luaState) noexcept {
@@ -21,6 +24,7 @@ namespace c2k::ScriptUtils {
             auto result = applicationContext.registry.componentMutable<TransformComponent>(entity);
             return result ? &result.value() : nullptr;
         };
+        luaState["getTime"] = [&]() { return applicationContext.time; };
     }
 
 }// namespace c2k::ScriptUtils

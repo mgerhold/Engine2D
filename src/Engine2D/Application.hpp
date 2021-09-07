@@ -25,7 +25,7 @@ namespace c2k {
         Application(const std::string& title, WindowSize size, OpenGLVersion version) noexcept
             : mWindow{ title, size, version, mInput },
               mRenderer{ mWindow },
-              mAppContext{ mRenderer, mRegistry } { }
+              mAppContext{ mRenderer, mRegistry, mTime } { }
         Application(const Application&) = delete;
         Application(Application&&) = delete;
         virtual ~Application() {
@@ -76,9 +76,9 @@ namespace c2k {
         Window mWindow;
         Registry mRegistry;
         Renderer mRenderer;
+        Time mTime;
         ApplicationContext mAppContext;
         AssetDatabase mAssetDatabase;
-        Time mTime;
         Random mRandom;
     };
 

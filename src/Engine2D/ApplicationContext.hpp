@@ -8,12 +8,14 @@ namespace c2k {
 
     class Renderer;
     class Registry;
+    struct Time;
 
     struct ApplicationContext {
-        ApplicationContext(Renderer& renderer, Registry& registry) noexcept;
+        ApplicationContext(Renderer& renderer, Registry& registry, Time& time) noexcept;
 
         Renderer& renderer;
         Registry& registry;
+        Time& time;
     };
 
 }// namespace c2k

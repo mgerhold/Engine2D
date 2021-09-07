@@ -52,6 +52,9 @@ namespace c2k {
         template<typename Component>
         void attachComponent(Entity entity, const Component& component) noexcept {
             mComponentHolder.template attach<Component>(getIdentifierBitsFromEntity(entity), component);
+            if constexpr (std::is_same_v<Component, ScriptComponent>) {
+                component.script->invoke("awake", entity);
+            }
         }
 
         template<typename... Components>
