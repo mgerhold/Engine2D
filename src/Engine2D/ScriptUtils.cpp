@@ -11,6 +11,11 @@
 #define MAGIC_ENUM_RANGE_MAX 348
 #include <magic_enum.hpp>
 
+static_assert(MAGIC_ENUM_RANGE_MAX >= static_cast<std::underlying_type_t<c2k::Key>>(c2k::Key::LastKey));
+static_assert(MAGIC_ENUM_RANGE_MAX >=
+              static_cast<std::underlying_type_t<c2k::MouseButton>>(c2k::MouseButton::LastButton));
+// TODO: Add more asserts to handle gamepad/joystick buttons/axes
+
 namespace c2k::ScriptUtils {
 
     void registerTypes(sol::state& luaState) noexcept {
@@ -23,8 +28,6 @@ namespace c2k::ScriptUtils {
         luaState["Key"] = luaState.create_table();
         for (const auto& entry : magic_enum::enum_entries<Key>()) {
             luaState["Key"][entry.second] = static_cast<typename std::underlying_type<Key>::type>(entry.first);
-            spdlog::info("Defining key {} as {}", entry.second,
-                         static_cast<typename std::underlying_type<Key>::type>(entry.first));
         }
         luaState["MouseButton"] = luaState.create_table();
         for (const auto& entry : magic_enum::enum_entries<MouseButton>()) {
