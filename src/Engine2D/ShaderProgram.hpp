@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "GUID.hpp"
 #include "expected/expected.hpp"
 
 namespace c2k {
@@ -32,6 +33,9 @@ namespace c2k {
                 const std::filesystem::path& fragmentShaderPath);
         static void setUniform(GLuint shaderName, std::size_t uniformNameHash, const glm::mat4& matrix) noexcept;
         void setUniform(std::size_t uniformNameHash, const glm::mat4& matrix) const noexcept;
+
+    public:
+        GUID guid;
 
     private:
         void cacheUniformLocations() noexcept;

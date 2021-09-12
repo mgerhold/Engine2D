@@ -7,6 +7,21 @@
 
 namespace c2k {
 
+    Script::Script() noexcept {
+        mLuaState->open_libraries(sol::lib::base);
+        mLuaState->script(R"(function onAttach(entity)
+printWarning(entity)
+end
+
+function update(entity)
+printWarning(entity)
+end
+
+function printWarning(entity)
+print("Warning: Default script on entity " .. entity.id)
+end)");
+    }
+
     Script::Script(std::string source) noexcept {
         assert(sApplicationContext != nullptr &&
                "Scripts can only be instantiated after setting the application context.");
@@ -18,6 +33,8 @@ namespace c2k {
             spdlog::error("Error occurred: {}", err.what());
             return result;
         });
+        mOnAttachFunction = mLuaState->get<sol::protected_function>("onAttach");
+        mUpdateFunction = mLuaState->get<sol::protected_function>("update");
     }
 
     tl::expected<Script, std::string> Script::loadFromFile(const std::filesystem::path& filename) noexcept {

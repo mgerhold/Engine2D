@@ -5,8 +5,31 @@
 #pragma once
 
 #include "ApplicationContext.hpp"
+#include "Entity.hpp"
+#include "GUID.hpp"
 
 namespace c2k::ScriptUtils {
+
+    struct LuaEntity {
+        LuaEntity(Entity entity) noexcept : id{ entity } { }
+
+        operator Entity() const noexcept {
+            return id;
+        }
+
+        Entity id;
+    };
+
+    struct LuaTexture {
+        std::string guid;
+        int width;
+        int height;
+        int numChannels;
+    };
+
+    struct LuaShaderProgram {
+        std::string guid;
+    };
 
     void registerTypes(sol::state& luaState) noexcept;
     void provideAPI(ApplicationContext& applicationContext, sol::state& luaState) noexcept;

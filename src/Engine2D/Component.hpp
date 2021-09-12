@@ -11,6 +11,7 @@
 #include "Rect.hpp"
 #include "Entity.hpp"
 #include "Script.hpp"
+#include "ScriptUtils.hpp"
 
 namespace c2k {
 
@@ -40,7 +41,7 @@ namespace c2k {
         Rect textureRect;
         Color color;
         const Texture* texture;
-        ShaderProgram* shader;
+        ShaderProgram* shaderProgram;
     };
 
     struct SpriteSheetAnimationComponent {

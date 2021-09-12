@@ -6,7 +6,7 @@
 
 namespace c2k {
 
-    AssetDatabase::AssetDatabase() noexcept : mDebugFallbackScript{ "" } {// TODO: load actual fallback script
+    AssetDatabase::AssetDatabase() noexcept {
         auto expectedDebugTexture = Texture::createFromFillColor(1, 1, 3, Color{ .r{ 255 }, .g{ 0 }, .b{ 255 } });
         if (expectedDebugTexture) {
             mDebugFallbackTexture = std::move(expectedDebugTexture.value());

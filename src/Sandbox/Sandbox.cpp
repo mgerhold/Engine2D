@@ -39,7 +39,7 @@ namespace c2k {
                         .textureRect{ mAssetDatabase.spriteSheet(spriteSheetGUID).frames[0].rect },
                         .color{ Color::white() },
                         .texture{ mAssetDatabase.spriteSheet(spriteSheetGUID).texture },
-                        .shader{ &mAssetDatabase.shaderProgramMutable(shaderGUID) },
+                        .shaderProgram{ &mAssetDatabase.shaderProgramMutable(shaderGUID) },
                 },
                 SpriteSheetAnimationComponent{ .spriteSheet{ &mAssetDatabase.spriteSheet(spriteSheetGUID) },
                                                .lastFrameChange{ mTime.elapsed },
@@ -52,7 +52,7 @@ namespace c2k {
                         .textureRect{ mAssetDatabase.spriteSheet(spriteSheetGUID).frames[0].rect },
                         .color{ Color::white() },
                         .texture{ mAssetDatabase.spriteSheet(spriteSheetGUID).texture },
-                        .shader{ &mAssetDatabase.shaderProgramMutable(shaderGUID) },
+                        .shaderProgram{ &mAssetDatabase.shaderProgramMutable(shaderGUID) },
                 },
                 SpriteSheetAnimationComponent{ .spriteSheet{ &mAssetDatabase.spriteSheet(spriteSheetGUID) },
                                                .lastFrameChange{ mTime.elapsed },
@@ -65,7 +65,7 @@ namespace c2k {
                         .textureRect{ mAssetDatabase.spriteSheet(spriteSheetGUID).frames[0].rect },
                         .color{ Color::white() },
                         .texture{ mAssetDatabase.spriteSheet(spriteSheetGUID).texture },
-                        .shader{ &mAssetDatabase.shaderProgramMutable(shaderGUID) },
+                        .shaderProgram{ &mAssetDatabase.shaderProgramMutable(shaderGUID) },
                 },
                 SpriteSheetAnimationComponent{ .spriteSheet{ &mAssetDatabase.spriteSheet(spriteSheetGUID) },
                                                .lastFrameChange{ mTime.elapsed },
@@ -73,7 +73,7 @@ namespace c2k {
                                                .currentFrame{ 0 } },
                 RelationshipComponent{ .parent{ secondFlame } });
 
-        constexpr int numEntities = 500;
+        constexpr int numEntities = 100;
         for ([[maybe_unused]] auto _ : ranges::views::ints(0, numEntities)) {
             const glm::vec3 position{ mRandom.range(-2000.0f, 2000.0f), mRandom.range(-2000.0f, 2000.0f), 0.0f };
             mRegistry.createEntity(TransformComponent{ .position{ position }, .scale{ textureSize } },
@@ -81,16 +81,12 @@ namespace c2k {
                                            .textureRect{ Rect::unit() },
                                            .color{ Color::white() },
                                            .texture{ &mAssetDatabase.texture(textureGUID) },
-                                           .shader{ &mAssetDatabase.shaderProgramMutable(shaderGUID) },
+                                           .shaderProgram{ &mAssetDatabase.shaderProgramMutable(shaderGUID) },
                                    },
                                    RootComponent{},
                                    ScriptComponent{ .script = &mAssetDatabase.scriptMutable(GUID::fromString(
                                                             "5874d6e9-5529-45bc-829b-d6002ef21d70")) });
         }
-        /*mRegistry.createEntity(ScriptComponent{
-                .script = &mAssetDatabase.scriptMutable(GUID::fromString("5874d6e9-5529-45bc-829b-d6002ef21d70")) });
-        mRegistry.createEntity(ScriptComponent{
-                .script = &mAssetDatabase.scriptMutable(GUID::fromString("88cc0c19-cda5-4633-9e25-70635437a368")) });*/
         const auto cameraEntity = mRegistry.createEntity(TransformComponent{}, CameraComponent{});
         mRegistry.emplaceSystem<DynamicSpriteComponent&, SpriteSheetAnimationComponent&>(
                 []() {},
@@ -112,6 +108,7 @@ namespace c2k {
                                               gsl::narrow_cast<float>(glm::radians(20.0f) * mTime.delta);
                                   },
                                   []() {});
+
         /*mRegistry.emplaceSystem<const DynamicSprite&, Transform&>(
                 []() {},
                 [this](Entity, const DynamicSprite&, Transform& transform) {
@@ -167,9 +164,7 @@ namespace c2k {
                 []() {},
                 [this, anchor]() {
                     /* this system sets the position of the first sprite to the current
-                 * position of the mouse every frame */
-                    /*auto& transform =
-                            std::get<Transform&>(mRegistry.componentsMutable<DynamicSprite, Transform>().front());*/
+                     * position of the mouse every frame */
                     auto& cameraTransform = std::get<TransformComponent&>(
                             mRegistry.componentsMutable<CameraComponent, TransformComponent>().front());
 
@@ -181,11 +176,11 @@ namespace c2k {
                 });
         mRegistry.emplaceSystem<const ScriptComponent&>([]() {},
                                                         [](Entity entity, const ScriptComponent& scriptComponent) {
-                                                            scriptComponent.script->invoke("update", entity);
+                                                            scriptComponent.script->invokeUpdate(entity);
                                                         },
                                                         []() {});
         mRegistry.addScreenClearer(mAppContext, true, true);
-        mRegistry.addDynamicSpriteRenderer(mAppContext, mRegistry.component<TransformComponent>(cameraEntity).value());
+        mRegistry.addDynamicSpriteRenderer(mAppContext, cameraEntity);
         mRegistry.addDynamicSpriteRenderer(mAppContext);// overlay
     }
 

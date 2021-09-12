@@ -7,6 +7,7 @@
 #include "Image.hpp"
 #include "expected/expected.hpp"
 #include "Color.hpp"
+#include "GUID.hpp"
 
 namespace c2k {
 
@@ -54,6 +55,9 @@ namespace c2k {
                                                                                     int numChannels,
                                                                                     Color fillColor) noexcept;
         [[nodiscard]] static GLint getTextureUnitCount() noexcept;
+
+    public:
+        GUID guid;
 
     private:
         static void bind(GLuint textureName, GLint textureUnit) noexcept;

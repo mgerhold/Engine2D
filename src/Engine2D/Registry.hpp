@@ -53,7 +53,7 @@ namespace c2k {
         void attachComponent(Entity entity, const Component& component) noexcept {
             mComponentHolder.template attach<Component>(getIdentifierBitsFromEntity(entity), component);
             if constexpr (std::is_same_v<Component, ScriptComponent>) {
-                component.script->invoke("awake", entity);
+                component.script->invokeOnAttach(entity);
             }
         }
 
@@ -190,12 +190,15 @@ namespace c2k {
                                                  std::forward<ForEachFunction>(forEach),
                                                  std::forward<FinalizeFunction>(finalize));
         }
-        void addDynamicSpriteRenderer(
-                const ApplicationContext& appContext,
-                const TransformComponent& cameraTransform = TransformComponent::identity()) noexcept {
+        void addDynamicSpriteRenderer(const ApplicationContext& appContext,
+                                      Entity cameraEntity = invalidEntity) noexcept {
             emplaceSystem<const RootComponent&, const DynamicSpriteComponent&, const TransformComponent&>(
-                    [&appContext, &cameraTransform]() {
-                        DynamicSpriteRenderer::RootEntities::init(appContext, cameraTransform);
+                    [&appContext, cameraEntity]() {
+                        DynamicSpriteRenderer::RootEntities::init(
+                                appContext,
+                                cameraEntity == invalidEntity
+                                        ? TransformComponent::identity()
+                                        : appContext.registry.component<TransformComponent>(cameraEntity).value());
                     },
                     [&appContext](Entity entity, const RootComponent& root, const auto& sprite,
                                   const TransformComponent& transform) {
@@ -203,8 +206,12 @@ namespace c2k {
                     },
                     [&appContext]() { DynamicSpriteRenderer::RootEntities::finalize(appContext); });
             emplaceSystem<const RelationshipComponent&, const DynamicSpriteComponent&, const TransformComponent&>(
-                    [&appContext, &cameraTransform]() {
-                        DynamicSpriteRenderer::RelationshipEntities::init(appContext, cameraTransform);
+                    [&appContext, cameraEntity]() {
+                        DynamicSpriteRenderer::RelationshipEntities::init(
+                                appContext,
+                                cameraEntity == invalidEntity
+                                        ? TransformComponent::identity()
+                                        : appContext.registry.component<TransformComponent>(cameraEntity).value());
                     },
                     [&appContext](Entity entity, const RelationshipComponent& relationship, const auto& sprite,
                                   const TransformComponent& transform) {

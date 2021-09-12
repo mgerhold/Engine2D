@@ -7,11 +7,16 @@
 
 namespace c2k {
 
-    ApplicationContext::ApplicationContext(Renderer& renderer, Registry& registry, Time& time, Input& input) noexcept
+    ApplicationContext::ApplicationContext(Renderer& renderer,
+                                           Registry& registry,
+                                           Time& time,
+                                           Input& input,
+                                           AssetDatabase& assetDatabase) noexcept
         : renderer{ renderer },
           registry{ registry },
           time{ time },
-          input{ input } {
+          input{ input },
+          assetDatabase{ assetDatabase } {
         Script::setApplicationContext(*this);
     }
 }// namespace c2k

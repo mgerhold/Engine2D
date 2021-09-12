@@ -130,6 +130,7 @@ namespace c2k {
         swap(mWidth, other.mWidth);
         swap(mHeight, other.mHeight);
         swap(mNumChannels, other.mNumChannels);
+        swap(guid, other.guid);
     }
 
     Texture::~Texture() {
@@ -142,6 +143,7 @@ namespace c2k {
         swap(mWidth, other.mWidth);
         swap(mHeight, other.mHeight);
         swap(mNumChannels, other.mNumChannels);
+        swap(guid, other.guid);
         return *this;
     }
 

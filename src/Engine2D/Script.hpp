@@ -5,13 +5,16 @@
 #pragma once
 
 #include "FileUtils.hpp"
-#include "expected/expected.hpp"
+#include "ScriptUtils.hpp"
+#include "Entity.hpp"
 #include "ApplicationContext.hpp"
+#include "expected/expected.hpp"
 
 namespace c2k {
 
     class Script {
     public:
+        Script() noexcept;
         explicit Script(std::string source) noexcept;
 
         [[nodiscard]] static tl::expected<Script, std::string> loadFromFile(
@@ -34,8 +37,26 @@ namespace c2k {
             }
         }
 
+        void invokeOnAttach(ScriptUtils::LuaEntity luaEntity) noexcept {
+            if (mOnAttachFunction.valid()) {
+                mOnAttachFunction(luaEntity);
+            }
+        }
+
+        void invokeUpdate(ScriptUtils::LuaEntity luaEntity) noexcept {
+            if (mUpdateFunction.valid()) {
+                sol::protected_function_result result = mUpdateFunction(luaEntity);
+                if (!result.valid()) {
+                    sol::error error = result;
+                    spdlog::error("Update function on script is invalid: {}", error.what());
+                }
+            }
+        }
+
     private:
         std::unique_ptr<sol::state> mLuaState{ std::make_unique<sol::state>() };// indirection to keep references valid
+        sol::protected_function mOnAttachFunction;
+        sol::protected_function mUpdateFunction;
         static inline ApplicationContext* sApplicationContext{ nullptr };
     };
 

@@ -21,7 +21,13 @@ namespace c2k {
 
         Texture& loadTexture(const std::filesystem::path& filename, GUID guid) noexcept {
             return load<Texture>(
-                    guid, [&filename]() { return Image::loadFromFile(filename).and_then(Texture::create); },
+                    guid,
+                    [&]() {
+                        return Image::loadFromFile(filename).and_then(Texture::create).map([&](Texture texture) {
+                            texture.guid = guid;
+                            return texture;
+                        });
+                    },
                     mDebugFallbackTexture);
         }
 
@@ -30,8 +36,12 @@ namespace c2k {
                                          GUID guid) noexcept {
             return load<ShaderProgram>(
                     guid,
-                    [&vertexShaderFilename, &fragmentShaderFilename]() {
-                        return ShaderProgram::generateFromFiles(vertexShaderFilename, fragmentShaderFilename);
+                    [&]() {
+                        return ShaderProgram::generateFromFiles(vertexShaderFilename, fragmentShaderFilename)
+                                .map([&](ShaderProgram shaderProgram) {
+                                    shaderProgram.guid = guid;
+                                    return shaderProgram;
+                                });
                     },
                     mDebugFallbackShaderProgram);
         }
@@ -57,12 +67,28 @@ namespace c2k {
             return get<Texture>(guid, mDebugFallbackTexture);
         }
 
+        [[nodiscard]] Texture& fallbackTextureMutable() noexcept {
+            return mDebugFallbackTexture;
+        }
+
+        [[nodiscard]] const Texture& fallbackTexture() const noexcept {
+            return mDebugFallbackTexture;
+        }
+
         [[nodiscard]] ShaderProgram& shaderProgramMutable(GUID guid) noexcept {
             return getMutable<ShaderProgram>(guid, mDebugFallbackShaderProgram);
         }
 
         [[nodiscard]] const ShaderProgram& shaderProgram(GUID guid) const noexcept {
             return get<ShaderProgram>(guid, mDebugFallbackShaderProgram);
+        }
+
+        [[nodiscard]] ShaderProgram& fallbackShaderProgramMutable() noexcept {
+            return mDebugFallbackShaderProgram;
+        }
+
+        [[nodiscard]] const ShaderProgram& fallbackShaderProgram() const noexcept {
+            return mDebugFallbackShaderProgram;
         }
 
         [[nodiscard]] const SpriteSheet& spriteSheet(GUID guid) const noexcept {

@@ -13,12 +13,14 @@ namespace c2k {
         using std::swap;
         swap(mName, other.mName);
         swap(mUniformLocations, other.mUniformLocations);
+        swap(guid, other.guid);
     }
 
     ShaderProgram& ShaderProgram::operator=(ShaderProgram&& other) noexcept {
         using std::swap;
         swap(mName, other.mName);
         swap(mUniformLocations, other.mUniformLocations);
+        swap(guid, other.guid);
         return *this;
     }
 

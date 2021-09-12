@@ -20,8 +20,8 @@ namespace c2k {
                          const RootComponent&,
                          const DynamicSpriteComponent& sprite,
                          const TransformComponent& transform) {
-                appContext.renderer.drawQuad(transform.position, transform.rotation, transform.scale, *sprite.shader,
-                                             *sprite.texture, sprite.textureRect, sprite.color);
+                appContext.renderer.drawQuad(transform.position, transform.rotation, transform.scale,
+                                             *sprite.shaderProgram, *sprite.texture, sprite.textureRect, sprite.color);
             }
 
             void finalize(const ApplicationContext& appContext) {
@@ -49,8 +49,8 @@ namespace c2k {
                     transformMatrix = appContext.registry.component<TransformComponent>(current).value().matrix() *
                                       transformMatrix;
                 }
-                appContext.renderer.drawQuad(transformMatrix, *sprite.shader, *sprite.texture, sprite.textureRect,
-                                             sprite.color);
+                appContext.renderer.drawQuad(transformMatrix, *sprite.shaderProgram, *sprite.texture,
+                                             sprite.textureRect, sprite.color);
             }
 
             void finalize(const ApplicationContext& appContext) {
