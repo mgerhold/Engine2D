@@ -20,38 +20,30 @@ static_assert(MAGIC_ENUM_RANGE_MAX >=
 
 namespace c2k::ScriptUtils {
 
-    void registerTypes(sol::state& luaState) noexcept {
+    // TODO: allow nested namespaces
+    inline void createNamespace(sol::state& luaState, const std::string& namespaceName) noexcept {
+        luaState[namespaceName] = luaState.create_table();
+    }
+
+    inline void provideMathDataTypes(sol::state& luaState) noexcept {
         luaState.new_usertype<glm::vec3>("Vec3", "x", &glm::vec3::x, "y", &glm::vec3::y, "z", &glm::vec3::z);
         luaState.new_usertype<glm::vec2>("Vec2", "x", &glm::vec2::x, "y", &glm::vec2::y);
+        luaState.new_usertype<Rect>("Rect", "left", &Rect::left, "right", &Rect::right, "top", &Rect::top, "bottom",
+                                    &Rect::bottom);
+    }
+
+    inline void provideBasicEngineDataTypes(ApplicationContext& applicationContext, sol::state& luaState) noexcept {
         luaState.new_usertype<LuaEntity>("Entity", "id", &LuaEntity::id);
+        luaState.new_usertype<Color>("Color", "r", &Color::r, "g", &Color::g, "b", &Color::b, "a", &Color::a);
+        luaState.new_usertype<Time>("Time", "elapsed", sol::readonly(&Time::elapsed), "delta",
+                                    sol::readonly(&Time::delta));
         luaState.new_usertype<LuaTexture>("Texture", "guid", &LuaTexture::guid, "width", &LuaTexture::width, "height",
                                           &LuaTexture::height, "numChannels", &LuaTexture::numChannels);
         luaState.new_usertype<LuaShaderProgram>("ShaderProgram", "guid", &LuaShaderProgram::guid);
-        luaState.new_usertype<TransformComponent>("Transform", "position", &TransformComponent::position, "rotation",
-                                                  &TransformComponent::rotation, "scale", &TransformComponent::scale);
-        luaState.new_usertype<Rect>("Rect", "left", &Rect::left, "right", &Rect::right, "top", &Rect::top, "bottom",
-                                    &Rect::bottom);
-        luaState.new_usertype<Color>("Color", "r", &Color::r, "g", &Color::g, "b", &Color::b, "a", &Color::a);
-
-        luaState.new_usertype<Time>("Time", "elapsed", sol::readonly(&Time::elapsed), "delta",
-                                    sol::readonly(&Time::delta));
-        luaState["Key"] = luaState.create_table();
-        for (const auto& entry : magic_enum::enum_entries<Key>()) {
-            luaState["Key"][entry.second] = static_cast<typename std::underlying_type<Key>::type>(entry.first);
-        }
-        luaState["MouseButton"] = luaState.create_table();
-        for (const auto& entry : magic_enum::enum_entries<MouseButton>()) {
-            luaState["MouseButton"][entry.second] =
-                    static_cast<typename std::underlying_type<MouseButton>::type>(entry.first);
-        }
-        luaState.new_usertype<Input>("Input", "keyDown", &Input::keyDown, "keyRepeated", &Input::keyRepeated,
-                                     "keyPressed", &Input::keyPressed, "keyReleased", &Input::keyReleased,
-                                     "mousePosition", &Input::mousePosition, "mouseInsideWindow",
-                                     &Input::mouseInsideWindow, "mouseDown", &Input::mouseDown, "mousePressed",
-                                     &Input::mousePressed, "mouseReleased", &Input::mouseReleased);
+        luaState["c2k"]["getTime"] = [&]() { return applicationContext.time; };
     }
 
-    void provideAPI(ApplicationContext& applicationContext, sol::state& luaState) noexcept {
+    inline void provideEntityAPI(ApplicationContext& applicationContext, sol::state& luaState) noexcept {
         sol::usertype<LuaEntity> entityType = luaState["Entity"];
         entityType["new"] = [&]() { return LuaEntity{ applicationContext.registry.createEntity() }; };
         entityType["destroy"] = [&](LuaEntity luaEntity) { applicationContext.registry.destroyEntity(luaEntity); };
@@ -83,22 +75,29 @@ namespace c2k::ScriptUtils {
         entityType["attachRoot"] = [&](LuaEntity luaEntity) {
             applicationContext.registry.attachComponent<RootComponent>(luaEntity, RootComponent{});
         };
-        luaState["c2k"] = luaState.create_table();
-        luaState["c2k"]["getTime"] = [&]() { return applicationContext.time; };
-        luaState["c2k"]["getInput"] = [&]() { return applicationContext.input; };
-        luaState["c2k"]["assets"] = luaState.create_table();
-        luaState["c2k"]["assets"]["texture"] = [&](const std::string& guidString) {
-            const auto& texture = applicationContext.assetDatabase.texture(GUID::fromString(guidString));
-            return LuaTexture{ .guid{ texture.guid.string() },
-                               .width{ texture.width() },
-                               .height{ texture.height() },
-                               .numChannels{ texture.numChannels() } };
-        };
-        luaState["c2k"]["assets"]["shaderProgram"] = [&](const std::string& guidString) {
-            const auto& shaderProgram = applicationContext.assetDatabase.shaderProgram(GUID::fromString(guidString));
-            return LuaShaderProgram{ .guid{ shaderProgram.guid.string() } };
-        };
+    }
 
+    inline void provideInputAPI(ApplicationContext& applicationContext, sol::state& luaState) noexcept {
+        luaState["Key"] = luaState.create_table();
+        for (const auto& entry : magic_enum::enum_entries<Key>()) {
+            luaState["Key"][entry.second] = static_cast<typename std::underlying_type<Key>::type>(entry.first);
+        }
+        luaState["MouseButton"] = luaState.create_table();
+        for (const auto& entry : magic_enum::enum_entries<MouseButton>()) {
+            luaState["MouseButton"][entry.second] =
+                    static_cast<typename std::underlying_type<MouseButton>::type>(entry.first);
+        }
+        luaState.new_usertype<Input>("Input", "keyDown", &Input::keyDown, "keyRepeated", &Input::keyRepeated,
+                                     "keyPressed", &Input::keyPressed, "keyReleased", &Input::keyReleased,
+                                     "mousePosition", &Input::mousePosition, "mouseInsideWindow",
+                                     &Input::mouseInsideWindow, "mouseDown", &Input::mouseDown, "mousePressed",
+                                     &Input::mousePressed, "mouseReleased", &Input::mouseReleased);
+        luaState["c2k"]["getInput"] = [&]() { return applicationContext.input; };
+    }
+
+    inline void provideComponentAPI(ApplicationContext& applicationContext, sol::state& luaState) noexcept {
+        luaState.new_usertype<TransformComponent>("Transform", "position", &TransformComponent::position, "rotation",
+                                                  &TransformComponent::rotation, "scale", &TransformComponent::scale);
         luaState.new_usertype<DynamicSpriteComponent>(
                 "DynamicSprite", "textureRect", &DynamicSpriteComponent::textureRect, "color",
                 &DynamicSpriteComponent::color, "texture",
@@ -122,6 +121,31 @@ namespace c2k::ScriptUtils {
                             sprite.shaderProgram = &applicationContext.assetDatabase.shaderProgramMutable(
                                     GUID::fromString(luaShaderProgram.guid));
                         }));
+    }
+
+    inline void provideAssetsAPI(ApplicationContext& applicationContext, sol::state& luaState) noexcept {
+        luaState["c2k"]["assets"] = luaState.create_table();
+        luaState["c2k"]["assets"]["texture"] = [&](const std::string& guidString) {
+            const auto& texture = applicationContext.assetDatabase.texture(GUID::fromString(guidString));
+            return LuaTexture{ .guid{ texture.guid.string() },
+                               .width{ texture.width() },
+                               .height{ texture.height() },
+                               .numChannels{ texture.numChannels() } };
+        };
+        luaState["c2k"]["assets"]["shaderProgram"] = [&](const std::string& guidString) {
+            const auto& shaderProgram = applicationContext.assetDatabase.shaderProgram(GUID::fromString(guidString));
+            return LuaShaderProgram{ .guid{ shaderProgram.guid.string() } };
+        };
+    }
+
+    void provideAPI(ApplicationContext& applicationContext, sol::state& luaState) noexcept {
+        createNamespace(luaState, "c2k");
+        provideMathDataTypes(luaState);
+        provideBasicEngineDataTypes(applicationContext, luaState);
+        provideComponentAPI(applicationContext, luaState);
+        provideInputAPI(applicationContext, luaState);
+        provideEntityAPI(applicationContext, luaState);
+        provideAssetsAPI(applicationContext, luaState);
     }
 
 }// namespace c2k::ScriptUtils

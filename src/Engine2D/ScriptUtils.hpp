@@ -31,7 +31,6 @@ namespace c2k::ScriptUtils {
         std::string guid;
     };
 
-    void registerTypes(sol::state& luaState) noexcept;
     void provideAPI(ApplicationContext& applicationContext, sol::state& luaState) noexcept;
 
 }// namespace c2k::ScriptUtils
