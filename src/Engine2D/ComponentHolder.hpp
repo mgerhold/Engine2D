@@ -181,6 +181,10 @@ namespace c2k {
             return TypeIdentifier::template get<Component>();
         }
 
+        [[nodiscard]] std::vector<SparseSet*>& sparseSets() noexcept {
+            return mSparseSets;
+        }
+
     private:
         template<typename Component>
         [[nodiscard]] SparseSet& getComponentMutable() noexcept {

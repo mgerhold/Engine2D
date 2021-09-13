@@ -54,6 +54,7 @@ namespace c2k::ScriptUtils {
     void provideAPI(ApplicationContext& applicationContext, sol::state& luaState) noexcept {
         sol::usertype<LuaEntity> entityType = luaState["Entity"];
         entityType["new"] = [&]() { return LuaEntity{ applicationContext.registry.createEntity() }; };
+        entityType["destroy"] = [&](LuaEntity luaEntity) { applicationContext.registry.destroyEntity(luaEntity); };
         entityType["getTransform"] = [&](LuaEntity luaEntity) {
             auto result = applicationContext.registry.componentMutable<TransformComponent>(luaEntity);
             return result ? &result.value() : nullptr;
@@ -121,13 +122,6 @@ namespace c2k::ScriptUtils {
                             sprite.shaderProgram = &applicationContext.assetDatabase.shaderProgramMutable(
                                     GUID::fromString(luaShaderProgram.guid));
                         }));
-
-        /*struct DynamicSpriteComponent {
-            Rect textureRect;
-            Color color;
-            const Texture* texture;
-            ShaderProgram* shader;
-        };*/
     }
 
 }// namespace c2k::ScriptUtils

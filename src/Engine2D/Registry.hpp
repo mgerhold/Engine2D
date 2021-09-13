@@ -152,6 +152,7 @@ namespace c2k {
         void destroyEntity(Entity entity) noexcept {
             assert(isEntityAlive(entity) && "The entity to remove must be alive.");
             const auto index = getIndexFromEntity(entity);
+            deleteComponentsByEntityIndex(index);
             increaseGeneration(mEntities[index]);
             swapIdentifiers(mNextRecyclableEntity, mEntities[index]);
             ++mNumRecyclableEntities;
@@ -257,6 +258,15 @@ namespace c2k {
         }
         [[nodiscard]] static std::size_t getIndexFromEntity(Entity entity) noexcept {
             return static_cast<std::size_t>(getIdentifierBitsFromEntity(entity));
+        }
+
+        void deleteComponentsByEntityIndex(std::size_t index) noexcept {
+            const auto entityIndex = gsl::narrow_cast<Entity>(index);
+            for (auto sparseSet : mComponentHolder.sparseSets()) {
+                if (sparseSet->has(entityIndex)) {
+                    sparseSet->remove(entityIndex);
+                }
+            }
         }
 
     private:
