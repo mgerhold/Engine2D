@@ -1,0 +1,1289 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+		"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+	<title>Reference</title>
+	<link rel="stylesheet" href="ldoc.css" type="text/css"/>
+</head>
+<body>
+
+<div id="container">
+
+	<div id="product">
+		<div id="product_logo"></div>
+		<div id="product_name"><big><b></b></big></div>
+		<div id="product_description"></div>
+	</div> <!-- id="product" -->
+
+
+	<div id="main">
+
+
+		<!-- Menu -->
+
+		<div id="navigation">
+			<br/>
+			<h1>ldoc</h1>
+
+
+			<h2>Contents</h2>
+			<ul>
+				<li><a href="#Functions">Functions</a></li>
+				<li><a href="#Class_Color">Class Color </a></li>
+				<li><a href="#Class_DynamicSprite">Class DynamicSprite </a></li>
+				<li><a href="#Class_Entity">Class Entity </a></li>
+				<li><a href="#Class_Input">Class Input </a></li>
+				<li><a href="#Class_Rect">Class Rect </a></li>
+				<li><a href="#Class_Relationship">Class Relationship </a></li>
+				<li><a href="#Class_Root">Class Root </a></li>
+				<li><a href="#Class_ShaderProgram">Class ShaderProgram </a></li>
+				<li><a href="#Class_SpriteSheet">Class SpriteSheet </a></li>
+				<li><a href="#Class_SpriteSheetFrame">Class SpriteSheetFrame </a></li>
+				<li><a href="#Class_Texture">Class Texture </a></li>
+				<li><a href="#Class_Time">Class Time </a></li>
+				<li><a href="#Class_Transform">Class Transform </a></li>
+				<li><a href="#Class_Vec2">Class Vec2 </a></li>
+				<li><a href="#Class_Vec3">Class Vec3 </a></li>
+			</ul>
+
+
+			<h2>Modules</h2>
+			<ul class="$(kind=='Topics' and '' or 'nowrap'">
+				<li><strong>c2k</strong></li>
+			</ul>
+
+		</div>
+
+		<div id="content">
+
+			<h1>Module <code>c2k</code></h1>
+			<p>The c2k engine module.</p>
+			<p>
+				This module contains the Lua application programming interface (API) of the c2k game engine.</p>
+
+
+			<h2><a href="#Functions">Functions</a></h2>
+			<table class="function_list">
+				<tr>
+					<td class="name" nowrap><a href="#c2k.assets.shaderProgram">c2k.assets.shaderProgram (guid)</a></td>
+					<td class="summary">Retrieves a shader program handle.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#c2k.assets.spriteSheet">c2k.assets.spriteSheet (guid)</a></td>
+					<td class="summary">Retrieves a sprite sheet handle.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#c2k.assets.texture">c2k.assets.texture (guid)</a></td>
+					<td class="summary">Retrieves a texture handle.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#getTime">getTime ()</a></td>
+					<td class="summary">Retrieves timing information.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#getInput">getInput ()</a></td>
+					<td class="summary">Retrieves a handle to the input system.</td>
+				</tr>
+			</table>
+			<h2><a href="#Class_Color">Class Color </a></h2>
+			<table class="function_list">
+				<tr>
+					<td class="name" nowrap><a href="#Color.r">Color.r</a></td>
+					<td class="summary">The red channel of the color.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#Color.g">Color.g</a></td>
+					<td class="summary">The green channel of the color.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#Color.b">Color.b</a></td>
+					<td class="summary">The blue channel of the color.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#Color.a">Color.a</a></td>
+					<td class="summary">The alpha channel of the color.</td>
+				</tr>
+			</table>
+			<h2><a href="#Class_DynamicSprite">Class DynamicSprite </a></h2>
+			<table class="function_list">
+				<tr>
+					<td class="name" nowrap><a href="#DynamicSprite.textureRect">DynamicSprite.textureRect</a></td>
+					<td class="summary">The texture rect to use.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#DynamicSprite.color">DynamicSprite.color</a></td>
+					<td class="summary">The color component of the sprite.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#DynamicSprite.texture">DynamicSprite.texture</a></td>
+					<td class="summary">The texture to be used for this sprite.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#DynamicSprite.shaderProgram">DynamicSprite.shaderProgram</a></td>
+					<td class="summary">The shader program to be used for this sprite.</td>
+				</tr>
+			</table>
+			<h2><a href="#Class_Entity">Class Entity </a></h2>
+			<table class="function_list">
+				<tr>
+					<td class="name" nowrap><a href="#Entity.id">Entity.id</a></td>
+					<td class="summary">The id of the entity.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#Entity.new">Entity.new ()</a></td>
+					<td class="summary">Constructs a new entity.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#Entity:destroy">Entity:destroy ()</a></td>
+					<td class="summary">Destroys the entity and all of its components.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#Entity:getTransform">Entity:getTransform ()</a></td>
+					<td class="summary">Retrieves the transform component.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#Entity:attachTransform">Entity:attachTransform ()</a></td>
+					<td class="summary">Attaches a newly created transform component to the entity.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#Entity:getDynamicSprite">Entity:getDynamicSprite ()</a></td>
+					<td class="summary">Retrieves the dynamic sprite component.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#Entity:attachDynamicSprite">Entity:attachDynamicSprite ()</a></td>
+					<td class="summary">Attaches a newly created dynamic sprite component to the entity.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#Entity:hasRoot">Entity:hasRoot ()</a></td>
+					<td class="summary">Checks if the entity has a <a href="index.html#Root">Root</a> component
+						attached.
+					</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#Entity:attachRoot">Entity:attachRoot ()</a></td>
+					<td class="summary">Attaches a newly created <a href="index.html#Root">Root</a> component to the
+						entity.
+					</td>
+				</tr>
+			</table>
+			<h2><a href="#Class_Input">Class Input </a></h2>
+			<table class="function_list">
+				<tr>
+					<td class="name" nowrap><a href="#Input:keyDown">Input:keyDown (key)</a></td>
+					<td class="summary">Checks if the specified key is currently being held down.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#Input:keyRepeated">Input:keyRepeated (key)</a></td>
+					<td class="summary">Checks if the specified key has been repeated this frame.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#Input:keyPressed">Input:keyPressed (key)</a></td>
+					<td class="summary">Checks if the specified key has been pressed this frame.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#Input:keyReleased">Input:keyReleased (key)</a></td>
+					<td class="summary">Checks if the specified key has been released this frame.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#Input:mousePosition">Input:mousePosition ()</a></td>
+					<td class="summary">Gets the current position of the mouse cursor.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#Input:mouseInsideWindow">Input:mouseInsideWindow ()</a></td>
+					<td class="summary">Checks if the mouse cursor currently is inside the window.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#Input:mouseDown">Input:mouseDown (mouseButton)</a></td>
+					<td class="summary">Checks if the specified mouse button is currently being held down.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#Input:mousePressed">Input:mousePressed (mouseButton)</a></td>
+					<td class="summary">Checks if the specified mouse button has been pressed this frame.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#Input:mouseReleased">Input:mouseReleased (mouseButton)</a></td>
+					<td class="summary">Checks if the specified mouse button has been released this frame.</td>
+				</tr>
+			</table>
+			<h2><a href="#Class_Rect">Class Rect </a></h2>
+			<table class="function_list">
+				<tr>
+					<td class="name" nowrap><a href="#Rect.left">Rect.left</a></td>
+					<td class="summary">The x-value of the left boundary of the rectangle.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#Rect.right">Rect.right</a></td>
+					<td class="summary">The x-value of the right boundary of the rectangle.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#Rect.top">Rect.top</a></td>
+					<td class="summary">The y-value of the top boundary of the rectangle.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#Rect.bottom">Rect.bottom</a></td>
+					<td class="summary">The y-value of the bottom boundary of the rectangle.</td>
+				</tr>
+			</table>
+			<h2><a href="#Class_Relationship">Class Relationship </a></h2>
+			<table class="function_list">
+				<tr>
+					<td class="name" nowrap><a href="#Relationship.parent">Relationship.parent</a></td>
+					<td class="summary">The parent entity.</td>
+				</tr>
+			</table>
+			<h2><a href="#Class_Root">Class Root </a></h2>
+			<table class="function_list">
+				<tr>
+					<td class="name" nowrap><a href="#Root._">Root._</a></td>
+					<td class="summary">Ignore this.</td>
+				</tr>
+			</table>
+			<h2><a href="#Class_ShaderProgram">Class ShaderProgram </a></h2>
+			<table class="function_list">
+				<tr>
+					<td class="name" nowrap><a href="#ShaderProgram.guid">ShaderProgram.guid</a></td>
+					<td class="summary">The global unique id (GUID) of this shader program.</td>
+				</tr>
+			</table>
+			<h2><a href="#Class_SpriteSheet">Class SpriteSheet </a></h2>
+			<table class="function_list">
+				<tr>
+					<td class="name" nowrap><a href="#SpriteSheet.frames">SpriteSheet.frames</a></td>
+					<td class="summary">The list of frames of this sprite sheet.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#SpriteSheet.texture">SpriteSheet.texture</a></td>
+					<td class="summary">The texture that should be used with this sprite sheet.</td>
+				</tr>
+			</table>
+			<h2><a href="#Class_SpriteSheetFrame">Class SpriteSheetFrame </a></h2>
+			<table class="function_list">
+				<tr>
+					<td class="name" nowrap><a href="#SpriteSheetFrame.rect">SpriteSheetFrame.rect</a></td>
+					<td class="summary">The texture rect for this sprite sheet frame as normalized coordinates.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#SpriteSheetFrame.sourceWidth">SpriteSheetFrame.sourceWidth</a>
+					</td>
+					<td class="summary">The width of the original sprite graphic in pixels.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#SpriteSheetFrame.sourceHeight">SpriteSheetFrame.sourceHeight</a>
+					</td>
+					<td class="summary">The height of the original sprite graphic in pixels.</td>
+				</tr>
+			</table>
+			<h2><a href="#Class_Texture">Class Texture </a></h2>
+			<table class="function_list">
+				<tr>
+					<td class="name" nowrap><a href="#Texture.guid">Texture.guid</a></td>
+					<td class="summary">The global unique id (GUID) of this texture.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#Texture.width">Texture.width</a></td>
+					<td class="summary">The width of this texture in pixels.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#Texture.height">Texture.height</a></td>
+					<td class="summary">The height of this texture in pixels.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#Texture.numChannels">Texture.numChannels</a></td>
+					<td class="summary">The number of channels of this texture.</td>
+				</tr>
+			</table>
+			<h2><a href="#Class_Time">Class Time </a></h2>
+			<table class="function_list">
+				<tr>
+					<td class="name" nowrap><a href="#Time.elapsed">Time.elapsed</a></td>
+					<td class="summary">The elapsed time since the start of the engine's main loop.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#Time.delta">Time.delta</a></td>
+					<td class="summary">The duration of the last frame.</td>
+				</tr>
+			</table>
+			<h2><a href="#Class_Transform">Class Transform </a></h2>
+			<table class="function_list">
+				<tr>
+					<td class="name" nowrap><a href="#Transform.position">Transform.position</a></td>
+					<td class="summary">The position components of the transform.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#Transform.rotation">Transform.rotation</a></td>
+					<td class="summary">The rotation of the transform (in radians).</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#Transform.scale">Transform.scale</a></td>
+					<td class="summary">The scale of the transform.</td>
+				</tr>
+			</table>
+			<h2><a href="#Class_Vec2">Class Vec2 </a></h2>
+			<table class="function_list">
+				<tr>
+					<td class="name" nowrap><a href="#Vec2.x">Vec2.x</a></td>
+					<td class="summary">The x-value.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#Vec2.y">Vec2.y</a></td>
+					<td class="summary">The y-value.</td>
+				</tr>
+			</table>
+			<h2><a href="#Class_Vec3">Class Vec3 </a></h2>
+			<table class="function_list">
+				<tr>
+					<td class="name" nowrap><a href="#Vec3.x">Vec3.x</a></td>
+					<td class="summary">The x-value.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#Vec3.y">Vec3.y</a></td>
+					<td class="summary">The y-value.</td>
+				</tr>
+				<tr>
+					<td class="name" nowrap><a href="#Vec3.z">Vec3.z</a></td>
+					<td class="summary">The z-value.</td>
+				</tr>
+			</table>
+
+			<br/>
+			<br/>
+
+
+			<h2><a name="Functions"></a>Functions</h2>
+
+			<dl class="function">
+				<dt>
+					<a name="c2k.assets.shaderProgram"></a>
+					<strong>c2k.assets.shaderProgram (guid)</strong>
+				</dt>
+				<dd>
+					Retrieves a shader program handle.
+
+
+					<h3>Parameters:</h3>
+					<ul>
+						<li><span class="parameter">guid</span>
+							The global unique id of the shader program.
+						</li>
+					</ul>
+
+
+					<h3>See also:</h3>
+					<ul>
+						<a href="index.html#ShaderProgram">ShaderProgram</a>
+					</ul>
+
+
+				</dd>
+				<dt>
+					<a name="c2k.assets.spriteSheet"></a>
+					<strong>c2k.assets.spriteSheet (guid)</strong>
+				</dt>
+				<dd>
+					Retrieves a sprite sheet handle.
+
+
+					<h3>Parameters:</h3>
+					<ul>
+						<li><span class="parameter">guid</span>
+							The global unique id of the sprite sheet.
+						</li>
+					</ul>
+
+
+					<h3>See also:</h3>
+					<ul>
+						<li><a href="index.html#SpriteSheet">SpriteSheet</a></li>
+						<li><a href="index.html#SpriteSheetFrame">SpriteSheetFrame</a></li>
+					</ul>
+
+
+				</dd>
+				<dt>
+					<a name="c2k.assets.texture"></a>
+					<strong>c2k.assets.texture (guid)</strong>
+				</dt>
+				<dd>
+					Retrieves a texture handle.
+
+
+					<h3>Parameters:</h3>
+					<ul>
+						<li><span class="parameter">guid</span>
+							The global unique id of the texture program.
+						</li>
+					</ul>
+
+
+					<h3>See also:</h3>
+					<ul>
+						<a href="index.html#Texture">Texture</a>
+					</ul>
+
+
+				</dd>
+				<dt>
+					<a name="getTime"></a>
+					<strong>getTime ()</strong>
+				</dt>
+				<dd>
+					Retrieves timing information.
+					This function returns data about the timing (e. g. delta time) of the current frame.
+
+
+					<h3>Returns:</h3>
+					<ol>
+
+						<span class="types"><a class="type" href="index.html#Time">Time</a></span>
+						an object that contains timing information
+					</ol>
+
+
+					<h3>See also:</h3>
+					<ul>
+						<a href="index.html#Time">Time</a>
+					</ul>
+
+
+				</dd>
+				<dt>
+					<a name="getInput"></a>
+					<strong>getInput ()</strong>
+				</dt>
+				<dd>
+					Retrieves a handle to the input system.
+
+
+					<h3>Returns:</h3>
+					<ol>
+
+						<span class="types"><a class="type" href="index.html#Input">Input</a></span>
+						a handle to the input system
+					</ol>
+
+
+					<h3>See also:</h3>
+					<ul>
+						<a href="index.html#Input">Input</a>
+					</ul>
+
+
+				</dd>
+			</dl>
+			<h2><a name="Class_Color"></a>Class Color </h2>
+
+			This class represents a color.
+			<dl class="function">
+				<dt>
+					<a name="Color.r"></a>
+					<strong>Color.r</strong>
+				</dt>
+				<dd>
+					The red channel of the color.
+
+
+				</dd>
+				<dt>
+					<a name="Color.g"></a>
+					<strong>Color.g</strong>
+				</dt>
+				<dd>
+					The green channel of the color.
+
+
+				</dd>
+				<dt>
+					<a name="Color.b"></a>
+					<strong>Color.b</strong>
+				</dt>
+				<dd>
+					The blue channel of the color.
+
+
+				</dd>
+				<dt>
+					<a name="Color.a"></a>
+					<strong>Color.a</strong>
+				</dt>
+				<dd>
+					The alpha channel of the color.
+
+
+				</dd>
+			</dl>
+			<h2><a name="Class_DynamicSprite"></a>Class DynamicSprite </h2>
+
+			This class represents a dynamic sprite component.
+			A dynamic sprite component is one of the components that must be present
+			on an <a href="index.html#Entity">Entity</a> for a sprite to be rendered. The entity also needs a
+			<a href="index.html#Transform">Transform</a> component and either a <a href="index.html#Root">Root</a> or a
+			<a href="index.html#Relationship">Relationship</a> component.
+			<dl class="function">
+				<dt>
+					<a name="DynamicSprite.textureRect"></a>
+					<strong>DynamicSprite.textureRect</strong>
+				</dt>
+				<dd>
+					The texture rect to use.
+					This <a href="index.html#Rect">Rect</a> defines the region of the texture to be shown. Its values
+					must be specified in normalized coordinates.
+
+
+					<h3>See also:</h3>
+					<ul>
+						<a href="index.html#Rect">Rect</a>
+					</ul>
+
+
+				</dd>
+				<dt>
+					<a name="DynamicSprite.color"></a>
+					<strong>DynamicSprite.color</strong>
+				</dt>
+				<dd>
+					The color component of the sprite.
+					Depending on the used shader, the sprite may get tinted with this color.
+
+
+					<h3>See also:</h3>
+					<ul>
+						<a href="index.html#Color">Color</a>
+					</ul>
+
+
+				</dd>
+				<dt>
+					<a name="DynamicSprite.texture"></a>
+					<strong>DynamicSprite.texture</strong>
+				</dt>
+				<dd>
+					The texture to be used for this sprite.
+
+
+					<h3>See also:</h3>
+					<ul>
+						<a href="index.html#Texture">Texture</a>
+					</ul>
+
+
+				</dd>
+				<dt>
+					<a name="DynamicSprite.shaderProgram"></a>
+					<strong>DynamicSprite.shaderProgram</strong>
+				</dt>
+				<dd>
+					The shader program to be used for this sprite.
+
+
+					<h3>See also:</h3>
+					<ul>
+						<a href="index.html#ShaderProgram">ShaderProgram</a>
+					</ul>
+
+
+				</dd>
+			</dl>
+			<h2><a name="Class_Entity"></a>Class Entity </h2>
+
+			This class represents an entity.
+			<dl class="function">
+				<dt>
+					<a name="Entity.id"></a>
+					<strong>Entity.id</strong>
+				</dt>
+				<dd>
+					The id of the entity.
+
+
+				</dd>
+				<dt>
+					<a name="Entity.new"></a>
+					<strong>Entity.new ()</strong>
+				</dt>
+				<dd>
+					Constructs a new entity.
+
+
+					<h3>Returns:</h3>
+					<ol>
+
+						<span class="types"><a class="type" href="index.html#Entity">Entity</a></span>
+						handle to the new entity
+					</ol>
+
+
+				</dd>
+				<dt>
+					<a name="Entity:destroy"></a>
+					<strong>Entity:destroy ()</strong>
+				</dt>
+				<dd>
+					Destroys the entity and all of its components.
+
+
+				</dd>
+				<dt>
+					<a name="Entity:getTransform"></a>
+					<strong>Entity:getTransform ()</strong>
+				</dt>
+				<dd>
+					Retrieves the transform component.
+
+
+					<h3>Returns:</h3>
+					<ol>
+
+						<span class="types"><a class="type" href="index.html#Transform">Transform</a></span>
+						the transform component
+					</ol>
+
+
+				</dd>
+				<dt>
+					<a name="Entity:attachTransform"></a>
+					<strong>Entity:attachTransform ()</strong>
+				</dt>
+				<dd>
+					Attaches a newly created transform component to the entity.
+
+
+					<h3>Returns:</h3>
+					<ol>
+
+						<span class="types"><a class="type" href="index.html#Transform">Transform</a></span>
+						the transform component that has been attached
+					</ol>
+
+
+				</dd>
+				<dt>
+					<a name="Entity:getDynamicSprite"></a>
+					<strong>Entity:getDynamicSprite ()</strong>
+				</dt>
+				<dd>
+					Retrieves the dynamic sprite component.
+
+
+					<h3>Returns:</h3>
+					<ol>
+
+						<span class="types"><a class="type" href="index.html#DynamicSprite">DynamicSprite</a></span>
+						the dynamic sprite component
+					</ol>
+
+
+				</dd>
+				<dt>
+					<a name="Entity:attachDynamicSprite"></a>
+					<strong>Entity:attachDynamicSprite ()</strong>
+				</dt>
+				<dd>
+					Attaches a newly created dynamic sprite component to the entity.
+
+
+					<h3>Returns:</h3>
+					<ol>
+
+						<span class="types"><a class="type" href="index.html#DynamicSprite">DynamicSprite</a></span>
+						the dynamic sprite component that has been attached
+					</ol>
+
+
+				</dd>
+				<dt>
+					<a name="Entity:hasRoot"></a>
+					<strong>Entity:hasRoot ()</strong>
+				</dt>
+				<dd>
+					Checks if the entity has a <a href="index.html#Root">Root</a> component attached.
+
+
+					<h3>Returns:</h3>
+					<ol>
+
+						<span class="types"><span class="type">bool</span></span>
+						true if the entity has a root component, false otherwise
+					</ol>
+
+
+				</dd>
+				<dt>
+					<a name="Entity:attachRoot"></a>
+					<strong>Entity:attachRoot ()</strong>
+				</dt>
+				<dd>
+					Attaches a newly created <a href="index.html#Root">Root</a> component to the entity.
+
+
+				</dd>
+			</dl>
+			<h2><a name="Class_Input"></a>Class Input </h2>
+
+			This class provides access to the engine's input system.
+			<dl class="function">
+				<dt>
+					<a name="Input:keyDown"></a>
+					<strong>Input:keyDown (key)</strong>
+				</dt>
+				<dd>
+					Checks if the specified key is currently being held down.
+
+
+					<h3>Parameters:</h3>
+					<ul>
+						<li><span class="parameter">key</span>
+							<span class="types"><span class="type">Key</span></span>
+							the key of interest
+						</li>
+					</ul>
+
+					<h3>Returns:</h3>
+					<ol>
+
+						<span class="types"><span class="type">bool</span></span>
+						true if the key is held, false otherwise
+					</ol>
+
+
+				</dd>
+				<dt>
+					<a name="Input:keyRepeated"></a>
+					<strong>Input:keyRepeated (key)</strong>
+				</dt>
+				<dd>
+					Checks if the specified key has been repeated this frame.
+
+
+					<h3>Parameters:</h3>
+					<ul>
+						<li><span class="parameter">key</span>
+							<span class="types"><span class="type">Key</span></span>
+							the key of interest
+						</li>
+					</ul>
+
+					<h3>Returns:</h3>
+					<ol>
+
+						<span class="types"><span class="type">bool</span></span>
+						true if the key is repeated, false otherwise
+					</ol>
+
+
+				</dd>
+				<dt>
+					<a name="Input:keyPressed"></a>
+					<strong>Input:keyPressed (key)</strong>
+				</dt>
+				<dd>
+					Checks if the specified key has been pressed this frame.
+
+
+					<h3>Parameters:</h3>
+					<ul>
+						<li><span class="parameter">key</span>
+							<span class="types"><span class="type">Key</span></span>
+							the key of interest
+						</li>
+					</ul>
+
+					<h3>Returns:</h3>
+					<ol>
+
+						<span class="types"><span class="type">bool</span></span>
+						true if the key has been pressed, false otherwise
+					</ol>
+
+
+				</dd>
+				<dt>
+					<a name="Input:keyReleased"></a>
+					<strong>Input:keyReleased (key)</strong>
+				</dt>
+				<dd>
+					Checks if the specified key has been released this frame.
+
+
+					<h3>Parameters:</h3>
+					<ul>
+						<li><span class="parameter">key</span>
+							<span class="types"><span class="type">Key</span></span>
+							the key of interest
+						</li>
+					</ul>
+
+					<h3>Returns:</h3>
+					<ol>
+
+						<span class="types"><span class="type">bool</span></span>
+						true if the key has been released, false otherwise
+					</ol>
+
+
+				</dd>
+				<dt>
+					<a name="Input:mousePosition"></a>
+					<strong>Input:mousePosition ()</strong>
+				</dt>
+				<dd>
+					Gets the current position of the mouse cursor.
+
+
+					<h3>Returns:</h3>
+					<ol>
+
+						<span class="types"><a class="type" href="index.html#Vec2">Vec2</a></span>
+						the cursor position
+					</ol>
+
+
+				</dd>
+				<dt>
+					<a name="Input:mouseInsideWindow"></a>
+					<strong>Input:mouseInsideWindow ()</strong>
+				</dt>
+				<dd>
+					Checks if the mouse cursor currently is inside the window.
+
+
+					<h3>Returns:</h3>
+					<ol>
+
+						<span class="types"><span class="type">bool</span></span>
+						true if the cursor is inside the window, false otherwise
+					</ol>
+
+
+				</dd>
+				<dt>
+					<a name="Input:mouseDown"></a>
+					<strong>Input:mouseDown (mouseButton)</strong>
+				</dt>
+				<dd>
+					Checks if the specified mouse button is currently being held down.
+
+
+					<h3>Parameters:</h3>
+					<ul>
+						<li><span class="parameter">mouseButton</span>
+							<span class="types"><span class="type">MouseButton</span></span>
+							the mouse button of interest
+						</li>
+					</ul>
+
+					<h3>Returns:</h3>
+					<ol>
+
+						<span class="types"><span class="type">bool</span></span>
+						true if the mouse button is held, false otherwise
+					</ol>
+
+
+				</dd>
+				<dt>
+					<a name="Input:mousePressed"></a>
+					<strong>Input:mousePressed (mouseButton)</strong>
+				</dt>
+				<dd>
+					Checks if the specified mouse button has been pressed this frame.
+
+
+					<h3>Parameters:</h3>
+					<ul>
+						<li><span class="parameter">mouseButton</span>
+							<span class="types"><span class="type">MouseButton</span></span>
+							the mouse button of interest
+						</li>
+					</ul>
+
+					<h3>Returns:</h3>
+					<ol>
+
+						<span class="types"><span class="type">bool</span></span>
+						true if the mouse button has been pressed, false otherwise
+					</ol>
+
+
+				</dd>
+				<dt>
+					<a name="Input:mouseReleased"></a>
+					<strong>Input:mouseReleased (mouseButton)</strong>
+				</dt>
+				<dd>
+					Checks if the specified mouse button has been released this frame.
+
+
+					<h3>Parameters:</h3>
+					<ul>
+						<li><span class="parameter">mouseButton</span>
+							<span class="types"><span class="type">MouseButton</span></span>
+							the mouse button of interest
+						</li>
+					</ul>
+
+					<h3>Returns:</h3>
+					<ol>
+
+						<span class="types"><span class="type">bool</span></span>
+						true if the mouse button has been released, false otherwise
+					</ol>
+
+
+				</dd>
+			</dl>
+			<h2><a name="Class_Rect"></a>Class Rect </h2>
+
+			This class represents a rectangle.
+			<dl class="function">
+				<dt>
+					<a name="Rect.left"></a>
+					<strong>Rect.left</strong>
+				</dt>
+				<dd>
+					The x-value of the left boundary of the rectangle.
+
+
+				</dd>
+				<dt>
+					<a name="Rect.right"></a>
+					<strong>Rect.right</strong>
+				</dt>
+				<dd>
+					The x-value of the right boundary of the rectangle.
+
+
+				</dd>
+				<dt>
+					<a name="Rect.top"></a>
+					<strong>Rect.top</strong>
+				</dt>
+				<dd>
+					The y-value of the top boundary of the rectangle.
+
+
+				</dd>
+				<dt>
+					<a name="Rect.bottom"></a>
+					<strong>Rect.bottom</strong>
+				</dt>
+				<dd>
+					The y-value of the bottom boundary of the rectangle.
+
+
+				</dd>
+			</dl>
+			<h2><a name="Class_Relationship"></a>Class Relationship </h2>
+
+			This class represents a relationship component.
+			The root relationship serves as a tag for entities inside the scene hierarchy that
+			do have a parent entity. Entities that have no specified hierarchy status
+			(relationship or <a href="index.html#Root">Root</a> component) won't be rendered.
+			<dl class="function">
+				<dt>
+					<a name="Relationship.parent"></a>
+					<strong>Relationship.parent</strong>
+				</dt>
+				<dd>
+					The parent entity.
+
+
+				</dd>
+			</dl>
+			<h2><a name="Class_Root"></a>Class Root </h2>
+
+			This class represents a root component.
+			The root component serves as a tag for entities inside the scene hierarchy that
+			don't have a parent entity. Entities that have no specified hierarchy status
+			(root or <a href="index.html#Relationship">Relationship</a> component) won't be rendered.
+			<dl class="function">
+				<dt>
+					<a name="Root._"></a>
+					<strong>Root._</strong>
+				</dt>
+				<dd>
+					Ignore this.
+					This placeholder forces the root component to appear in the documentation.
+					It is needed since this is an empty type.
+
+
+				</dd>
+			</dl>
+			<h2><a name="Class_ShaderProgram"></a>Class ShaderProgram </h2>
+
+			This class represents a shader program.
+			This is a handle to a shader program that resides in GPU memory. Handles can be
+			retrieved by calling <a href="index.html#c2k.assets.shaderProgram">c2k.assets.shaderProgram</a> and passing
+			a global unique id (GUID)
+			as a string.
+			<dl class="function">
+				<dt>
+					<a name="ShaderProgram.guid"></a>
+					<strong>ShaderProgram.guid</strong>
+				</dt>
+				<dd>
+					The global unique id (GUID) of this shader program.
+
+
+				</dd>
+			</dl>
+			<h2><a name="Class_SpriteSheet"></a>Class SpriteSheet </h2>
+
+			This class represents a sprite sheet.
+			This is a handle to a sprite sheet. Handles can be retrieved by calling
+			<a href="index.html#c2k.assets.spriteSheet">c2k.assets.spriteSheet</a> and passing a global unique id (GUID)
+			as a string.
+			<dl class="function">
+				<dt>
+					<a name="SpriteSheet.frames"></a>
+					<strong>SpriteSheet.frames</strong>
+				</dt>
+				<dd>
+					The list of frames of this sprite sheet.
+
+
+					<h3>See also:</h3>
+					<ul>
+						<a href="index.html#SpriteSheetFrame">SpriteSheetFrame</a>
+					</ul>
+
+
+				</dd>
+				<dt>
+					<a name="SpriteSheet.texture"></a>
+					<strong>SpriteSheet.texture</strong>
+				</dt>
+				<dd>
+					The texture that should be used with this sprite sheet.
+
+
+					<h3>See also:</h3>
+					<ul>
+						<a href="index.html#Texture">Texture</a>
+					</ul>
+
+
+				</dd>
+			</dl>
+			<h2><a name="Class_SpriteSheetFrame"></a>Class SpriteSheetFrame </h2>
+
+			This class represents a single frame of a <a href="index.html#SpriteSheet">SpriteSheet</a>.
+			<dl class="function">
+				<dt>
+					<a name="SpriteSheetFrame.rect"></a>
+					<strong>SpriteSheetFrame.rect</strong>
+				</dt>
+				<dd>
+					The texture rect for this sprite sheet frame as normalized coordinates.
+
+
+				</dd>
+				<dt>
+					<a name="SpriteSheetFrame.sourceWidth"></a>
+					<strong>SpriteSheetFrame.sourceWidth</strong>
+				</dt>
+				<dd>
+					The width of the original sprite graphic in pixels.
+
+
+				</dd>
+				<dt>
+					<a name="SpriteSheetFrame.sourceHeight"></a>
+					<strong>SpriteSheetFrame.sourceHeight</strong>
+				</dt>
+				<dd>
+					The height of the original sprite graphic in pixels.
+
+
+				</dd>
+			</dl>
+			<h2><a name="Class_Texture"></a>Class Texture </h2>
+
+			This class represents a texture.
+			This is a handle to a texture that resides in GPU memory. Handles can be
+			retrieved by calling <a href="index.html#c2k.assets.texture">c2k.assets.texture</a> and passing a global
+			unique id (GUID)
+			as a string.
+			<h3>Usage:</h3>
+			<pre class="example"><span class="global">print</span>(<span
+					class="string">"The width of this texture is "</span> .. c2k.assets.texture(<span class="string">"dff006d0-3c6e-4a22-99ff-2b2af8fdc770"</span>).width .. <span
+					class="string">" pixels"</span>)</pre>
+			<dl class="function">
+				<dt>
+					<a name="Texture.guid"></a>
+					<strong>Texture.guid</strong>
+				</dt>
+				<dd>
+					The global unique id (GUID) of this texture.
+
+
+				</dd>
+				<dt>
+					<a name="Texture.width"></a>
+					<strong>Texture.width</strong>
+				</dt>
+				<dd>
+					The width of this texture in pixels.
+
+
+				</dd>
+				<dt>
+					<a name="Texture.height"></a>
+					<strong>Texture.height</strong>
+				</dt>
+				<dd>
+					The height of this texture in pixels.
+
+
+				</dd>
+				<dt>
+					<a name="Texture.numChannels"></a>
+					<strong>Texture.numChannels</strong>
+				</dt>
+				<dd>
+					The number of channels of this texture.
+
+
+				</dd>
+			</dl>
+			<h2><a name="Class_Time"></a>Class Time </h2>
+
+			This class represents timing information.
+			The data provided inside an object of this type represents timing information
+			for the current frame. An object of this type should only be obtained by
+			calling <a href="index.html#getTime">getTime</a>.
+			<h3>Usage:</h3>
+			<pre class="example"><span class="global">print</span>(<span class="string">"The main loop is running since "</span> .. getTime().elapsed .. <span
+					class="string">" seconds"</span>)</pre>
+			<dl class="function">
+				<dt>
+					<a name="Time.elapsed"></a>
+					<strong>Time.elapsed</strong>
+				</dt>
+				<dd>
+					The elapsed time since the start of the engine's main loop.
+
+
+				</dd>
+				<dt>
+					<a name="Time.delta"></a>
+					<strong>Time.delta</strong>
+				</dt>
+				<dd>
+					The duration of the last frame.
+
+
+				</dd>
+			</dl>
+			<h2><a name="Class_Transform"></a>Class Transform </h2>
+
+			This class represents a transform component.
+			<dl class="function">
+				<dt>
+					<a name="Transform.position"></a>
+					<strong>Transform.position</strong>
+				</dt>
+				<dd>
+					The position components of the transform.
+					The position is encoded as a three-dimensional vector.
+
+
+					<h3>See also:</h3>
+					<ul>
+						<a href="index.html#Vec3">Vec3</a>
+					</ul>
+
+
+				</dd>
+				<dt>
+					<a name="Transform.rotation"></a>
+					<strong>Transform.rotation</strong>
+				</dt>
+				<dd>
+					The rotation of the transform (in radians).
+
+
+				</dd>
+				<dt>
+					<a name="Transform.scale"></a>
+					<strong>Transform.scale</strong>
+				</dt>
+				<dd>
+					The scale of the transform.
+					The scale is encoded as a two-dimensional vector.
+
+
+					<h3>See also:</h3>
+					<ul>
+						<a href="index.html#Vec2">Vec2</a>
+					</ul>
+
+
+				</dd>
+			</dl>
+			<h2><a name="Class_Vec2"></a>Class Vec2 </h2>
+
+			This class represents a two-dimensional vector.
+			<dl class="function">
+				<dt>
+					<a name="Vec2.x"></a>
+					<strong>Vec2.x</strong>
+				</dt>
+				<dd>
+					The x-value.
+
+
+				</dd>
+				<dt>
+					<a name="Vec2.y"></a>
+					<strong>Vec2.y</strong>
+				</dt>
+				<dd>
+					The y-value.
+
+
+				</dd>
+			</dl>
+			<h2><a name="Class_Vec3"></a>Class Vec3 </h2>
+
+			This class represents a three-dimensional vector.
+			<dl class="function">
+				<dt>
+					<a name="Vec3.x"></a>
+					<strong>Vec3.x</strong>
+				</dt>
+				<dd>
+					The x-value.
+
+
+				</dd>
+				<dt>
+					<a name="Vec3.y"></a>
+					<strong>Vec3.y</strong>
+				</dt>
+				<dd>
+					The y-value.
+
+
+				</dd>
+				<dt>
+					<a name="Vec3.z"></a>
+					<strong>Vec3.z</strong>
+				</dt>
+				<dd>
+					The z-value.
+
+
+				</dd>
+			</dl>
+
+
+		</div> <!-- id="content" -->
+	</div> <!-- id="main" -->
+	<div id="about">
+		<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.3</a></i>
+		<i style="float:right;">Last updated 2021-09-14 19:47:28 </i>
+	</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>
