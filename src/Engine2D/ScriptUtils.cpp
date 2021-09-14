@@ -20,9 +20,15 @@ static_assert(MAGIC_ENUM_RANGE_MAX >=
 
 namespace c2k::ScriptUtils {
 
-    // TODO: allow nested namespaces
-    inline void createNamespace(sol::state& luaState, const std::string& namespaceName) noexcept {
-        luaState[namespaceName] = luaState.create_table();
+    template<typename... Rest>
+    inline void createNamespace(auto& parent, const std::string& first, Rest... rest) noexcept {
+        auto namespaceTable = parent[first];
+        if (!namespaceTable.valid()) {
+            namespaceTable.set(sol::create);
+        }
+        if constexpr (sizeof...(Rest) > 0) {
+            createNamespace(namespaceTable, rest...);
+        }
     }
 
     inline void provideMathDataTypes(sol::state& luaState) noexcept {
@@ -78,11 +84,11 @@ namespace c2k::ScriptUtils {
     }
 
     inline void provideInputAPI(ApplicationContext& applicationContext, sol::state& luaState) noexcept {
-        luaState["Key"] = luaState.create_table();
+        createNamespace(luaState, "Key");
         for (const auto& entry : magic_enum::enum_entries<Key>()) {
             luaState["Key"][entry.second] = static_cast<typename std::underlying_type<Key>::type>(entry.first);
         }
-        luaState["MouseButton"] = luaState.create_table();
+        createNamespace(luaState, "MouseButton");
         for (const auto& entry : magic_enum::enum_entries<MouseButton>()) {
             luaState["MouseButton"][entry.second] =
                     static_cast<typename std::underlying_type<MouseButton>::type>(entry.first);
@@ -124,7 +130,7 @@ namespace c2k::ScriptUtils {
     }
 
     inline void provideAssetsAPI(ApplicationContext& applicationContext, sol::state& luaState) noexcept {
-        luaState["c2k"]["assets"] = luaState.create_table();
+        createNamespace(luaState, "c2k", "assets");
         luaState["c2k"]["assets"]["texture"] = [&](const std::string& guidString) {
             const auto& texture = applicationContext.assetDatabase.texture(GUID::fromString(guidString));
             return LuaTexture{ .guid{ texture.guid.string() },
