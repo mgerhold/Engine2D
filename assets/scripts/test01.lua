@@ -26,7 +26,7 @@ function update(entity)
 
     if input:keyPressed(Key.G) then
         if numSpawnedEntities < maxNumSpawnedEntities and currentlySpawning then
-            spawnedEntities[entity.id] = entity.new()
+            spawnedEntities[entity.id] = Entity.new()
 
             newTransform = spawnedEntities[entity.id]:attachTransform()
             newTransform.position.x = math.random(-200, 200)

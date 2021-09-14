@@ -101,7 +101,7 @@ add_definitions(-DBOOST_UUID_FORCE_AUTO_LINK)
 foreach (target ${TARGET_LIST})
     # set warning levels
     if (MSVC)
-        target_compile_options(${target} PUBLIC /W4 /permissive-)
+        target_compile_options(${target} PUBLIC /W4 /permissive- /bigobj)
     else ()
         target_compile_options(${target} PUBLIC -Wall -Wextra -pedantic -Wconversion -pthread -ltbb)
     endif ()

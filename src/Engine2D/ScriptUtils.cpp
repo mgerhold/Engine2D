@@ -40,7 +40,7 @@ namespace c2k::ScriptUtils {
                                         &Rect::bottom);
         }
 
-        inline void defineBasicEngineDataTypes(ApplicationContext& applicationContext, sol::state& luaState) noexcept {
+        inline void defineBasicEngineDataTypes(sol::state& luaState) noexcept {
             luaState.new_usertype<LuaEntity>("Entity", "id", &LuaEntity::id);
             luaState.new_usertype<Color>("Color", "r", &Color::r, "g", &Color::g, "b", &Color::b, "a", &Color::a);
             luaState.new_usertype<Time>("Time", "elapsed", sol::readonly(&Time::elapsed), "delta",
@@ -48,6 +48,24 @@ namespace c2k::ScriptUtils {
             luaState.new_usertype<LuaTexture>("Texture", "guid", &LuaTexture::guid, "width", &LuaTexture::width,
                                               "height", &LuaTexture::height, "numChannels", &LuaTexture::numChannels);
             luaState.new_usertype<LuaShaderProgram>("ShaderProgram", "guid", &LuaShaderProgram::guid);
+            luaState.new_usertype<SpriteSheet::Frame>("SpriteSheetFrame", "rect", &SpriteSheet::Frame::rect,
+                                                      "sourceWidth", &SpriteSheet::Frame::sourceWidth, "sourceHeight",
+                                                      &SpriteSheet::Frame::sourceHeight);
+            luaState.new_usertype<SpriteSheet>(
+                    "SpriteSheet", "frames",
+                    sol::property([](SpriteSheet& spriteSheet) -> std::vector<SpriteSheet::Frame>& {
+                        return spriteSheet.frames;
+                    }),
+                    "texture", sol::property([&](const SpriteSheet& spriteSheet) {
+                        const auto& texture = *spriteSheet.texture;
+                        return LuaTexture{ .guid{ texture.guid.string() },
+                                           .width{ texture.width() },
+                                           .height{ texture.height() },
+                                           .numChannels{ texture.numChannels() } };
+                    }));
+        }
+
+        inline void defineTimeGetter(ApplicationContext& applicationContext, sol::state& luaState) noexcept {
             luaState["c2k"]["getTime"] = [&]() { return applicationContext.time; };
         }
 
@@ -216,22 +234,32 @@ namespace c2k::ScriptUtils {
                     return LuaShaderProgram{ .guid{ shaderProgram.guid.string() } };
                 };
             }
+
+            inline void provideSpriteSheetAPI(ApplicationContext& applicationContext, sol::state& luaState) noexcept {
+                luaState["c2k"]["assets"]["spriteSheet"] = [&](const std::string& guidString) {
+                    const auto& spriteSheet =
+                            applicationContext.assetDatabase.spriteSheet(GUID::fromString(guidString));
+                    return spriteSheet;
+                };
+            }
         }// namespace AssetsAPI
 
         inline void provideAssetsAPI(ApplicationContext& applicationContext, sol::state& luaState) noexcept {
             createNamespace(luaState, "c2k", "assets");
             AssetsAPI::provideTextureAssetsAPI(applicationContext, luaState);
             AssetsAPI::provideShaderProgramAPI(applicationContext, luaState);
+            AssetsAPI::provideSpriteSheetAPI(applicationContext, luaState);
         }
 
         inline void defineTypes(ApplicationContext& applicationContext, sol::state& luaState) noexcept {
             defineMathDataTypes(luaState);
-            defineBasicEngineDataTypes(applicationContext, luaState);
+            defineBasicEngineDataTypes(luaState);
             defineComponentTypes(applicationContext, luaState);
         }
 
         inline void provideAPIs(ApplicationContext& applicationContext, sol::state& luaState) noexcept {
             provideInputAPI(applicationContext, luaState);
+            defineTimeGetter(applicationContext, luaState);
             provideEntityAPI(applicationContext, luaState);
             provideAssetsAPI(applicationContext, luaState);
         }

@@ -14,6 +14,11 @@
       "guid": "c22764c9-9750-4749-810e-10f4c6f50123",
       "filename": "textures/fire.png",
       "group": ""
+    },
+    {
+      "guid": "105cefb4-cec3-4bde-a0da-c85f5b6d8bbc",
+      "filename": "textures/icons.png",
+      "group": ""
     }
   ],
   "shaderPrograms": [
@@ -34,6 +39,11 @@
       "guid": "88cc0c19-cda5-4633-9e25-70635437a368",
       "filename": "scripts/test02.lua",
       "group": ""
+    },
+    {
+      "guid": "afcdc904-20a0-4185-8d8f-d9ba0d61eb37",
+      "filename": "scripts/spritesheettest.lua",
+      "group": ""
     }
   ],
   "spriteSheets": [
@@ -42,6 +52,12 @@
       "filename": "spritesheets/fire.json",
       "group": "",
       "texture": "c22764c9-9750-4749-810e-10f4c6f50123"
+    },
+    {
+      "guid": "22171ab7-6b8b-474f-bf24-366724625641",
+      "filename": "spritesheets/icons.json",
+      "group": "",
+      "texture": "105cefb4-cec3-4bde-a0da-c85f5b6d8bbc"
     }
   ]
 }

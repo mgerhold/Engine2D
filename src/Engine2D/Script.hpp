@@ -39,7 +39,11 @@ namespace c2k {
 
         void invokeOnAttach(ScriptUtils::LuaEntity luaEntity) noexcept {
             if (mOnAttachFunction.valid()) {
-                mOnAttachFunction(luaEntity);
+                sol::protected_function_result result = mOnAttachFunction(luaEntity);
+                if (!result.valid()) {
+                    sol::error error = result;
+                    spdlog::error("Error executing onAttach()-function: {}", error.what());
+                }
             }
         }
 

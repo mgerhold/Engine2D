@@ -32,6 +32,8 @@ namespace c2k {
         const glm::vec2 fireTextureSize{
             textureHeight * mAssetDatabase.spriteSheet(spriteSheetGUID).frames[0].getWidthToHeightRatio(), textureHeight
         };
+        mRegistry.createEntity(ScriptComponent{
+                .script{ &mAssetDatabase.scriptMutable(GUID::fromString("afcdc904-20a0-4185-8d8f-d9ba0d61eb37")) } });
         const auto anchor = mRegistry.createEntity(TransformComponent{}, RootComponent{});
         mRegistry.createEntity(
                 TransformComponent{ .scale{ fireTextureSize * 2.0f } },
