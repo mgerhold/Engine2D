@@ -66,7 +66,10 @@ namespace c2k::ScriptUtils {
         }
 
         inline void defineTimeGetter(ApplicationContext& applicationContext, sol::state& luaState) noexcept {
-            luaState["c2k"]["getTime"] = [&]() { return applicationContext.time; };
+            luaState["c2k"]["getTime"] = [&]() {
+                // return as pointer to allow reference semantics in Lua
+                return &applicationContext.time;
+            };
         }
 
         namespace ComponentTypes {
@@ -204,7 +207,10 @@ namespace c2k::ScriptUtils {
             }
 
             inline void provideInputGetter(ApplicationContext& applicationContext, sol::state& luaState) noexcept {
-                luaState["c2k"]["getInput"] = [&]() { return applicationContext.input; };
+                luaState["c2k"]["getInput"] = [&]() {
+                    // return as pointer to allow reference semantics in Lua
+                    return &applicationContext.input;
+                };
             }
 
         }// namespace InputAPI
