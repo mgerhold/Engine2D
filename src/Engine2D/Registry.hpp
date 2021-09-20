@@ -109,7 +109,6 @@ namespace c2k {
                             Identifier{ gsl::narrow_cast<Entity>(mEntities.size()) }, Generation{ 0 }));
                     if (mComponentHolder.size() < mEntities.capacity()) {
                         // TODO: add option to deny resizing
-                        spdlog::warn("Resizing all component containers to new size: {}", mEntities.capacity());
                         mComponentHolder.resize(mEntities.capacity());
                     }
                     return result;

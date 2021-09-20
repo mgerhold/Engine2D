@@ -147,10 +147,13 @@ namespace c2k {
         }
 
         void refreshWindowTitle() noexcept {
-            glfwSetWindowTitle(
-                    mWindow.getGLFWWindowPointer(),
-                    fmt::format("{:.2f} ms ({:.2f} fps)", mTime.meanFrameTime() * 1000.0, mTime.meanFramesPerSecond)
-                            .c_str());
+            static std::string titleText = "";
+            const auto targetTitleText =
+                    fmt::format("{:.2f} ms ({:.2f} fps)", mTime.meanFrameTime() * 1000.0, mTime.meanFramesPerSecond);
+            if (titleText != targetTitleText) {
+                glfwSetWindowTitle(mWindow.getGLFWWindowPointer(), targetTitleText.c_str());
+                titleText = targetTitleText;
+            }
         }
 
     protected:
