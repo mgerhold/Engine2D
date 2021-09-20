@@ -54,7 +54,6 @@ add_library(Engine2D STATIC
         src/Engine2D/Entity.hpp
         src/Engine2D/optional/optional.hpp
         src/Engine2D/Component.hpp
-        src/Engine2D/System.hpp
         src/Engine2D/AssetDatabase.cpp
         src/Engine2D/AssetDatabase.hpp
         src/Engine2D/GUID.hpp
@@ -66,7 +65,6 @@ add_library(Engine2D STATIC
         src/Engine2D/AssetList.hpp
         src/Engine2D/FileUtils.cpp
         src/Engine2D/FileUtils.hpp
-        src/Engine2D/PredefinedSystems.hpp
         src/Engine2D/Random.cpp
         src/Engine2D/Random.hpp
         src/Engine2D/pch.hpp
@@ -79,13 +77,11 @@ add_library(Engine2D STATIC
         src/Engine2D/Rect.hpp
         src/Engine2D/GUID.cpp
         src/Engine2D/ApplicationContext.hpp
-        src/Engine2D/PredefinedSystems.cpp
         src/Engine2D/Script.cpp
         src/Engine2D/Script.hpp
         src/Engine2D/ScriptUtils.cpp
         src/Engine2D/ScriptUtils.hpp
         src/Engine2D/ApplicationContext.cpp
-        src/Engine2D/Registry.cpp
         src/Engine2D/SparseSet.cpp)
 add_executable(Sandbox src/Sandbox/main.cpp src/Sandbox/Sandbox.hpp src/Sandbox/Sandbox.cpp)
 target_include_directories(Sandbox PUBLIC ${PROJECT_SOURCE_DIR}/src/Engine2D)

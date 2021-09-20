@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "Entity.hpp"
+
 namespace c2k {
 
     class Renderer;
@@ -17,13 +19,15 @@ namespace c2k {
                            Registry& registry,
                            Time& time,
                            Input& input,
-                           AssetDatabase& assetDatabase) noexcept;
+                           AssetDatabase& assetDatabase,
+                           Entity mainCameraEntity) noexcept;
 
         Renderer& renderer;
         Registry& registry;
         Time& time;
         Input& input;
         AssetDatabase& assetDatabase;
+        Entity mainCameraEntity;
     };
 
 }// namespace c2k
