@@ -79,6 +79,10 @@
                     <td class="summary">Retrieves a texture handle.</td>
                 </tr>
                 <tr>
+                    <td class="name" nowrap><a href="#c2k.assets.script">c2k.assets.script (guid)</a></td>
+                    <td class="summary">Retrieves a script handle.</td>
+                </tr>
+                <tr>
                     <td class="name" nowrap><a href="#getTime">getTime ()</a></td>
                     <td class="summary">Retrieves timing information.</td>
                 </tr>
@@ -136,6 +140,10 @@
                     <td class="summary">Constructs a new entity.</td>
                 </tr>
                 <tr>
+                    <td class="name" nowrap><a href="#Entity:invalid">Entity:invalid ()</a></td>
+                    <td class="summary">Returns an invalid entity.</td>
+                </tr>
+                <tr>
                     <td class="name" nowrap><a href="#Entity:destroy">Entity:destroy ()</a></td>
                     <td class="summary">Destroys the entity and all of its components.</td>
                 </tr>
@@ -146,6 +154,10 @@
                 <tr>
                     <td class="name" nowrap><a href="#Entity:attachDynamicSprite">Entity:attachDynamicSprite ()</a></td>
                     <td class="summary">Attaches a newly created dynamic sprite component to the entity.</td>
+                </tr>
+                <tr>
+                    <td class="name" nowrap><a href="#Entity:attachScript">Entity:attachScript (script)</a></td>
+                    <td class="summary">Attaches a script component to the entity.</td>
                 </tr>
                 <tr>
                     <td class="name" nowrap><a href="#Entity:getTransform">Entity:getTransform ()</a></td>
@@ -432,6 +444,29 @@
 
                 </dd>
                 <dt>
+                    <a name="c2k.assets.script"></a>
+                    <strong>c2k.assets.script (guid)</strong>
+                </dt>
+                <dd>
+                    Retrieves a script handle.
+
+
+                    <h3>Parameters:</h3>
+                    <ul>
+                        <li><span class="parameter">guid</span>
+                            The global unique id of the script.
+                        </li>
+                    </ul>
+
+
+                    <h3>See also:</h3>
+                    <ul>
+                        <a href="index.html#Script">Script</a>
+                    </ul>
+
+
+                </dd>
+                <dt>
                     <a name="getTime"></a>
                     <strong>getTime ()</strong>
                 </dt>
@@ -623,11 +658,21 @@
 
                 </dd>
                 <dt>
+                    <a name="Entity:invalid"></a>
+                    <strong>Entity:invalid ()</strong>
+                </dt>
+                <dd>
+                    Returns an invalid entity.
+
+
+                </dd>
+                <dt>
                     <a name="Entity:destroy"></a>
                     <strong>Entity:destroy ()</strong>
                 </dt>
                 <dd>
                     Destroys the entity and all of its components.
+                    The entity will be implicitly set to an invalid entity after it has been destroyed.
 
 
                 </dd>
@@ -662,6 +707,30 @@
                         <span class="types"><a class="type" href="index.html#DynamicSprite">DynamicSprite</a></span>
                         the dynamic sprite component that has been attached
                     </ol>
+
+
+                </dd>
+                <dt>
+                    <a name="Entity:attachScript"></a>
+                    <strong>Entity:attachScript (script)</strong>
+                </dt>
+                <dd>
+                    Attaches a script component to the entity.
+
+
+                    <h3>Parameters:</h3>
+                    <ul>
+                        <li><span class="parameter">script</span>
+                            <span class="types"><a class="type" href="index.html#Script">Script</a></span>
+                            the handle to the script that should be attached
+                        </li>
+                    </ul>
+
+
+                    <h3>See also:</h3>
+                    <ul>
+                        <a href="index.html#Script">Script</a>
+                    </ul>
 
 
                 </dd>
@@ -1020,7 +1089,8 @@
             <h2><a name="Class_Script"></a>Class Script </h2>
 
             This class represents a script.
-            This is a handle to a script. Handles can be retrieved by calling ??? and
+            This is a handle to a script. Handles can be retrieved by calling <a href="index.html#c2k.assets.script">c2k.assets.script</a>
+            and
             passing a global unique id (GUID) as a string.
             <dl class="function">
                 <dt>
@@ -1306,7 +1376,7 @@
     </div> <!-- id="main" -->
     <div id="about">
         <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.3</a></i>
-        <i style="float:right;">Last updated 2021-09-20 14:09:33 </i>
+        <i style="float:right;">Last updated 2021-09-20 17:29:35 </i>
     </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

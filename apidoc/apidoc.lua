@@ -95,7 +95,12 @@ Entity.id = 0
 function Entity.new()
 end
 
+--- Returns an invalid entity.
+function Entity.invalid()
+end
+
 --- Destroys the entity and all of its components.
+-- The entity will be implicitly set to an invalid entity after it has been destroyed.
 function Entity:destroy()
 end
 

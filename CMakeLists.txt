@@ -82,7 +82,7 @@ add_library(Engine2D STATIC
         src/Engine2D/ScriptUtils.cpp
         src/Engine2D/ScriptUtils.hpp
         src/Engine2D/ApplicationContext.cpp
-        src/Engine2D/SparseSet.cpp)
+        src/Engine2D/SparseSet.cpp src/Engine2D/BufferedScriptCommand.hpp src/Engine2D/BufferedScriptCommands.cpp)
 add_executable(Sandbox src/Sandbox/main.cpp src/Sandbox/Sandbox.hpp src/Sandbox/Sandbox.cpp)
 target_include_directories(Sandbox PUBLIC ${PROJECT_SOURCE_DIR}/src/Engine2D)
 add_dependencies(Sandbox Engine2D)

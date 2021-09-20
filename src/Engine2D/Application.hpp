@@ -114,6 +114,10 @@ namespace c2k {
             for (auto&& [entity, scriptComponent] : mRegistry.components<ScriptComponent>()) {
                 scriptComponent.script->invokeUpdate(entity);
             }
+            for (const auto& command : mAppContext.bufferedScriptCommands) {
+                std::visit([this](auto&& typedCommand) { typedCommand.process(mAppContext); }, command);
+            }
+            mAppContext.bufferedScriptCommands.clear();
         }
 
         void renderDynamicSprites() noexcept {

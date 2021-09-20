@@ -7,6 +7,7 @@ end
 function update(thisEntity)
     local elapsed = time.elapsed
     if elapsed >= nextPrint then
+        counter = counter + 1
         print(counter .. " seconds elapsed")
         nextPrint = elapsed + 1.0
     end

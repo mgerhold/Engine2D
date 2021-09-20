@@ -5,6 +5,8 @@
 #pragma once
 
 #include "Entity.hpp"
+#include "BufferedScriptCommand.hpp"
+#include <vector>
 
 namespace c2k {
 
@@ -28,6 +30,7 @@ namespace c2k {
         Input& input;
         AssetDatabase& assetDatabase;
         Entity mainCameraEntity;
+        std::vector<BufferedScriptCommands::Command> bufferedScriptCommands;
     };
 
 }// namespace c2k

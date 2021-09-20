@@ -117,12 +117,15 @@ namespace c2k::ScriptUtils {
             inline void provideConstructionAPI(ApplicationContext& applicationContext,
                                                sol::usertype<LuaEntity>& entityType) noexcept {
                 entityType["new"] = [&]() { return LuaEntity{ applicationContext.registry.createEntity() }; };
+                entityType["invalid"] = []() { return LuaEntity{ invalidEntity }; };
             }
 
             inline void provideDestructionAPI(ApplicationContext& applicationContext,
                                               sol::usertype<LuaEntity>& entityType) noexcept {
-                entityType["destroy"] = [&](LuaEntity luaEntity) {
-                    applicationContext.registry.destroyEntity(luaEntity);
+                entityType["destroy"] = [&](LuaEntity& luaEntity) {
+                    applicationContext.bufferedScriptCommands.emplace_back(
+                            BufferedScriptCommands::DestroyEntity{ .targetEntity{ luaEntity } });
+                    luaEntity = invalidEntity;
                 };
             }
 
@@ -141,9 +144,9 @@ namespace c2k::ScriptUtils {
             inline void provideScriptAPI(ApplicationContext& applicationContext,
                                          sol::usertype<LuaEntity>& entityType) noexcept {
                 entityType["attachScript"] = [&](LuaEntity luaEntity, const LuaScript& luaScript) {
-                    applicationContext.registry.attachComponent<ScriptComponent>(
-                            luaEntity, ScriptComponent{ .script{ &applicationContext.assetDatabase.scriptMutable(
-                                               GUID::fromString(luaScript.guid)) } });
+                    applicationContext.bufferedScriptCommands.emplace_back(
+                            BufferedScriptCommands::AttachScript{ .scriptGUID{ GUID::fromString(luaScript.guid) },
+                                                                  .targetEntity{ luaEntity } });
                 };
             }
 
