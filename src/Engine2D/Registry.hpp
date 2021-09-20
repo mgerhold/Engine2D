@@ -105,13 +105,14 @@ namespace c2k {
                     assert(static_cast<std::size_t>(getIdentifierBitsFromEntity(mEntities[index])) == index);
                     return mEntities[index];
                 } else {
-                    mEntities.push_back(entityFromIdentifierAndGeneration(
+                    const auto result = mEntities.emplace_back(entityFromIdentifierAndGeneration(
                             Identifier{ gsl::narrow_cast<Entity>(mEntities.size()) }, Generation{ 0 }));
-                    // TODO: add option to deny resizing
-                    if (mComponentHolder.size() < mEntities.size()) {
-                        mComponentHolder.resize(mEntities.size());
+                    if (mComponentHolder.size() < mEntities.capacity()) {
+                        // TODO: add option to deny resizing
+                        spdlog::warn("Resizing all component containers to new size: {}", mEntities.capacity());
+                        mComponentHolder.resize(mEntities.capacity());
                     }
-                    return mEntities.back();
+                    return result;
                 }
             }();// immediately invoked
             attachComponents(entity, components...);
