@@ -31,6 +31,10 @@ namespace c2k::ScriptUtils {
         std::string guid;
     };
 
+    struct LuaScript {
+        std::string guid;
+    };
+
     void provideAPI(ApplicationContext& applicationContext, sol::state& luaState) noexcept;
 
 }// namespace c2k::ScriptUtils

@@ -32,8 +32,12 @@ namespace c2k {
         const glm::vec2 fireTextureSize{
             textureHeight * mAssetDatabase.spriteSheet(spriteSheetGUID).frames[0].getWidthToHeightRatio(), textureHeight
         };
+        // entity with spritesheettest.lua script attached
         mRegistry.createEntity(ScriptComponent{
                 .script{ &mAssetDatabase.scriptMutable(GUID::fromString("afcdc904-20a0-4185-8d8f-d9ba0d61eb37")) } });
+        // entity with entityspawner.lua script attached
+        mRegistry.createEntity(ScriptComponent{
+                .script{ &mAssetDatabase.scriptMutable(GUID::fromString("9632ed81-76ce-469c-b909-09a754877ae9")) } });
         const auto anchor = mRegistry.createEntity(TransformComponent{}, RootComponent{});
         mRegistry.createEntity(
                 TransformComponent{ .scale{ fireTextureSize * 2.0f } },

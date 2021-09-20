@@ -59,7 +59,6 @@ abbr, acronym {
 sup {
     vertical-align: baseline;
 }
-
 sub {
     vertical-align: baseline;
 }
@@ -317,7 +316,6 @@ table.index td {
     #navigation {
         display: none;
     }
-
     pre.example {
         font-family: "Andale Mono", monospace;
         font-size: 10pt;

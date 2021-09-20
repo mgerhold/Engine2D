@@ -22,7 +22,7 @@ print("Warning: Default script on entity " .. entity.id)
 end)");
     }
 
-    Script::Script(std::string source) noexcept {
+    Script::Script(std::string source, GUID guid) noexcept : guid{ guid } {
         assert(sApplicationContext != nullptr &&
                "Scripts can only be instantiated after setting the application context.");
         mLuaState->open_libraries(sol::lib::base, sol::lib::math);
@@ -36,8 +36,8 @@ end)");
         mUpdateFunction = mLuaState->get<sol::protected_function>("update");
     }
 
-    tl::expected<Script, std::string> Script::loadFromFile(const std::filesystem::path& filename) noexcept {
-        return Script{ FileUtils::readTextFile(filename) };
+    tl::expected<Script, std::string> Script::loadFromFile(const std::filesystem::path& filename, GUID guid) noexcept {
+        return Script{ FileUtils::readTextFile(filename), guid };
     }
 
     void Script::setApplicationContext(ApplicationContext& context) noexcept {

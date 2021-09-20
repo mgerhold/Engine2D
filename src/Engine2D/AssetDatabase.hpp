@@ -56,7 +56,7 @@ namespace c2k {
 
         Script& loadScript(const std::filesystem::path& filename, GUID guid) noexcept {
             return load<Script>(
-                    guid, [&filename]() { return Script::loadFromFile(filename); }, mDebugFallbackScript);
+                    guid, [&filename, guid]() { return Script::loadFromFile(filename, guid); }, mDebugFallbackScript);
         }
 
         [[nodiscard]] Texture& textureMutable(GUID guid) noexcept {

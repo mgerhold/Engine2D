@@ -9,16 +9,17 @@
 #include "Entity.hpp"
 #include "ApplicationContext.hpp"
 #include "expected/expected.hpp"
+#include "GUID.hpp"
 
 namespace c2k {
 
     class Script {
     public:
         Script() noexcept;
-        explicit Script(std::string source) noexcept;
+        explicit Script(std::string source, GUID guid) noexcept;
 
-        [[nodiscard]] static tl::expected<Script, std::string> loadFromFile(
-                const std::filesystem::path& filename) noexcept;
+        [[nodiscard]] static tl::expected<Script, std::string> loadFromFile(const std::filesystem::path& filename,
+                                                                            GUID guid = GUID{}) noexcept;
 
         static void setApplicationContext(ApplicationContext& context) noexcept;
 
@@ -56,6 +57,9 @@ namespace c2k {
                 }
             }
         }
+
+    public:
+        GUID guid;
 
     private:
         std::unique_ptr<sol::state> mLuaState{ std::make_unique<sol::state>() };// indirection to keep references valid

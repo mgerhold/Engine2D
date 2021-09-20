@@ -48,6 +48,7 @@ namespace c2k::ScriptUtils {
             luaState.new_usertype<LuaTexture>("Texture", "guid", &LuaTexture::guid, "width", &LuaTexture::width,
                                               "height", &LuaTexture::height, "numChannels", &LuaTexture::numChannels);
             luaState.new_usertype<LuaShaderProgram>("ShaderProgram", "guid", &LuaShaderProgram::guid);
+            luaState.new_usertype<LuaScript>("Script", "guid", &LuaScript::guid);
             luaState.new_usertype<SpriteSheet::Frame>("SpriteSheetFrame", "rect", &SpriteSheet::Frame::rect,
                                                       "sourceWidth", &SpriteSheet::Frame::sourceWidth, "sourceHeight",
                                                       &SpriteSheet::Frame::sourceHeight);
@@ -137,6 +138,16 @@ namespace c2k::ScriptUtils {
                 };
             }
 
+            inline void provideScriptAPI(ApplicationContext& applicationContext,
+                                         sol::usertype<LuaEntity>& entityType) noexcept {
+                entityType["attachScript"] = [&](LuaEntity luaEntity, const LuaScript& luaScript) {
+                    applicationContext.registry.attachComponent<ScriptComponent>(
+                            luaEntity, ScriptComponent{ .script{ &applicationContext.assetDatabase.scriptMutable(
+                                               GUID::fromString(luaScript.guid)) } });
+                };
+            }
+
+
             inline void provideDynamicSpriteAPI(ApplicationContext& applicationContext,
                                                 sol::usertype<LuaEntity>& entityType) noexcept {
                 entityType["getDynamicSprite"] = [&](LuaEntity luaEntity) {
@@ -164,7 +175,6 @@ namespace c2k::ScriptUtils {
                     applicationContext.registry.attachComponent<RootComponent>(luaEntity, RootComponent{});
                 };
             }
-
         }// namespace EntityAPI
 
         inline void provideEntityAPI(ApplicationContext& applicationContext, sol::state& luaState) noexcept {
@@ -172,6 +182,7 @@ namespace c2k::ScriptUtils {
             EntityAPI::provideConstructionAPI(applicationContext, entityType);
             EntityAPI::provideDestructionAPI(applicationContext, entityType);
             EntityAPI::provideTransformAPI(applicationContext, entityType);
+            EntityAPI::provideScriptAPI(applicationContext, entityType);
             EntityAPI::provideDynamicSpriteAPI(applicationContext, entityType);
             EntityAPI::provideHierarchyAPI(applicationContext, entityType);
         }
@@ -248,6 +259,13 @@ namespace c2k::ScriptUtils {
                     return spriteSheet;
                 };
             }
+
+            inline void provideScriptAPI(ApplicationContext& applicationContext, sol::state& luaState) noexcept {
+                luaState["c2k"]["assets"]["script"] = [&](const std::string& guidString) {
+                    const auto& script = applicationContext.assetDatabase.scriptMutable(GUID::fromString(guidString));
+                    return LuaScript{ .guid{ script.guid.string() } };
+                };
+            }
         }// namespace AssetsAPI
 
         inline void provideAssetsAPI(ApplicationContext& applicationContext, sol::state& luaState) noexcept {
@@ -255,6 +273,7 @@ namespace c2k::ScriptUtils {
             AssetsAPI::provideTextureAssetsAPI(applicationContext, luaState);
             AssetsAPI::provideShaderProgramAPI(applicationContext, luaState);
             AssetsAPI::provideSpriteSheetAPI(applicationContext, luaState);
+            AssetsAPI::provideScriptAPI(applicationContext, luaState);
         }
 
         inline void defineTypes(ApplicationContext& applicationContext, sol::state& luaState) noexcept {

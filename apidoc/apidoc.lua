@@ -25,6 +25,12 @@ end
 function c2k.assets.texture(guid)
 end
 
+--- Retrieves a script handle.
+-- @param guid The global unique id of the script.
+-- @see Script
+function c2k.assets.script(guid)
+end
+
 --- Retrieves timing information.
 -- This function returns data about the timing (e. g. delta time) of the current frame.
 -- @see Time
@@ -93,16 +99,6 @@ end
 function Entity:destroy()
 end
 
---- Retrieves the transform component.
--- @treturn Transform the transform component
-function Entity:getTransform()
-end
-
---- Attaches a newly created transform component to the entity.
--- @treturn Transform the transform component that has been attached
-function Entity:attachTransform()
-end
-
 --- Retrieves the dynamic sprite component.
 -- @treturn DynamicSprite the dynamic sprite component
 function Entity:getDynamicSprite()
@@ -111,6 +107,22 @@ end
 --- Attaches a newly created dynamic sprite component to the entity.
 -- @treturn DynamicSprite the dynamic sprite component that has been attached
 function Entity:attachDynamicSprite()
+end
+
+--- Attaches a script component to the entity.
+-- @tparam Script script the handle to the script that should be attached
+-- @see Script
+function Entity:attachScript(script)
+end
+
+--- Retrieves the transform component.
+-- @treturn Transform the transform component
+function Entity:getTransform()
+end
+
+--- Attaches a newly created transform component to the entity.
+-- @treturn Transform the transform component that has been attached
+function Entity:attachTransform()
 end
 
 --- Checks if the entity has a @{Root} component attached.
@@ -211,6 +223,14 @@ Relationship.parent = Entity.new()
 -- This placeholder forces the root component to appear in the documentation.
 -- It is needed since this is an empty type.
 Root._ = ""
+
+--- This class represents a script.
+-- This is a handle to a script. Handles can be retrieved by calling @{c2k.assets.script} and
+-- passing a global unique id (GUID) as a string.
+-- @type Script
+
+--- The global unique id (GUID) of this script.
+Script.guid = ""
 
 --- This class represents a shader program.
 -- This is a handle to a shader program that resides in GPU memory. Handles can be

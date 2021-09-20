@@ -44,6 +44,16 @@
       "guid": "afcdc904-20a0-4185-8d8f-d9ba0d61eb37",
       "filename": "scripts/spritesheettest.lua",
       "group": ""
+    },
+    {
+      "guid": "9632ed81-76ce-469c-b909-09a754877ae9",
+      "filename": "scripts/entityspawner.lua",
+      "group": ""
+    },
+    {
+      "guid": "43e72b36-75d0-4ba7-93c7-d443d649bacc",
+      "filename": "scripts/clock.lua",
+      "group": ""
     }
   ],
   "spriteSheets": [
