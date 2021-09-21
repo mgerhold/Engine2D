@@ -74,10 +74,49 @@ namespace c2k::ScriptUtils {
         }
 
         namespace ComponentTypes {
-            inline void defineTransformType(sol::state& luaState) {
-                luaState.new_usertype<TransformComponent>("Transform", "position", &TransformComponent::position,
+            inline void defineTransformType(ApplicationContext& applicationContext, sol::state& luaState) {
+                luaState.new_usertype<LuaTransform>(
+                        "Transform", "position", sol::property([&](const LuaTransform& luaTransform) -> glm::vec3* {
+                            auto&& transform = applicationContext.registry.componentMutable<TransformComponent>(
+                                    luaTransform.owningEntity);
+                            if (!transform) {
+                                spdlog::error("Invalid transform handle.");
+                                return nullptr;
+                            }
+                            return &(transform->position);
+                        }),
+                        "rotation",
+                        sol::property(
+                                [&](const LuaTransform& luaTransform) {
+                                    auto&& transform = applicationContext.registry.component<TransformComponent>(
+                                            luaTransform.owningEntity);
+                                    if (!transform) {
+                                        spdlog::error("Invalid transform handle.");
+                                        return 0.0f;
+                                    }
+                                    return transform->rotation;
+                                },
+                                [&](const LuaTransform& luaTransform, float rotation) {
+                                    auto&& transform = applicationContext.registry.componentMutable<TransformComponent>(
+                                            luaTransform.owningEntity);
+                                    if (!transform) {
+                                        spdlog::error("Invalid transform handle.");
+                                        return;
+                                    }
+                                    transform->rotation = rotation;
+                                }),
+                        "scale", sol::property([&](const LuaTransform& luaTransform) -> glm::vec2* {
+                            auto&& transform = applicationContext.registry.componentMutable<TransformComponent>(
+                                    luaTransform.owningEntity);
+                            if (!transform) {
+                                spdlog::error("Invalid transform handle.");
+                                return nullptr;
+                            }
+                            return &(transform->scale);
+                        }));
+                /*luaState.new_usertype<TransformComponent>("Transform", "position", &TransformComponent::position,
                                                           "rotation", &TransformComponent::rotation, "scale",
-                                                          &TransformComponent::scale);
+                                                          &TransformComponent::scale);*/
             }
 
             inline void defineDynamicSpriteType(ApplicationContext& applicationContext, sol::state& luaState) {
@@ -171,7 +210,7 @@ namespace c2k::ScriptUtils {
         }// namespace ComponentTypes
 
         inline void defineComponentTypes(ApplicationContext& applicationContext, sol::state& luaState) noexcept {
-            ComponentTypes::defineTransformType(luaState);
+            ComponentTypes::defineTransformType(applicationContext, luaState);
             ComponentTypes::defineDynamicSpriteType(applicationContext, luaState);
         }
 
@@ -195,12 +234,22 @@ namespace c2k::ScriptUtils {
             inline void provideTransformAPI(ApplicationContext& applicationContext,
                                             sol::usertype<LuaEntity>& entityType) noexcept {
                 entityType["getTransform"] = [&](LuaEntity luaEntity) {
-                    auto result = applicationContext.registry.componentMutable<TransformComponent>(luaEntity);
-                    return result ? &result.value() : nullptr;
+                    const Entity entity{ luaEntity };
+                    const auto transform = applicationContext.registry.component<TransformComponent>(entity);
+                    if (!transform) {
+                        spdlog::error("Entity {} does not have a transform component.", entity);
+                        return LuaTransform{ .owningEntity{ invalidEntity } };
+                    }
+                    return LuaTransform{ .owningEntity{ entity } };
                 };
                 entityType["attachTransform"] = [&](LuaEntity luaEntity) {
-                    applicationContext.registry.attachComponent<TransformComponent>(luaEntity, {});
-                    return &applicationContext.registry.componentMutable<TransformComponent>(luaEntity).value();
+                    const Entity entity{ luaEntity };
+                    if (applicationContext.registry.hasComponent<TransformComponent>(entity)) {
+                        spdlog::error("Entity {} already has a transform component.", entity);
+                    } else {
+                        applicationContext.registry.attachComponent<TransformComponent>(entity, {});
+                    }
+                    return LuaTransform{ .owningEntity{ entity } };
                 };
             }
 

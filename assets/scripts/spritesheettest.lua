@@ -12,8 +12,8 @@ function onAttach(entity)
 
     -- attach transform component to this entity
     local transform = entity:attachTransform()
-    transform.scale.x = 60
-    transform.scale.y = 60
+    transform.scale.x = 120
+    transform.scale.y = 120
 
     -- retrieve handle to shader program
     local shader = c2k.assets.shaderProgram(shaderGUID)

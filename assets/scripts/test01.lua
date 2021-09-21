@@ -2,6 +2,7 @@
 math.randomseed(42)
 rotationSpeeds = {}
 spawnedEntities = {}
+transforms = {}
 
 textureGUID = "9043b452-363c-4917-bfde-592a72077e37"
 texture = c2k.assets.texture(textureGUID)
@@ -13,17 +14,19 @@ shader = c2k.assets.shaderProgram(shaderGUID)
 numSpawnedEntities = 0
 currentlySpawning = true
 maxNumSpawnedEntities = 0
+speed = 100.0 -- rotation speed
 
 -- awake is called when this script is attached onto an entity
 function onAttach(entity)
     rotationSpeeds[entity.id] = math.random(10, 60) -- create random rotation speeds for the current entity
     maxNumSpawnedEntities = maxNumSpawnedEntities + 1
+    transforms[entity.id] = entity:getTransform() -- cache handle to transform component
+    time = c2k.getTime() -- cache time handle
+    input = c2k.getInput() -- cache input handle
 end
 
 -- update gets called every frame for every entity with this script
 function update(entity)
-    input = c2k.getInput()
-
     if input:keyPressed(Key.G) then
         if numSpawnedEntities < maxNumSpawnedEntities and currentlySpawning then
             spawnedEntities[entity.id] = Entity.new()
@@ -57,20 +60,17 @@ function update(entity)
         end
     end
 
-    time = c2k.getTime()
-    transform = entity:getTransform()
-    transform.rotation = transform.rotation + math.rad(rotationSpeeds[entity.id]) * time.delta
-    speed = 100.0
+    transforms[entity.id].rotation = transforms[entity.id].rotation + math.rad(rotationSpeeds[entity.id]) * time.delta
     if input:keyDown(Key.Left) then
-        transform.position.x = transform.position.x - speed * time.delta
+        transforms[entity.id].position.x = transforms[entity.id].position.x - speed * time.delta
     end
     if input:keyDown(Key.Right) then
-        transform.position.x = transform.position.x + speed * time.delta
+        transforms[entity.id].position.x = transforms[entity.id].position.x + speed * time.delta
     end
     if input:keyDown(Key.Up) then
-        transform.position.y = transform.position.y + speed * time.delta
+        transforms[entity.id].position.y = transforms[entity.id].position.y + speed * time.delta
     end
     if input:keyDown(Key.Down) then
-        transform.position.y = transform.position.y - speed * time.delta
+        transforms[entity.id].position.y = transforms[entity.id].position.y - speed * time.delta
     end
 end

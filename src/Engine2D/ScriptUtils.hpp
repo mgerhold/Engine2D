@@ -39,6 +39,10 @@ namespace c2k::ScriptUtils {
         std::string guid;
     };
 
+    struct LuaTransform {
+        Entity owningEntity;
+    };
+
     void provideAPI(ApplicationContext& applicationContext, sol::state& luaState) noexcept;
 
 }// namespace c2k::ScriptUtils
