@@ -20,6 +20,10 @@ namespace c2k::ScriptUtils {
         Entity id;
     };
 
+    struct LuaDynamicSprite {
+        Entity owningEntity;
+    };
+
     struct LuaTexture {
         std::string guid;
         int width;

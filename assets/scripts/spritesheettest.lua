@@ -19,7 +19,7 @@ function onAttach(entity)
     local shader = c2k.assets.shaderProgram(shaderGUID)
 
     -- attach dynamic sprite component to this entity
-    local sprite = entity:attachDynamicSprite()
+    sprite = entity:attachDynamicSprite() -- sprite handle is cached for later since "sprite" is global
     sprite.shaderProgram = shader
     sprite.texture = spriteSheet.texture
     currentIndex = 1
@@ -40,7 +40,6 @@ function update(entity)
         if currentIndex == #spriteSheet.frames + 1 then
             currentIndex = 1
         end
-        sprite = entity:getDynamicSprite()
         sprite.textureRect = spriteSheet.frames[currentIndex].rect
     end
 end
