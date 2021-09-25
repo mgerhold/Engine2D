@@ -37,7 +37,8 @@ namespace c2k {
         // entity with entityspawner.lua script attached
         mRegistry.createEntity(ScriptComponent{
                 .script{ &mAssetDatabase.scriptMutable(GUID::fromString("9632ed81-76ce-469c-b909-09a754877ae9")) } });
-        const auto anchor = mRegistry.createEntity(TransformComponent{}, RootComponent{});
+        const auto anchor =
+                mRegistry.createEntity(TransformComponent{ .position{ 0.0f, 180.0f, 0.6f } }, RootComponent{});
         mRegistry.createEntity(
                 TransformComponent{ .scale{ fireTextureSize * 2.0f } },
                 DynamicSpriteComponent{
