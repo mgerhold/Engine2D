@@ -114,9 +114,6 @@ namespace c2k::ScriptUtils {
                             }
                             return &(transform->scale);
                         }));
-                /*luaState.new_usertype<TransformComponent>("Transform", "position", &TransformComponent::position,
-                                                          "rotation", &TransformComponent::rotation, "scale",
-                                                          &TransformComponent::scale);*/
             }
 
             inline void defineDynamicSpriteType(ApplicationContext& applicationContext, sol::state& luaState) {

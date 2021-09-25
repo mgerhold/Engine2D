@@ -14,7 +14,7 @@ shader = c2k.assets.shaderProgram(shaderGUID)
 numSpawnedEntities = 0
 currentlySpawning = true
 maxNumSpawnedEntities = 0
-speed = 100.0 -- rotation speed
+rotationSpeed = 100.0
 
 -- awake is called when this script is attached onto an entity
 function onAttach(entity)
@@ -62,15 +62,15 @@ function update(entity)
 
     transforms[entity.id].rotation = transforms[entity.id].rotation + math.rad(rotationSpeeds[entity.id]) * time.delta
     if input:keyDown(Key.Left) then
-        transforms[entity.id].position.x = transforms[entity.id].position.x - speed * time.delta
+        transforms[entity.id].position.x = transforms[entity.id].position.x - rotationSpeed * time.delta
     end
     if input:keyDown(Key.Right) then
-        transforms[entity.id].position.x = transforms[entity.id].position.x + speed * time.delta
+        transforms[entity.id].position.x = transforms[entity.id].position.x + rotationSpeed * time.delta
     end
     if input:keyDown(Key.Up) then
-        transforms[entity.id].position.y = transforms[entity.id].position.y + speed * time.delta
+        transforms[entity.id].position.y = transforms[entity.id].position.y + rotationSpeed * time.delta
     end
     if input:keyDown(Key.Down) then
-        transforms[entity.id].position.y = transforms[entity.id].position.y - speed * time.delta
+        transforms[entity.id].position.y = transforms[entity.id].position.y - rotationSpeed * time.delta
     end
 end
