@@ -10,6 +10,7 @@
 #include "SpriteSheet.hpp"
 #include "AssetList.hpp"
 #include "Script.hpp"
+#include "ParticleSystem.hpp"
 
 namespace c2k {
 
@@ -50,13 +51,21 @@ namespace c2k {
                                      GUID guid,
                                      const Texture& texture) noexcept {
             return load<SpriteSheet>(
-                    guid, [&filename, &texture]() { return SpriteSheet::loadFromFile(filename, texture); },
-                    mDebugFallbackSpriteSheet);
+                    guid, [&]() { return SpriteSheet::loadFromFile(filename, texture); }, mDebugFallbackSpriteSheet);
         }
 
         Script& loadScript(const std::filesystem::path& filename, GUID guid) noexcept {
             return load<Script>(
                     guid, [&filename, guid]() { return Script::loadFromFile(filename, guid); }, mDebugFallbackScript);
+        }
+
+        ParticleSystem& loadParticleSystem(const std::filesystem::path& filename,
+                                           GUID guid,
+                                           const Texture& texture,
+                                           ShaderProgram& shaderProgram) noexcept {
+            return load<ParticleSystem>(
+                    guid, [&]() { return ParticleSystem::loadFromFile(filename, texture, shaderProgram); },
+                    mDebugFallbackParticleSystem);
         }
 
         [[nodiscard]] Texture& textureMutable(GUID guid) noexcept {
@@ -99,6 +108,10 @@ namespace c2k {
             return getMutable<Script>(guid, mDebugFallbackScript);
         }
 
+        [[nodiscard]] const ParticleSystem& particleSystem(GUID guid) noexcept {
+            return get<ParticleSystem>(guid, mDebugFallbackParticleSystem);
+        }
+
         [[nodiscard]] static auto assetPath() noexcept {
             return std::filesystem::current_path() / "assets";
         }
@@ -112,7 +125,7 @@ namespace c2k {
         }
 
     private:
-        using Asset = std::variant<Texture, ShaderProgram, SpriteSheet, Script>;
+        using Asset = std::variant<Texture, ShaderProgram, SpriteSheet, Script, ParticleSystem>;
 
     private:
         template<typename T, typename LoadFunc>
@@ -153,9 +166,10 @@ namespace c2k {
     private:
         std::unordered_map<GUID, Asset> mAssets;
         Texture mDebugFallbackTexture;
-        ShaderProgram mDebugFallbackShaderProgram;// TODO: set
-        SpriteSheet mDebugFallbackSpriteSheet;    // TODO: set
-        Script mDebugFallbackScript;              // TODO: set
+        ShaderProgram mDebugFallbackShaderProgram;  // TODO: set
+        SpriteSheet mDebugFallbackSpriteSheet;      // TODO: set
+        Script mDebugFallbackScript;                // TODO: set
+        ParticleSystem mDebugFallbackParticleSystem;// TODO: set
     };
 
 }// namespace c2k

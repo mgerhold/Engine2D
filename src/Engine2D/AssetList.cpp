@@ -19,9 +19,10 @@ namespace c2k {
             return;
         }
         mAssetDescriptions = json.get<AssetDescriptions::List>();
-        spdlog::info("Parsed {} textures, {} shader programs, {} sprite sheets, {} scripts",
+        spdlog::info("Parsed {} textures, {} shader programs, {} sprite sheets, {} scripts, {} particle systems",
                      mAssetDescriptions.textures.size(), mAssetDescriptions.shaderPrograms.size(),
-                     mAssetDescriptions.spriteSheets.size(), mAssetDescriptions.scripts.size());
+                     mAssetDescriptions.spriteSheets.size(), mAssetDescriptions.scripts.size(),
+                     mAssetDescriptions.particleSystems.size());
     }
 
 }// namespace c2k

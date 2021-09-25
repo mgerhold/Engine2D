@@ -3,6 +3,7 @@
 //
 
 #include "Application.hpp"
+#include "MathUtils/MathUtils.hpp"
 
 namespace {
     // anonymous namespace for functions and data that deal with measuring the frame time
@@ -75,6 +76,8 @@ namespace c2k {
     void Application::runSystems() noexcept {
         runScripts();
         animateSprites();
+        handleParticleEmitters();
+        handleParticles();
         renderDynamicSprites();
     }
 
@@ -134,6 +137,75 @@ namespace c2k {
             glfwSetWindowTitle(mWindow.getGLFWWindowPointer(), targetTitleText.c_str());
             titleText = targetTitleText;
         }
+    }
+
+    void Application::handleParticleEmitters() noexcept {
+        // TODO: remove from local scope to avoid heap allocations every frame
+        for (auto&& [entity, particleEmitter, transform, root] :
+             mRegistry.componentsMutable<ParticleEmitterComponent, TransformComponent, RootComponent>()) {
+            const double spawnInterval = 1.0 / particleEmitter.particleSystem->particlesPerSecond;
+            while (mTime.elapsed >= particleEmitter.lastSpawnTime + spawnInterval) {
+                mSpawningEmitters.emplace_back(entity);
+                particleEmitter.lastSpawnTime += spawnInterval;
+            }
+        }
+        for (auto emitterEntity : mSpawningEmitters) {
+            const ParticleSystem& particleSystem =
+                    *(mRegistry.component<ParticleEmitterComponent>(emitterEntity).value().particleSystem);
+            const glm::vec2 baseScale{ particleSystem.texture->widthToHeightRatio(), 1.0f };
+            const auto startScale = baseScale * particleSystem.startScale;
+            const auto endScale = baseScale * particleSystem.endScale;
+            const double totalLifeTime = particleSystem.startLifeTime + mRandom.range(-particleSystem.lifeTimeVariation,
+                                                                                      particleSystem.lifeTimeVariation);
+            const float startRotationSpeed = glm::radians(particleSystem.startRotationSpeed +
+                                                          mRandom.range(-particleSystem.startRotationSpeedVariation,
+                                                                        particleSystem.startRotationSpeedVariation));
+            const float endRotationSpeed = glm::radians(
+                    particleSystem.endRotationSpeed +
+                    mRandom.range(-particleSystem.endRotationSpeedVariation, particleSystem.endRotationSpeedVariation));
+            auto particleEntity = mRegistry.createEntity(
+                    TransformComponent{
+                            .position{ mRegistry.component<TransformComponent>(emitterEntity).value().position },
+                            .rotation{ 0.0f },
+                            .scale{ baseScale * particleSystem.startScale } },
+                    DynamicSpriteComponent{ .textureRect{ Rect::unit() },
+                                            .color{ Color::white() },
+                                            .texture{ particleSystem.texture },
+                                            .shaderProgram{ particleSystem.shaderProgram } },
+                    RootComponent{},
+                    ParticleComponent{ .remainingLifeTime{ totalLifeTime },
+                                       .totalLifeTime{ totalLifeTime },
+                                       .velocity{ mRandom.unitDirection() * mRandom.range(100.0f, 300.0f) },
+                                       .gravity{ particleSystem.gravity },
+                                       .startScale{ startScale },
+                                       .endScale{ endScale },
+                                       .startRotationSpeed{ startRotationSpeed },
+                                       .endRotationSpeed{ endRotationSpeed } });
+        }
+        mSpawningEmitters.clear();
+    }
+
+    void Application::handleParticles() noexcept {
+        for (auto&& [entity, particle, transform] :
+             mRegistry.componentsMutable<ParticleComponent, TransformComponent>()) {
+            const float interpolationParameter =
+                    gsl::narrow_cast<float>(1.0 - particle.remainingLifeTime / particle.totalLifeTime);
+            const auto delta = gsl::narrow_cast<float>(mTime.delta);
+            particle.velocity += particle.gravity * delta;
+            transform.position += particle.velocity * delta;
+            transform.scale = MathUtils::lerp(particle.startScale, particle.endScale, interpolationParameter);
+            transform.rotation +=
+                    MathUtils::lerp(particle.startRotationSpeed, particle.endRotationSpeed, interpolationParameter) *
+                    delta;
+            particle.remainingLifeTime -= mTime.delta;
+            if (particle.remainingLifeTime < 0.0) {
+                mParticleEntitiesToDelete.emplace_back(entity);
+            }
+        }
+        for (auto entityToDelete : mParticleEntitiesToDelete) {
+            mRegistry.destroyEntity(entityToDelete);
+        }
+        mParticleEntitiesToDelete.clear();
     }
 
 }// namespace c2k

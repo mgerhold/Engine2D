@@ -34,6 +34,11 @@ namespace c2k {
         for (const auto& scriptDescription : list.assetDescriptions().scripts) {
             loadScript(assets / scriptDescription.filename, scriptDescription.guid);
         }
+        for (const auto& particleSystemDescription : list.assetDescriptions().particleSystems) {
+            loadParticleSystem(assets / particleSystemDescription.filename, particleSystemDescription.guid,
+                               texture(particleSystemDescription.texture),
+                               shaderProgramMutable(particleSystemDescription.shaderProgram));
+        }
     }
 
     void AssetDatabase::loadFromList(const std::filesystem::path& path) noexcept {

@@ -37,6 +37,8 @@ namespace c2k {
         void animateSprites() noexcept;
         void runScripts() noexcept;
         void renderDynamicSprites() noexcept;
+        void handleParticleEmitters() noexcept;
+        void handleParticles() noexcept;
         void refreshWindowTitle() noexcept;
 
     protected:
@@ -48,6 +50,10 @@ namespace c2k {
         AssetDatabase mAssetDatabase;
         Random mRandom;
         ApplicationContext mAppContext;
+
+    private:
+        std::vector<Entity> mSpawningEmitters;
+        std::vector<Entity> mParticleEntitiesToDelete;
     };
 
 }// namespace c2k

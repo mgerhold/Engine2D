@@ -12,6 +12,7 @@
 #include "Entity.hpp"
 #include "Script.hpp"
 #include "ScriptUtils/ScriptUtils.hpp"
+#include "ParticleSystem.hpp"
 
 namespace c2k {
 
@@ -81,4 +82,20 @@ namespace c2k {
         Script* script;
     };
 
-}// namespace c2k::Components
+    struct ParticleEmitterComponent {
+        const ParticleSystem* particleSystem{ nullptr };
+        double lastSpawnTime{ 0.0 };
+    };
+
+    struct ParticleComponent {
+        double remainingLifeTime{ 0.0 };
+        double totalLifeTime{ 0.0 };
+        glm::vec3 velocity{ 0.0f };
+        glm::vec3 gravity{ 0.0f };
+        glm::vec2 startScale{ 1.0f };
+        glm::vec2 endScale{ 1.0f };
+        float startRotationSpeed{ 0.0f };
+        float endRotationSpeed{ 0.0f };
+    };
+
+}// namespace c2k
