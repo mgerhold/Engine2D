@@ -15,6 +15,7 @@ numSpawnedEntities = 0
 currentlySpawning = true
 maxNumSpawnedEntities = 0
 rotationSpeed = 100.0
+zoomSpeed = 0.4
 
 -- awake is called when this script is attached onto an entity
 function onAttach(entity)
@@ -74,14 +75,11 @@ function update(entity)
         transforms[entity.id].position.y = transforms[entity.id].position.y - rotationSpeed * time.delta
     end
     if input:keyDown(Key.NumpadAdd) then
-        transforms[entity.id].scale.x = transforms[entity.id].scale.x * (1 + 0.2 * time.delta)
-        transforms[entity.id].scale.y = transforms[entity.id].scale.y * (1 + 0.2 * time.delta)
+        transforms[entity.id].scale.x = transforms[entity.id].scale.x * (1 + zoomSpeed * time.delta)
+        transforms[entity.id].scale.y = transforms[entity.id].scale.y * (1 + zoomSpeed * time.delta)
     end
     if input:keyDown(Key.NumpadSubtract) then
-        transforms[entity.id].scale.x = transforms[entity.id].scale.x * (1 - 0.2 * time.delta)
-        transforms[entity.id].scale.y = transforms[entity.id].scale.y * (1 - 0.2 * time.delta)
-    end
-    if input:keyPressed(Key.Escape) then
-        c2k.application.quit()
+        transforms[entity.id].scale.x = transforms[entity.id].scale.x * (1 - zoomSpeed * time.delta)
+        transforms[entity.id].scale.y = transforms[entity.id].scale.y * (1 - zoomSpeed * time.delta)
     end
 end

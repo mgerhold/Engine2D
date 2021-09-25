@@ -53,17 +53,14 @@ namespace c2k {
         }
         switch (glfwAction) {
             case GLFW_PRESS:
-                assert(!mKeyBuffer[static_cast<std::size_t>(glfwKeyCode)]);
                 mKeyBuffer[static_cast<std::size_t>(glfwKeyCode)] = true;
                 mPressedThisFrame.push_back(static_cast<Key>(glfwKeyCode));
                 break;
             case GLFW_RELEASE:
-                assert(mKeyBuffer[static_cast<std::size_t>(glfwKeyCode)]);
                 mKeyBuffer[static_cast<std::size_t>(glfwKeyCode)] = false;
                 mReleasedThisFrame.push_back(static_cast<Key>(glfwKeyCode));
                 break;
             case GLFW_REPEAT:
-                assert(mKeyBuffer[static_cast<std::size_t>(glfwKeyCode)]);
                 mRepeatedThisFrame.push_back(static_cast<Key>(glfwKeyCode));
                 break;
             default:
@@ -79,12 +76,10 @@ namespace c2k {
     void Input::mouseButtonCallback(int glfwButton, int glfwAction) noexcept {
         switch (glfwAction) {
             case GLFW_PRESS:
-                assert(!mMouseButtonBuffer[glfwButton]);
                 mMouseButtonBuffer[glfwButton] = true;
                 mMouseButtonsPressedThisFrame.push_back(static_cast<MouseButton>(glfwButton));
                 break;
             case GLFW_RELEASE:
-                assert(mMouseButtonBuffer[glfwButton]);
                 mMouseButtonBuffer[glfwButton] = false;
                 mMouseButtonsReleasedThisFrame.push_back(static_cast<MouseButton>(glfwButton));
                 break;
