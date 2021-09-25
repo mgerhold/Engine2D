@@ -3,13 +3,13 @@
 //
 
 #include "ScriptUtils.hpp"
-#include "Component.hpp"
-#include "Registry.hpp"
-#include "Time.hpp"
-#include "Input.hpp"
-#include "AssetDatabase.hpp"
-#include "Rect.hpp"
-#include "Color.hpp"
+#include "../Component.hpp"
+#include "../Registry.hpp"
+#include "../Time.hpp"
+#include "../Input.hpp"
+#include "../AssetDatabase.hpp"
+#include "../Rect.hpp"
+#include "../Color.hpp"
 #define MAGIC_ENUM_RANGE_MAX 348
 #include <magic_enum.hpp>
 

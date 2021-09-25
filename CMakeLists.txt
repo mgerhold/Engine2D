@@ -22,7 +22,6 @@ set(TARGET_LIST
 
 add_library(Engine2D STATIC
         src/Engine2D/Application.hpp
-        src/Engine2D/strong_type/strong_type.hpp
         src/Engine2D/WindowSize.hpp
         src/Engine2D/OpenGLVersion.hpp
         src/Engine2D/GLDataUsagePattern.hpp
@@ -33,9 +32,6 @@ add_library(Engine2D STATIC
         src/Engine2D/GlUtils.hpp
         src/Engine2D/VertexBuffer.cpp
         src/Engine2D/VertexBuffer.hpp
-        src/Engine2D/expected/expected.hpp
-        src/Engine2D/hash/hash.hpp
-        src/Engine2D/hash/hash.cpp
         src/Engine2D/StbImageInclude.cpp
         src/Engine2D/Image.cpp
         src/Engine2D/Image.hpp
@@ -52,7 +48,6 @@ add_library(Engine2D STATIC
         src/Engine2D/TypeIdentifier.hpp
         src/Engine2D/Registry.hpp
         src/Engine2D/Entity.hpp
-        src/Engine2D/optional/optional.hpp
         src/Engine2D/Component.hpp
         src/Engine2D/AssetDatabase.cpp
         src/Engine2D/AssetDatabase.hpp
@@ -63,8 +58,8 @@ add_library(Engine2D STATIC
         src/Engine2D/Time.hpp
         src/Engine2D/AssetList.cpp
         src/Engine2D/AssetList.hpp
-        src/Engine2D/FileUtils.cpp
-        src/Engine2D/FileUtils.hpp
+        src/Engine2D/FileUtils/FileUtils.cpp
+        src/Engine2D/FileUtils/FileUtils.hpp
         src/Engine2D/Random.cpp
         src/Engine2D/Random.hpp
         src/Engine2D/pch.hpp
@@ -79,10 +74,15 @@ add_library(Engine2D STATIC
         src/Engine2D/ApplicationContext.hpp
         src/Engine2D/Script.cpp
         src/Engine2D/Script.hpp
-        src/Engine2D/ScriptUtils.cpp
-        src/Engine2D/ScriptUtils.hpp
+        src/Engine2D/ScriptUtils/ScriptUtils.cpp
+        src/Engine2D/ScriptUtils/ScriptUtils.hpp
         src/Engine2D/ApplicationContext.cpp
-        src/Engine2D/SparseSet.cpp src/Engine2D/BufferedScriptCommand.hpp src/Engine2D/BufferedScriptCommands.cpp)
+        src/Engine2D/SparseSet.cpp
+        src/Engine2D/BufferedScriptCommand.hpp
+        src/Engine2D/BufferedScriptCommands.cpp
+        src/Engine2D/Hash/Hash.hpp
+        src/Engine2D/Hash/Hash.cpp)
+target_include_directories(Engine2D PUBLIC ${PROJECT_SOURCE_DIR}/vendor)
 add_executable(Sandbox src/Sandbox/main.cpp src/Sandbox/Sandbox.hpp src/Sandbox/Sandbox.cpp)
 target_include_directories(Sandbox PUBLIC ${PROJECT_SOURCE_DIR}/src/Engine2D)
 add_dependencies(Sandbox Engine2D)

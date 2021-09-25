@@ -2,9 +2,9 @@
 // Created by coder2k on 29.05.2021.
 //
 
-#include "hash.hpp"
+#include "Hash.hpp"
 
-namespace Hash {
+namespace c2k::Hash {
 
     std::unordered_map<std::size_t, std::string> cachedHashNames;
 
@@ -17,4 +17,4 @@ namespace Hash {
         }
     }
 
-}
+}// namespace c2k::Hash

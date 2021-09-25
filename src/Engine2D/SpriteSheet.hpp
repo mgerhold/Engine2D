@@ -6,7 +6,6 @@
 
 #include "Texture.hpp"
 #include "Rect.hpp"
-#include "expected/expected.hpp"
 
 namespace c2k {
 

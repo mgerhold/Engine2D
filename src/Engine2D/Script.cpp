@@ -3,7 +3,7 @@
 //
 
 #include "Script.hpp"
-#include "ScriptUtils.hpp"
+#include "ScriptUtils/ScriptUtils.hpp"
 
 namespace c2k {
 

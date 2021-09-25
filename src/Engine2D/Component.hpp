@@ -11,7 +11,7 @@
 #include "Rect.hpp"
 #include "Entity.hpp"
 #include "Script.hpp"
-#include "ScriptUtils.hpp"
+#include "ScriptUtils/ScriptUtils.hpp"
 
 namespace c2k {
 

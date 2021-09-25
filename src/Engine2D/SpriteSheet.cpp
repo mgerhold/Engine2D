@@ -3,7 +3,7 @@
 //
 
 #include "SpriteSheet.hpp"
-#include "FileUtils.hpp"
+#include "FileUtils/FileUtils.hpp"
 #include "JSONUtils.hpp"
 
 namespace c2k {

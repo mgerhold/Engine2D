@@ -3,7 +3,7 @@
 //
 
 #include "ShaderProgram.hpp"
-#include "hash/hash.hpp"
+#include "Hash/Hash.hpp"
 
 namespace c2k {
 
@@ -126,7 +126,6 @@ namespace c2k {
     }
 
     void ShaderProgram::setUniform(std::size_t uniformNameHash, const glm::mat4& matrix) const noexcept {
-        //setUniform(mName, uniformNameHash, matrix);
         bind();
         const auto it = mUniformLocations.find(uniformNameHash);
 

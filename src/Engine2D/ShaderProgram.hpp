@@ -5,7 +5,6 @@
 #pragma once
 
 #include "GUID.hpp"
-#include "expected/expected.hpp"
 
 namespace c2k {
 

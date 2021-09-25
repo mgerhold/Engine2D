@@ -6,7 +6,7 @@
 #include "Component.hpp"
 #include "GLDataUsagePattern.hpp"
 #include "ScopedTimer.hpp"
-#include "hash/hash.hpp"
+#include "Hash/Hash.hpp"
 
 namespace c2k {
 

@@ -5,7 +5,6 @@
 #include "Sandbox.hpp"
 #include "Image.hpp"
 #include "Texture.hpp"
-#include "hash/hash.hpp"
 #include "Component.hpp"
 
 namespace c2k {

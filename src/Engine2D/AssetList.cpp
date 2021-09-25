@@ -3,7 +3,7 @@
 //
 
 #include "AssetList.hpp"
-#include "FileUtils.hpp"
+#include "FileUtils/FileUtils.hpp"
 
 namespace c2k {
 

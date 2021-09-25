@@ -5,7 +5,6 @@
 #pragma once
 
 #include "Image.hpp"
-#include "expected/expected.hpp"
 #include "Color.hpp"
 #include "GUID.hpp"
 

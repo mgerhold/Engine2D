@@ -4,11 +4,10 @@
 
 #pragma once
 
-#include "FileUtils.hpp"
-#include "ScriptUtils.hpp"
+#include "FileUtils/FileUtils.hpp"
+#include "ScriptUtils/ScriptUtils.hpp"
 #include "Entity.hpp"
 #include "ApplicationContext.hpp"
-#include "expected/expected.hpp"
 #include "GUID.hpp"
 
 namespace c2k {

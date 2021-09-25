@@ -5,7 +5,6 @@
 #pragma once
 
 #include "ComponentHolder.hpp"
-#include "optional/optional.hpp"
 #include "Entity.hpp"
 #include "TypeIdentifier.hpp"
 #include "Component.hpp"

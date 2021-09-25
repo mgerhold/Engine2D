@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "ApplicationContext.hpp"
-#include "Entity.hpp"
-#include "GUID.hpp"
+#include "../ApplicationContext.hpp"
+#include "../Entity.hpp"
+#include "../GUID.hpp"
 
 namespace c2k::ScriptUtils {
 

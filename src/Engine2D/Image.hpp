@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "expected/expected.hpp"
 #include "Color.hpp"
 
 namespace c2k {
