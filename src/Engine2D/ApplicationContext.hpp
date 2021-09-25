@@ -15,6 +15,7 @@ namespace c2k {
     struct Time;
     class Input;
     class AssetDatabase;
+    class Application;
 
     struct ApplicationContext {
         ApplicationContext(Renderer& renderer,
@@ -22,6 +23,7 @@ namespace c2k {
                            Time& time,
                            Input& input,
                            AssetDatabase& assetDatabase,
+                           Application& application,
                            Entity mainCameraEntity) noexcept;
 
         Renderer& renderer;
@@ -29,6 +31,7 @@ namespace c2k {
         Time& time;
         Input& input;
         AssetDatabase& assetDatabase;
+        Application& application;
         Entity mainCameraEntity;
         std::vector<BufferedScriptCommands::Command> bufferedScriptCommands;
     };

@@ -188,7 +188,6 @@ namespace c2k {
         glm::vec2 mMousePosition{ 0.0f };
         bool mMouseInsideWindow{ false };
 
-        template<typename T>
         friend class Application;
 
         friend class Window;

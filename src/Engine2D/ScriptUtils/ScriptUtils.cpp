@@ -10,6 +10,7 @@
 #include "../AssetDatabase.hpp"
 #include "../Rect.hpp"
 #include "../Color.hpp"
+#include "../Application.hpp"
 #define MAGIC_ENUM_RANGE_MAX 348
 #include <magic_enum.hpp>
 
@@ -397,6 +398,11 @@ namespace c2k::ScriptUtils {
             AssetsAPI::provideScriptAPI(applicationContext, luaState);
         }
 
+        inline void provideApplicationAPI(ApplicationContext& applicationContext, sol::state& luaState) noexcept {
+            createNamespace(luaState, "c2k", "application");
+            luaState["c2k"]["application"]["quit"] = [&]() { applicationContext.application.quit(); };
+        }
+
         inline void defineTypes(ApplicationContext& applicationContext, sol::state& luaState) noexcept {
             defineMathDataTypes(luaState);
             defineBasicEngineDataTypes(luaState);
@@ -408,6 +414,7 @@ namespace c2k::ScriptUtils {
             defineTimeGetter(applicationContext, luaState);
             provideEntityAPI(applicationContext, luaState);
             provideAssetsAPI(applicationContext, luaState);
+            provideApplicationAPI(applicationContext, luaState);
         }
 
     }// namespace

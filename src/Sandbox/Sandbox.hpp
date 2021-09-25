@@ -8,13 +8,13 @@
 
 namespace c2k {
 
-    class Sandbox final : public Application<Sandbox> {
+    class Sandbox final : public Application {
     public:
         using Application::Application;
 
     private:
-        void setup() noexcept;
-        void update() noexcept;
+        void setup() noexcept override;
+        void update() noexcept override;
 
     private:
         friend class Application;

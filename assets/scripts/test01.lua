@@ -73,4 +73,15 @@ function update(entity)
     if input:keyDown(Key.Down) then
         transforms[entity.id].position.y = transforms[entity.id].position.y - rotationSpeed * time.delta
     end
+    if input:keyDown(Key.NumpadAdd) then
+        transforms[entity.id].scale.x = transforms[entity.id].scale.x * (1 + 0.2 * time.delta)
+        transforms[entity.id].scale.y = transforms[entity.id].scale.y * (1 + 0.2 * time.delta)
+    end
+    if input:keyDown(Key.NumpadSubtract) then
+        transforms[entity.id].scale.x = transforms[entity.id].scale.x * (1 - 0.2 * time.delta)
+        transforms[entity.id].scale.y = transforms[entity.id].scale.y * (1 - 0.2 * time.delta)
+    end
+    if input:keyPressed(Key.Escape) then
+        c2k.application.quit()
+    end
 end

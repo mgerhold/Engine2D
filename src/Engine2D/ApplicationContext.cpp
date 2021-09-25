@@ -12,12 +12,14 @@ namespace c2k {
                                            Time& time,
                                            Input& input,
                                            AssetDatabase& assetDatabase,
+                                           Application& application,
                                            Entity mainCameraEntity) noexcept
         : renderer{ renderer },
           registry{ registry },
           time{ time },
           input{ input },
           assetDatabase{ assetDatabase },
+          application{ application },
           mainCameraEntity{ mainCameraEntity } {
         Script::setApplicationContext(*this);
     }
