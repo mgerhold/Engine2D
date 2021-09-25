@@ -81,7 +81,8 @@ add_library(Engine2D STATIC
         src/Engine2D/BufferedScriptCommand.hpp
         src/Engine2D/BufferedScriptCommands.cpp
         src/Engine2D/Hash/Hash.hpp
-        src/Engine2D/Hash/Hash.cpp src/Engine2D/Application.cpp)
+        src/Engine2D/Hash/Hash.cpp
+        src/Engine2D/Application.cpp)
 target_include_directories(Engine2D PUBLIC ${PROJECT_SOURCE_DIR}/vendor)
 add_executable(Sandbox src/Sandbox/main.cpp src/Sandbox/Sandbox.hpp src/Sandbox/Sandbox.cpp)
 target_include_directories(Sandbox PUBLIC ${PROJECT_SOURCE_DIR}/src/Engine2D)
@@ -125,10 +126,15 @@ target_link_libraries(Engine2D PRIVATE glfw)
 
 find_package(glad CONFIG REQUIRED)
 target_link_libraries(Engine2D PRIVATE glad::glad)
-target_link_libraries(Sandbox PRIVATE glad::glad)
 
 find_package(Microsoft.GSL CONFIG REQUIRED)
 target_link_libraries(Engine2D PRIVATE Microsoft.GSL::GSL)
+
+find_package(tl-expected CONFIG REQUIRED)
+target_link_libraries(Engine2D PRIVATE tl::expected)
+
+find_package(tl-optional CONFIG REQUIRED)
+target_link_libraries(Engine2D PRIVATE tl::optional)
 
 find_package(spdlog CONFIG REQUIRED)
 target_link_libraries(Engine2D PRIVATE spdlog::spdlog spdlog::spdlog_header_only)

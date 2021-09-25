@@ -13,9 +13,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <nlohmann/json.hpp>
-#include <expected/expected.hpp>
-#include <optional/optional.hpp>
-#include <strong_type/strong_type.hpp>
+#include <tl/expected.hpp>
+#include <tl/optional.hpp>
 #pragma warning(push)
 #pragma warning(disable : 4201)
 #include <glm/glm.hpp>
