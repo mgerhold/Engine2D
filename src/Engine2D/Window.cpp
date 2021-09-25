@@ -19,6 +19,7 @@ namespace c2k {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, version.minor);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
+        glfwWindowHint(GLFW_SAMPLES, 4);
         mWindowPtr = glfwCreateWindow(size.width, size.height, title.c_str(), nullptr, nullptr);
         if (mWindowPtr == nullptr) {
             glfwTerminate();
@@ -72,6 +73,7 @@ namespace c2k {
             return;
         }
         glEnable(GL_DEPTH_TEST);
+        glEnable(GL_MULTISAMPLE);
     }
 
     Window::~Window() {
