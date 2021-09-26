@@ -163,7 +163,7 @@ namespace c2k {
             const float endRotationSpeed = glm::radians(
                     particleSystem.endRotationSpeed +
                     mRandom.range(-particleSystem.endRotationSpeedVariation, particleSystem.endRotationSpeedVariation));
-            auto particleEntity = mRegistry.createEntity(
+            mRegistry.createEntity(
                     TransformComponent{
                             .position{ mRegistry.component<TransformComponent>(emitterEntity).value().position },
                             .rotation{ 0.0f },
