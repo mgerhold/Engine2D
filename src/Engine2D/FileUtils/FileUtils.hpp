@@ -6,6 +6,6 @@
 
 namespace c2k::FileUtils {
 
-    [[nodiscard]] std::string readTextFile(const std::filesystem::path& path) noexcept;
+    [[nodiscard]] tl::expected<std::string, std::string> readTextFile(const std::filesystem::path& path) noexcept;
 
 }

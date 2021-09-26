@@ -67,7 +67,11 @@ namespace c2k {
         using namespace JSONUtils;
         using namespace std::literals::string_literals;
         const auto fileContents = FileUtils::readTextFile(filename);
-        auto json = nlohmann::json::parse(fileContents, nullptr, false);
+        if (!fileContents) {
+            return tl::unexpected(
+                    fmt::format("Failed to read particle system file {}: {}", filename.string(), fileContents.error()));
+        }
+        auto json = nlohmann::json::parse(fileContents.value(), nullptr, false);
         if (json.is_discarded()) {
             return tl::unexpected(fmt::format("Failed to parse JSON file {}", filename.string()));
         }

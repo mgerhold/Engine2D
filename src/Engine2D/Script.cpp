@@ -37,7 +37,9 @@ end)");
     }
 
     tl::expected<Script, std::string> Script::loadFromFile(const std::filesystem::path& filename, GUID guid) noexcept {
-        return Script{ FileUtils::readTextFile(filename), guid };
+        return FileUtils::readTextFile(filename).transform([&](std::string&& fileContents) {
+            return Script{ fileContents, guid };
+        });
     }
 
     void Script::setApplicationContext(ApplicationContext& context) noexcept {

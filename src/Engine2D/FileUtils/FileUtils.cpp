@@ -6,9 +6,11 @@
 
 namespace c2k::FileUtils {
 
-    std::string readTextFile(const std::filesystem::path& path) noexcept {
-        // TODO: error checking
+    tl::expected<std::string, std::string> readTextFile(const std::filesystem::path& path) noexcept {
         std::ifstream inputFileStream{ path };
+        if (!inputFileStream.good()) {
+            return tl::unexpected<std::string>(fmt::format("Unable to open file {}", path.string()));
+        }
         return std::string{ std::istreambuf_iterator<char>{ inputFileStream }, {} };
     }
 

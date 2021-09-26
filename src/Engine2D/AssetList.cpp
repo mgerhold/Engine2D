@@ -13,7 +13,11 @@ namespace c2k {
 
     void AssetList::fromFile(const std::filesystem::path& path) noexcept {
         const auto fileContents = FileUtils::readTextFile(path);
-        auto json = nlohmann::json::parse(fileContents, nullptr, false);
+        if (!fileContents) {
+            spdlog::error(fmt::format("Unable to read file: {}", path.string()));
+            return;
+        }
+        auto json = nlohmann::json::parse(fileContents.value(), nullptr, false);
         if (json.is_discarded()) {
             spdlog::error("Failed to parse JSON file {}", path.string());
             return;
