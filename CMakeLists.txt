@@ -82,7 +82,7 @@ add_library(Engine2D STATIC
         src/Engine2D/BufferedScriptCommands.cpp
         src/Engine2D/Hash/Hash.hpp
         src/Engine2D/Hash/Hash.cpp
-        src/Engine2D/Application.cpp src/Engine2D/ParticleSystem.hpp src/Engine2D/ParticleSystem.cpp src/Engine2D/MathUtils/MathUtils.cpp src/Engine2D/MathUtils/MathUtils.hpp)
+        src/Engine2D/Application.cpp src/Engine2D/ParticleSystem.hpp src/Engine2D/ParticleSystem.cpp src/Engine2D/MathUtils/MathUtils.cpp src/Engine2D/MathUtils/MathUtils.hpp src/Engine2D/Sprite.cpp src/Engine2D/Sprite.hpp)
 target_include_directories(Engine2D PUBLIC ${PROJECT_SOURCE_DIR}/vendor)
 add_executable(Sandbox src/Sandbox/main.cpp src/Sandbox/Sandbox.hpp src/Sandbox/Sandbox.cpp)
 target_include_directories(Sandbox PUBLIC ${PROJECT_SOURCE_DIR}/src/Engine2D)

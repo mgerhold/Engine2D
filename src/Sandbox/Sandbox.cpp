@@ -48,10 +48,9 @@ namespace c2k {
         mRegistry.createEntity(
                 TransformComponent{ .scale{ fireTextureSize * 2.0f } },
                 DynamicSpriteComponent{
-                        .textureRect{ mAssetDatabase.spriteSheet(spriteSheetGUID).frames[0].rect },
-                        .color{ Color::white() },
-                        .texture{ mAssetDatabase.spriteSheet(spriteSheetGUID).texture },
                         .shaderProgram{ &mAssetDatabase.shaderProgramMutable(shaderGUID) },
+                        .sprite{ Sprite::fromSpriteSheet(mAssetDatabase.spriteSheet(spriteSheetGUID), 0) },
+                        .color{ Color::white() },
                 },
                 SpriteSheetAnimationComponent{ .spriteSheet{ &mAssetDatabase.spriteSheet(spriteSheetGUID) },
                                                .lastFrameChange{ mTime.elapsed },
@@ -61,10 +60,9 @@ namespace c2k {
         const auto secondFlame = mRegistry.createEntity(
                 TransformComponent{ .position{ 200.0f, 0.0f, 0.0f }, .scale{ fireTextureSize } },
                 DynamicSpriteComponent{
-                        .textureRect{ mAssetDatabase.spriteSheet(spriteSheetGUID).frames[0].rect },
-                        .color{ Color::white() },
-                        .texture{ mAssetDatabase.spriteSheet(spriteSheetGUID).texture },
                         .shaderProgram{ &mAssetDatabase.shaderProgramMutable(shaderGUID) },
+                        .sprite{ Sprite::fromSpriteSheet(mAssetDatabase.spriteSheet(spriteSheetGUID), 0) },
+                        .color{ Color::white() },
                 },
                 SpriteSheetAnimationComponent{ .spriteSheet{ &mAssetDatabase.spriteSheet(spriteSheetGUID) },
                                                .lastFrameChange{ mTime.elapsed },
@@ -74,10 +72,9 @@ namespace c2k {
         mRegistry.createEntity(
                 TransformComponent{ .position{ 5.0f, 0.0f, 0.0f }, .scale{ 0.5f, 0.5f } },
                 DynamicSpriteComponent{
-                        .textureRect{ mAssetDatabase.spriteSheet(spriteSheetGUID).frames[0].rect },
-                        .color{ Color::white() },
-                        .texture{ mAssetDatabase.spriteSheet(spriteSheetGUID).texture },
                         .shaderProgram{ &mAssetDatabase.shaderProgramMutable(shaderGUID) },
+                        .sprite{ Sprite::fromSpriteSheet(mAssetDatabase.spriteSheet(spriteSheetGUID), 0) },
+                        .color{ Color::white() },
                 },
                 SpriteSheetAnimationComponent{ .spriteSheet{ &mAssetDatabase.spriteSheet(spriteSheetGUID) },
                                                .lastFrameChange{ mTime.elapsed },
@@ -90,10 +87,9 @@ namespace c2k {
             const glm::vec3 position{ mRandom.range(-2000.0f, 2000.0f), mRandom.range(-2000.0f, 2000.0f), 0.0f };
             mRegistry.createEntity(TransformComponent{ .position{ position }, .scale{ textureSize } },
                                    DynamicSpriteComponent{
-                                           .textureRect{ Rect::unit() },
-                                           .color{ Color::white() },
-                                           .texture{ &mAssetDatabase.texture(textureGUID) },
                                            .shaderProgram{ &mAssetDatabase.shaderProgramMutable(shaderGUID) },
+                                           .sprite{ Sprite::fromTexture(mAssetDatabase.texture(textureGUID)) },
+                                           .color{ Color::white() },
                                    },
                                    RootComponent{},
                                    ScriptComponent{ .script = &mAssetDatabase.scriptMutable(GUID::fromString(

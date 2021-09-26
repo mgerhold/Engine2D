@@ -82,13 +82,13 @@ namespace c2k {
     }
 
     void Application::animateSprites() noexcept {
-        for (auto&& [entity, animation, sprite] :
+        for (auto&& [entity, animation, dynamicSprite] :
              mRegistry.componentsMutable<SpriteSheetAnimationComponent, DynamicSpriteComponent>()) {
             const double nextFrameChange = animation.lastFrameChange + animation.frameTime;
             if (mTime.elapsed >= nextFrameChange) {
                 animation.currentFrame =
                         (animation.currentFrame + 1) % gsl::narrow_cast<int>(animation.spriteSheet->frames.size());
-                sprite.textureRect = animation.spriteSheet->frames[animation.currentFrame].rect;
+                dynamicSprite.sprite.textureRect = animation.spriteSheet->frames[animation.currentFrame].rect;
                 animation.lastFrameChange = nextFrameChange;
             }
         }
@@ -109,12 +109,12 @@ namespace c2k {
                 mRegistry.component<TransformComponent>(mAppContext.mainCameraEntity).value().matrix();
         mRenderer.clear(true, true);
         mRenderer.beginFrame(cameraTransformMatrix);
-        for (auto&& [entity, root, sprite, transform] :
+        for (auto&& [entity, root, dynamicSprite, transform] :
              mRegistry.components<RootComponent, DynamicSpriteComponent, TransformComponent>()) {
-            mRenderer.drawQuad(transform.position, transform.rotation, transform.scale, *(sprite.shaderProgram),
-                               *(sprite.texture), sprite.textureRect, sprite.color);
+            mRenderer.drawQuad(transform.position, transform.rotation, transform.scale, *(dynamicSprite.shaderProgram),
+                               *(dynamicSprite.sprite.texture), dynamicSprite.sprite.textureRect, dynamicSprite.color);
         }
-        for (auto&& [entity, relationship, sprite, transform] :
+        for (auto&& [entity, relationship, dynamicSprite, transform] :
              mRegistry.components<RelationshipComponent, DynamicSpriteComponent, TransformComponent>()) {
             auto transformMatrix = transform.matrix();
             Entity current = relationship.parent;
@@ -123,8 +123,8 @@ namespace c2k {
                 current = mRegistry.component<RelationshipComponent>(current)->parent;
                 transformMatrix = mRegistry.component<TransformComponent>(current).value().matrix() * transformMatrix;
             }
-            mRenderer.drawQuad(transformMatrix, *sprite.shaderProgram, *sprite.texture, sprite.textureRect,
-                               sprite.color);
+            mRenderer.drawQuad(transformMatrix, *dynamicSprite.shaderProgram, *dynamicSprite.sprite.texture,
+                               dynamicSprite.sprite.textureRect, dynamicSprite.color);
         }
         mRenderer.endFrame();
     }
@@ -168,10 +168,9 @@ namespace c2k {
                             .position{ mRegistry.component<TransformComponent>(emitterEntity).value().position },
                             .rotation{ 0.0f },
                             .scale{ baseScale * particleSystem.startScale } },
-                    DynamicSpriteComponent{ .textureRect{ Rect::unit() },
-                                            .color{ Color::white() },
-                                            .texture{ particleSystem.texture },
-                                            .shaderProgram{ particleSystem.shaderProgram } },
+                    DynamicSpriteComponent{ .shaderProgram{ particleSystem.shaderProgram },
+                                            .sprite{ Sprite::fromTexture(*particleSystem.texture) },
+                                            .color{ Color::white() } },
                     RootComponent{},
                     ParticleComponent{ .remainingLifeTime{ totalLifeTime },
                                        .totalLifeTime{ totalLifeTime },

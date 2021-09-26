@@ -122,87 +122,96 @@ namespace c2k::ScriptUtils {
                         "DynamicSprite", "textureRect",
                         sol::property(
                                 [&](const LuaDynamicSprite& luaSprite) {
-                                    auto&& sprite{ applicationContext.registry.component<DynamicSpriteComponent>(
+                                    auto&& dynamicSprite{ applicationContext.registry.component<DynamicSpriteComponent>(
                                             luaSprite.owningEntity) };
-                                    if (!sprite) {
+                                    if (!dynamicSprite) {
                                         spdlog::error("Invalid dynamic sprite component");
                                         return Rect{};
                                     }
-                                    return sprite.value().textureRect;
+                                    return dynamicSprite.value().sprite.textureRect;
                                 },
                                 [&](const LuaDynamicSprite& luaSprite, const Rect& textureRect) {
-                                    auto&& sprite{ applicationContext.registry.componentMutable<DynamicSpriteComponent>(
-                                            luaSprite.owningEntity) };
-                                    if (!sprite) {
+                                    auto&& dynamicSprite{
+                                        applicationContext.registry.componentMutable<DynamicSpriteComponent>(
+                                                luaSprite.owningEntity)
+                                    };
+                                    if (!dynamicSprite) {
                                         spdlog::error("Invalid dynamic sprite component");
                                         return;
                                     }
-                                    sprite.value().textureRect = textureRect;
+                                    dynamicSprite.value().sprite.textureRect = textureRect;
                                 }),
                         "color",
                         sol::property(
                                 [&](const LuaDynamicSprite& luaSprite) {
-                                    auto&& sprite{ applicationContext.registry.component<DynamicSpriteComponent>(
+                                    auto&& dynamicSprite{ applicationContext.registry.component<DynamicSpriteComponent>(
                                             luaSprite.owningEntity) };
-                                    if (!sprite) {
+                                    if (!dynamicSprite) {
                                         spdlog::error("Invalid dynamic sprite component");
                                         return Color{};
                                     }
-                                    return sprite.value().color;
+                                    return dynamicSprite.value().color;
                                 },
                                 [&](const LuaDynamicSprite& luaSprite, const Color& color) {
-                                    auto&& sprite{ applicationContext.registry.componentMutable<DynamicSpriteComponent>(
-                                            luaSprite.owningEntity) };
-                                    if (!sprite) {
+                                    auto&& dynamicSprite{
+                                        applicationContext.registry.componentMutable<DynamicSpriteComponent>(
+                                                luaSprite.owningEntity)
+                                    };
+                                    if (!dynamicSprite) {
                                         spdlog::error("Invalid dynamic sprite component");
                                         return;
                                     }
-                                    sprite.value().color = color;
+                                    dynamicSprite.value().color = color;
                                 }),
                         "texture",
                         sol::property(
                                 [&](const LuaDynamicSprite& luaSprite) {
-                                    auto&& sprite{ applicationContext.registry.component<DynamicSpriteComponent>(
+                                    auto&& dynamicSprite{ applicationContext.registry.component<DynamicSpriteComponent>(
                                             luaSprite.owningEntity) };
-                                    if (!sprite) {
+                                    if (!dynamicSprite) {
                                         spdlog::error("Invalid dynamic sprite component");
                                         return LuaTexture{};
                                     }
-                                    return LuaTexture{ .guid{ sprite->texture->guid.string() },
-                                                       .width{ sprite->texture->width() },
-                                                       .height{ sprite->texture->height() },
-                                                       .numChannels{ sprite->texture->numChannels() } };
+                                    return LuaTexture{ .guid{ dynamicSprite->sprite.texture->guid.string() },
+                                                       .width{ dynamicSprite->sprite.texture->width() },
+                                                       .height{ dynamicSprite->sprite.texture->height() },
+                                                       .numChannels{ dynamicSprite->sprite.texture->numChannels() } };
                                 },
                                 [&](const LuaDynamicSprite& luaSprite, const LuaTexture& luaTexture) {
-                                    auto&& sprite{ applicationContext.registry.componentMutable<DynamicSpriteComponent>(
-                                            luaSprite.owningEntity) };
-                                    if (!sprite) {
+                                    auto&& dynamicSprite{
+                                        applicationContext.registry.componentMutable<DynamicSpriteComponent>(
+                                                luaSprite.owningEntity)
+                                    };
+                                    if (!dynamicSprite) {
                                         spdlog::error("Invalid dynamic sprite component");
                                         return;
                                     }
-                                    sprite->texture = &applicationContext.assetDatabase.texture(
+                                    dynamicSprite->sprite.texture = &applicationContext.assetDatabase.texture(
                                             GUID::fromString(luaTexture.guid));
                                 }),
                         "shaderProgram",
                         sol::property(
                                 [&](const LuaDynamicSprite& luaSprite) {
-                                    auto&& sprite{ applicationContext.registry.component<DynamicSpriteComponent>(
+                                    auto&& dynamicSprite{ applicationContext.registry.component<DynamicSpriteComponent>(
                                             luaSprite.owningEntity) };
-                                    if (!sprite) {
+                                    if (!dynamicSprite) {
                                         spdlog::error("Invalid dynamic sprite component");
                                         return LuaShaderProgram{};
                                     }
-                                    return LuaShaderProgram{ .guid{ sprite->shaderProgram->guid.string() } };
+                                    return LuaShaderProgram{ .guid{ dynamicSprite->shaderProgram->guid.string() } };
                                 },
                                 [&](const LuaDynamicSprite& luaSprite, const LuaShaderProgram& luaShaderProgram) {
-                                    auto&& sprite{ applicationContext.registry.componentMutable<DynamicSpriteComponent>(
-                                            luaSprite.owningEntity) };
-                                    if (!sprite) {
+                                    auto&& dynamicSprite{
+                                        applicationContext.registry.componentMutable<DynamicSpriteComponent>(
+                                                luaSprite.owningEntity)
+                                    };
+                                    if (!dynamicSprite) {
                                         spdlog::error("Invalid dynamic sprite component");
                                         return;
                                     }
-                                    sprite->shaderProgram = &applicationContext.assetDatabase.shaderProgramMutable(
-                                            GUID::fromString(luaShaderProgram.guid));
+                                    dynamicSprite->shaderProgram =
+                                            &applicationContext.assetDatabase.shaderProgramMutable(
+                                                    GUID::fromString(luaShaderProgram.guid));
                                 }));
             }
         }// namespace ComponentTypes
@@ -277,10 +286,9 @@ namespace c2k::ScriptUtils {
                         spdlog::error("Entity {} already has a dynamic sprite component.", entity);
                     } else {
                         const auto sprite = DynamicSpriteComponent{
-                            .textureRect{ Rect::unit() },
+                            .shaderProgram{ &applicationContext.assetDatabase.fallbackShaderProgramMutable() },
+                            .sprite{ Sprite::fromTexture(applicationContext.assetDatabase.fallbackTexture()) },
                             .color{ Color::white() },
-                            .texture{ &applicationContext.assetDatabase.fallbackTexture() },
-                            .shaderProgram{ &applicationContext.assetDatabase.fallbackShaderProgramMutable() }
                         };
                         applicationContext.registry.attachComponent<DynamicSpriteComponent>(entity, sprite);
                     }

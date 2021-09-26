@@ -13,6 +13,7 @@
 #include "Script.hpp"
 #include "ScriptUtils/ScriptUtils.hpp"
 #include "ParticleSystem.hpp"
+#include "Sprite.hpp"
 
 namespace c2k {
 
@@ -39,10 +40,9 @@ namespace c2k {
     };
 
     struct DynamicSpriteComponent {
-        Rect textureRect;
-        Color color;
-        const Texture* texture;
         ShaderProgram* shaderProgram;
+        Sprite sprite;
+        Color color;
     };
 
     struct SpriteSheetAnimationComponent {
