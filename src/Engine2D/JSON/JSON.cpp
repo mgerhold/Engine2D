@@ -1,0 +1,258 @@
+//
+// Created by coder2k on 27.09.2021.
+//
+
+#include "JSON.hpp"
+
+namespace c2k::JSON {
+
+    Parser parseAnyChar() noexcept {
+        return [](const InputString& input) -> Result {
+            if (input.empty()) {
+                return tl::unexpected(fmt::format("Invalid input: Got empty string"));
+            }
+            return ResultPair({ input.front() }, input.substr(1));
+        };
+    }
+
+    Parser parseChar(char c) noexcept {
+        return [c](const InputString& input) -> Result {
+            return parseAnyChar()(input).and_then([c, &input](Result&& result) -> Result {
+                if (get<char>(result->first.front()) != c) {
+                    return tl::unexpected(
+                            fmt::format("Invalid input: Got character '{}' (expected '{}')", input.front(), c));
+                }
+                return result;
+            });
+        };
+    }
+
+    Parser parseEitherOf(Parser first, Parser second) noexcept {
+        return [=](const InputString& input) -> Result {
+            const auto firstResult = first(input);
+            if (firstResult) {
+                return firstResult;
+            }
+            const auto secondResult = second(input);
+            if (secondResult) {
+                return secondResult;
+            }
+            return tl::unexpected(
+                    fmt::format("Unable to parse input with either of two parsers: Error was '{}' or '{}'",
+                                firstResult.error(), secondResult.error()));
+        };
+    }
+
+    Parser parseBothOf(Parser first, Parser second) noexcept {
+        return [=](const InputString& input) -> Result {
+            auto firstResult = first(input);
+            if (!firstResult) {
+                return tl::unexpected(firstResult.error());
+            }
+            const auto secondResult = second(firstResult->second);
+            if (!secondResult) {
+                return tl::unexpected(secondResult.error());
+            }
+            using ranges::views::concat, ranges::to_vector, ranges::views::all;
+            return ResultPair(to_vector(concat(firstResult->first, secondResult->first)), secondResult->second);
+        };
+    }
+
+    Parser parseDigit() noexcept {
+        return [](const InputString& input) -> Result {
+            return parseAnyChar()(input).and_then([&input](Result&& result) -> Result {
+                if (!std::isdigit(get<char>(result->first.front()))) {
+                    return tl::unexpected(
+                            fmt::format("Invalid input: Got character '{}' (expected digit)", input.front()));
+                }
+                return result;
+            });
+        };
+    }
+
+    Parser parsePositiveDigit() noexcept {
+        return [](const InputString& input) -> Result {
+            const auto result = parseDigit()(input);
+            if (!result) {
+                return result;
+            }
+            if (get<char>(result->first.front()) == '0') {
+                return tl::unexpected(
+                        fmt::format("Got {} (positive digit expected)", get<char>(result->first.front())));
+            }
+            return result;
+        };
+    }
+
+    Parser parserMap(Parser parser, std::function<Result(Result&&)> f) noexcept {
+        return [=](const InputString& input) -> Result {
+            return parser(input).and_then([&](Result&& result) -> Result { return f(std::move(result)); });
+        };
+    }
+
+    Parser parserMapValue(Parser parser, ParsedValue value) noexcept {
+        return parserMap(parser, [value = std::move(value)](Result&& result) -> Result {
+            return ResultPair{ std::move(value), result->second };
+        });
+    }
+
+    Parser parseCharVecToString(Parser parser) noexcept {
+        return parserMap(parser, [](Result&& result) -> Result {
+            std::string string;
+            string.reserve(result->first.size());
+            for (auto&& variant : result->first) {
+                string += get<char>(variant);
+            }
+            return ResultPair{ { string }, result->second };
+        });
+    }
+
+    Parser parseString(std::string string) noexcept {
+        return [s = std::move(string)](const InputString& input) -> Result {
+            if (s.empty()) {
+                return ResultPair{ {}, input };
+            }
+            auto result = parseChar(s.front())(input);
+            if (!result) {
+                return result;
+            }
+            auto it = s.begin() + 1;
+            while (result && it != s.end()) {
+                result = parseChar(*it)(result->second);
+                ++it;
+            }
+            if (!result) {
+                return result;
+            }
+            return ResultPair{ { s }, result->second };
+        };
+    }
+
+    Parser parseZeroOrMore(Parser parser) noexcept {
+        return [parser = std::move(parser)](InputString input) -> Result {
+            ParsedValue values;
+            auto result = parser(input);
+            while (result) {
+                values.insert(values.end(), result->first.begin(), result->first.end());
+                input = result->second;
+                result = parser(input);
+            }
+            return ResultPair{ { std::move(values) }, input };
+        };
+    }
+
+    Parser parseJSONString() noexcept {
+        return parserMapStringToJSONString(parseCharVecToString(parseSequence(
+                parseAndDrop(parseChar('"')),
+                parseZeroOrMore(parseAnyOf(
+                        parserMapValue(parseBothOf(parseChar('\\'), parseChar('"')), { '"' }),
+                        parserMapValue(parseBothOf(parseChar('\\'), parseChar('\\')), { '\\' }),
+                        parserMapValue(parseBothOf(parseChar('\\'), parseChar('/')), { '/' }),
+                        parserMapValue(parseBothOf(parseChar('\\'), parseChar('b')), { '\b' }),
+                        parserMapValue(parseBothOf(parseChar('\\'), parseChar('f')), { '\f' }),
+                        parserMapValue(parseBothOf(parseChar('\\'), parseChar('n')), { '\n' }),
+                        parserMapValue(parseBothOf(parseChar('\\'), parseChar('r')), { '\r' }),
+                        parserMapValue(parseBothOf(parseChar('\\'), parseChar('t')), { '\t' }),
+                        // TODO: \u and 4 hex digits
+                        parseBothOf(parseNot(parseAnyOf(parseControlCharacter(), parseChar('\\'), parseChar('"'))),
+                                    parseAnyChar()))),
+                parseAndDrop(parseChar('"')))));
+    }
+
+    Parser parseNot(Parser parser) noexcept {
+        return [parser = std::move(parser)](const InputString& input) -> Result {
+            auto result = parser(input);
+            if (result) {
+                return tl::unexpected(
+                        fmt::format("Syntax error: {}", input.substr(0, input.length() - result->second.length())));
+            }
+            return parseSuccess()(input);
+        };
+    }
+
+    Parser parseAndDrop(Parser parser) noexcept {
+        return parserMapValue(parser, ParsedValue{});
+    }
+
+    Parser parseControlCharacter() noexcept {
+        return [](const InputString& input) -> Result {
+            auto result = parseAnyChar()(input);
+            if (!result) {
+                return result;
+            }
+            if (!std::iscntrl(get<char>(result->first.front()))) {
+                return tl::unexpected(
+                        fmt::format("Expected control character, got '{}'", get<char>(result->first.front())));
+            }
+            return result;
+        };
+    }
+
+    Parser parserMapStringToJSONString(Parser parser) noexcept {
+        return parserMap(std::move(parser), [](Result&& result) -> Result {
+            return ResultPair{ { JSONString{ .value{ get<std::string>(result->first.front()) } } }, result->second };
+        });
+    }
+
+    Parser parseOptionally(Parser parser) noexcept {
+        return [parser = std::move(parser)](const InputString& input) -> Result {
+            const auto result = parser(input);
+            if (result) {
+                return result;
+            }
+            return parseSuccess()(input);
+        };
+    }
+
+    Parser parseSuccess() noexcept {
+        return [](const InputString& input) -> Result { return ResultPair{ {}, input }; };
+    }
+
+    Parser parseJSONNumber() noexcept {
+        // clang-format off
+        return parserMapStringToJSONNumber(
+                    parseCharVecToString(
+                        parseSequence(
+                            parseOptionally(parseChar('-')),
+                            parseEitherOf(
+                                parseChar('0'),
+                                parseSequence(
+                                    parsePositiveDigit(),
+                                    parseZeroOrMore(parseDigit())
+                                )
+                            ),
+                            parseOptionally(
+                                parseSequence(
+                                    parseChar('.'),
+                                    parseOneOrMore(parseDigit())
+                                )
+                            ),
+                            parseOptionally(
+                                parseSequence(
+                                    parseAnyOf(parseChar('E'), parseChar('e')),
+                                    parseOptionally(parseAnyOf(parseChar('+'), parseChar('-'))),
+                                    parseOneOrMore(parseDigit())
+                                )
+                            )
+                        )
+                    )
+                );
+        // clang-format on
+    }
+
+    Parser parserMapStringToJSONNumber(Parser parser) noexcept {
+        return parserMap(std::move(parser), [](Result&& result) -> Result {
+            const std::string numberString = get<std::string>(result->first.front());
+            const double number = std::strtod(numberString.c_str(), nullptr);
+            if (std::isinf(number) || std::isnan(number)) {
+                return tl::unexpected(fmt::format("Value out of range: {}", numberString));
+            }
+            return ResultPair{ { JSONNumber{ .value{ number } } }, result->second };
+        });
+    }
+
+    Parser parseOneOrMore(Parser parser) noexcept {
+        return parseSequence(parser, parseZeroOrMore(parser));
+    }
+
+}// namespace c2k::JSON

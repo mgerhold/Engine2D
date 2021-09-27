@@ -21,7 +21,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #pragma warning(pop)
+#pragma warning(push)
+#pragma warning(disable : 4702)
 #include <range/v3/all.hpp>
+#pragma warning(pop)
 #include <stb_image.h>
 #include <gsl/gsl>
 #include <gsl/gsl_util>
@@ -59,3 +62,4 @@
 #include <cmath>
 #include <cstdint>
 #include <cstddef>
+#include <cctype>
