@@ -18,36 +18,36 @@ TEST(PrimitiveParsers, parseChar) {
     spdlog::info("Parser returned error message: {}", result.error());
 }
 
-TEST(PrimitiveParsers, parseEitherOf) {
+TEST(PrimitiveParsers, operatorLogicalOr) {
     using namespace c2k::JSON;
     std::string input = "abc";
-    auto result = parseEitherOf(parseChar('a'), parseChar('b'))(input);
+    auto result = (parseChar('a') || parseChar('b'))(input);
     ASSERT_TRUE(result);
     ASSERT_EQ(get<char>(result->first.front()), 'a');
     ASSERT_EQ(result->second, "bc");
 
     input = "bac";
-    result = parseEitherOf(parseChar('a'), parseChar('b'))(input);
+    result = (parseChar('a') || parseChar('b'))(input);
     ASSERT_TRUE(result);
     ASSERT_EQ(get<char>(result->first.front()), 'b');
     ASSERT_EQ(result->second, "ac");
 
     input = "cab";
-    result = parseEitherOf(parseChar('a'), parseChar('b'))(input);
+    result = (parseChar('a') || parseChar('b'))(input);
     ASSERT_FALSE(result);
     spdlog::info("Parser returned error message: {}", result.error());
 }
 
-TEST(PrimitiveParsers, parseBothOf) {
+TEST(PrimitiveParsers, operatorPlusForTwoParsers) {
     using namespace c2k::JSON;
     std::string input = "abc";
-    auto result = parseCharVecToString(parseBothOf(parseChar('a'), parseChar('b')))(input);
+    auto result = parseCharVecToString(parseChar('a') + parseChar('b'))(input);
     ASSERT_TRUE(result);
     ASSERT_EQ(get<std::string>(result->first.front()), "ab");
     ASSERT_EQ(result->second, "c");
 
     input = "bac";
-    result = parseCharVecToString(parseBothOf(parseChar('a'), parseChar('b')))(input);
+    result = parseCharVecToString(parseChar('a') + parseChar('b'))(input);
     ASSERT_FALSE(result);
     spdlog::info("Parser returned error message: {}", result.error());
 }
@@ -61,20 +61,16 @@ TEST(PrimitiveParsers, parseDigit) {
     ASSERT_EQ(result->second, "1abc");
 }
 
-TEST(CombinedParsers, parseSequence) {
+TEST(CombinedParsers, operatorPlus) {
     using namespace c2k::JSON;
     std::string input = "constexprvolatile";
-    auto result = parseCharVecToString(parseSequence(parseChar('c'), parseChar('o'), parseChar('n'), parseChar('s'),
-                                                     parseChar('t'), parseChar('e'), parseChar('x'), parseChar('p'),
-                                                     parseChar('r')))(input);
+    auto result = parseCharVecToString('c'_c + 'o'_c + 'n'_c + 's'_c + 't'_c + 'e'_c + 'x'_c + 'p'_c + 'r'_c)(input);
     ASSERT_TRUE(result);
     ASSERT_EQ(get<std::string>(result->first.front()), "constexpr");
     ASSERT_EQ(result->second, "volatile");
 
     input = "Constexprvolatile";
-    result = parseCharVecToString(parseSequence(parseChar('c'), parseChar('o'), parseChar('n'), parseChar('s'),
-                                                parseChar('t'), parseChar('e'), parseChar('x'), parseChar('p'),
-                                                parseChar('r')))(input);
+    result = parseCharVecToString('c'_c + 'o'_c + 'n'_c + 's'_c + 't'_c + 'e'_c + 'x'_c + 'p'_c + 'r'_c)(input);
     ASSERT_FALSE(result);
     spdlog::info("Parser returned error message: {}", result.error());
 }

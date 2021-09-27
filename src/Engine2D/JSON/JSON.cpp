@@ -6,6 +6,60 @@
 
 namespace c2k::JSON {
 
+    Parser operator+(const Parser& lhs, const Parser& rhs) noexcept {
+        return [=](const InputString& input) -> Result {
+            auto firstResult = lhs(input);
+            if (!firstResult) {
+                return tl::unexpected(firstResult.error());
+            }
+            const auto secondResult = rhs(firstResult->second);
+            if (!secondResult) {
+                return tl::unexpected(secondResult.error());
+            }
+            using ranges::views::concat, ranges::to_vector, ranges::views::all;
+            return ResultPair(to_vector(concat(firstResult->first, secondResult->first)), secondResult->second);
+        };
+    }
+
+    Parser operator||(const Parser& lhs, const Parser& rhs) noexcept {
+        return [=](const InputString& input) -> Result {
+            const auto firstResult = lhs(input);
+            if (firstResult) {
+                return firstResult;
+            }
+            const auto secondResult = rhs(input);
+            if (secondResult) {
+                return secondResult;
+            }
+            return tl::unexpected(
+                    fmt::format("Unable to parse input with either of two parsers: Error was '{}' or '{}'",
+                                firstResult.error(), secondResult.error()));
+        };
+    }
+
+    Parser operator""_c(char c) noexcept {
+        return parseChar(c);
+    }
+
+    Parser operator>>(const Parser& parser, const ParsedValue& value) noexcept {
+        return parserMapValue(parser, value);
+    }
+
+    ParsedValue operator""_val(char c) noexcept {
+        return ParsedValue{ { c } };
+    }
+
+    Parser operator!(const Parser& parser) noexcept {
+        return [parser = std::move(parser)](const InputString& input) -> Result {
+            auto result = parser(input);
+            if (result) {
+                return tl::unexpected(
+                        fmt::format("Syntax error: {}", input.substr(0, input.length() - result->second.length())));
+            }
+            return parseSuccess()(input);
+        };
+    }
+
     Parser parseAnyChar() noexcept {
         return [](const InputString& input) -> Result {
             if (input.empty()) {
@@ -24,37 +78,6 @@ namespace c2k::JSON {
                 }
                 return result;
             });
-        };
-    }
-
-    Parser parseEitherOf(Parser first, Parser second) noexcept {
-        return [=](const InputString& input) -> Result {
-            const auto firstResult = first(input);
-            if (firstResult) {
-                return firstResult;
-            }
-            const auto secondResult = second(input);
-            if (secondResult) {
-                return secondResult;
-            }
-            return tl::unexpected(
-                    fmt::format("Unable to parse input with either of two parsers: Error was '{}' or '{}'",
-                                firstResult.error(), secondResult.error()));
-        };
-    }
-
-    Parser parseBothOf(Parser first, Parser second) noexcept {
-        return [=](const InputString& input) -> Result {
-            auto firstResult = first(input);
-            if (!firstResult) {
-                return tl::unexpected(firstResult.error());
-            }
-            const auto secondResult = second(firstResult->second);
-            if (!secondResult) {
-                return tl::unexpected(secondResult.error());
-            }
-            using ranges::views::concat, ranges::to_vector, ranges::views::all;
-            return ResultPair(to_vector(concat(firstResult->first, secondResult->first)), secondResult->second);
         };
     }
 
@@ -142,32 +165,26 @@ namespace c2k::JSON {
     }
 
     Parser parseJSONString() noexcept {
-        return parserMapStringToJSONString(parseCharVecToString(parseSequence(
-                parseAndDrop(parseChar('"')),
-                parseZeroOrMore(parseAnyOf(
-                        parserMapValue(parseBothOf(parseChar('\\'), parseChar('"')), { '"' }),
-                        parserMapValue(parseBothOf(parseChar('\\'), parseChar('\\')), { '\\' }),
-                        parserMapValue(parseBothOf(parseChar('\\'), parseChar('/')), { '/' }),
-                        parserMapValue(parseBothOf(parseChar('\\'), parseChar('b')), { '\b' }),
-                        parserMapValue(parseBothOf(parseChar('\\'), parseChar('f')), { '\f' }),
-                        parserMapValue(parseBothOf(parseChar('\\'), parseChar('n')), { '\n' }),
-                        parserMapValue(parseBothOf(parseChar('\\'), parseChar('r')), { '\r' }),
-                        parserMapValue(parseBothOf(parseChar('\\'), parseChar('t')), { '\t' }),
-                        // TODO: \u and 4 hex digits
-                        parseBothOf(parseNot(parseAnyOf(parseControlCharacter(), parseChar('\\'), parseChar('"'))),
-                                    parseAnyChar()))),
-                parseAndDrop(parseChar('"')))));
-    }
-
-    Parser parseNot(Parser parser) noexcept {
-        return [parser = std::move(parser)](const InputString& input) -> Result {
-            auto result = parser(input);
-            if (result) {
-                return tl::unexpected(
-                        fmt::format("Syntax error: {}", input.substr(0, input.length() - result->second.length())));
-            }
-            return parseSuccess()(input);
-        };
+        // clang-format off
+        return parserMapStringToJSONString(
+                    parseCharVecToString(
+                        parseAndDrop('"'_c) +
+                        parseZeroOrMore(
+                            (('\\'_c + '"'_c) >> '"'_val) ||
+                            (('\\'_c + '\\'_c) >> '\\'_val) ||
+                            (('\\'_c + '/'_c) >> '/'_val) ||
+                            (('\\'_c + 'b'_c) >> '\b'_val) ||
+                            (('\\'_c + 'f'_c) >> '\f'_val) ||
+                            (('\\'_c + 'n'_c) >> '\n'_val) ||
+                            (('\\'_c + 'r'_c) >> '\r'_val) ||
+                            (('\\'_c + 't'_c) >> '\t'_val) ||
+                            // TODO: \u and 4 hex digits
+                            (!(parseControlCharacter() || '\\'_c || '"'_c) + parseAnyChar())
+                        ) +
+                        parseAndDrop('"'_c)
+                    )
+               );
+        // clang-format on
     }
 
     Parser parseAndDrop(Parser parser) noexcept {
@@ -212,28 +229,11 @@ namespace c2k::JSON {
         // clang-format off
         return parserMapStringToJSONNumber(
                     parseCharVecToString(
-                        parseSequence(
-                            parseOptionally(parseChar('-')),
-                            parseEitherOf(
-                                parseChar('0'),
-                                parseSequence(
-                                    parsePositiveDigit(),
-                                    parseZeroOrMore(parseDigit())
-                                )
-                            ),
-                            parseOptionally(
-                                parseSequence(
-                                    parseChar('.'),
-                                    parseOneOrMore(parseDigit())
-                                )
-                            ),
-                            parseOptionally(
-                                parseSequence(
-                                    parseAnyOf(parseChar('E'), parseChar('e')),
-                                    parseOptionally(parseAnyOf(parseChar('+'), parseChar('-'))),
-                                    parseOneOrMore(parseDigit())
-                                )
-                            )
+                        parseOptionally(parseChar('-')) +
+                        ('0'_c || (parsePositiveDigit() + parseZeroOrMore(parseDigit()))) +
+                        parseOptionally('.'_c + parseOneOrMore(parseDigit())) +
+                        parseOptionally(
+                            ('E'_c || 'e'_c) + parseOptionally('+'_c || '-'_c) + parseOneOrMore(parseDigit())
                         )
                     )
                 );
@@ -252,7 +252,7 @@ namespace c2k::JSON {
     }
 
     Parser parseOneOrMore(Parser parser) noexcept {
-        return parseSequence(parser, parseZeroOrMore(parser));
+        return parser + parseZeroOrMore(parser);
     }
 
 }// namespace c2k::JSON

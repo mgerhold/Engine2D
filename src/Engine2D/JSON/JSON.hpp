@@ -21,40 +21,23 @@ namespace c2k::JSON {
     using Result = tl::expected<ResultPair, ErrorMessage>;
     using Parser = std::function<Result(InputString)>;
 
+    [[nodiscard]] Parser operator+(const Parser& lhs, const Parser& rhs) noexcept;
+    [[nodiscard]] Parser operator||(const Parser& lhs, const Parser& rhs) noexcept;
+    [[nodiscard]] Parser operator"" _c(char c) noexcept;
+    [[nodiscard]] Parser operator>>(const Parser& parser, const ParsedValue& value) noexcept;
+    [[nodiscard]] ParsedValue operator"" _val(char c) noexcept;
+    [[nodiscard]] Parser operator!(const Parser& parser) noexcept;
+
     [[nodiscard]] Parser parseAnyChar() noexcept;
     [[nodiscard]] Parser parseChar(char c) noexcept;
-    [[nodiscard]] Parser parseEitherOf(Parser first, Parser second) noexcept;
-    [[nodiscard]] Parser parseBothOf(Parser first, Parser second) noexcept;
     [[nodiscard]] Parser parseDigit() noexcept;
     [[nodiscard]] Parser parsePositiveDigit() noexcept;
     [[nodiscard]] Parser parserMap(Parser parser, std::function<Result(Result&&)> f) noexcept;
     [[nodiscard]] Parser parserMapValue(Parser parser, ParsedValue value) noexcept;
     [[nodiscard]] Parser parseCharVecToString(Parser parser) noexcept;
-
-    template<typename First, typename Second, typename... Rest>
-    [[nodiscard]] Parser parseAnyOf(First first, Second second, Rest... rest) noexcept {
-        const auto firstTwoParsers = parseEitherOf(first, second);
-        if constexpr (sizeof...(rest) == 0) {
-            return firstTwoParsers;
-        } else {
-            return parseAnyOf(firstTwoParsers, rest...);
-        }
-    }
-
-    template<typename First, typename Second, typename... Rest>
-    [[nodiscard]] Parser parseSequence(First first, Second second, Rest... rest) noexcept {
-        const auto firstTwoParsers = parseBothOf(first, second);
-        if constexpr (sizeof...(rest) == 0) {
-            return firstTwoParsers;
-        } else {
-            return parseSequence(firstTwoParsers, rest...);
-        }
-    }
-
     [[nodiscard]] Parser parseString(std::string string) noexcept;
     [[nodiscard]] Parser parseZeroOrMore(Parser parser) noexcept;
     [[nodiscard]] Parser parseJSONString() noexcept;
-    [[nodiscard]] Parser parseNot(Parser parser) noexcept;
     [[nodiscard]] Parser parseAndDrop(Parser parser) noexcept;
     [[nodiscard]] Parser parseControlCharacter() noexcept;
     [[nodiscard]] Parser parserMapStringToJSONString(Parser parser) noexcept;
