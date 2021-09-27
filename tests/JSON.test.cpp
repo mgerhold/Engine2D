@@ -221,3 +221,42 @@ TEST(CombinedParsers, parseJSONNumber) {
     ASSERT_EQ(get<JSONNumber>(result->first.front()).value, std::stod("123e5"));
     ASSERT_EQ(result->second, "abc");
 }
+
+TEST(CombinedParsers, parseWhitespace) {
+    using namespace c2k::JSON;
+    std::string input = "";
+    auto result = parseWhitespace()(input);
+    ASSERT_TRUE(result);
+    ASSERT_EQ(result->first.size(), 0);
+    ASSERT_EQ(result->second, "");
+
+    input = "abc";
+    result = parseWhitespace()(input);
+    ASSERT_TRUE(result);
+    ASSERT_EQ(result->first.size(), 0);
+    ASSERT_EQ(result->second, "abc");
+
+    input = " abc";
+    result = parseWhitespace()(input);
+    ASSERT_TRUE(result);
+    ASSERT_EQ(get<char>(result->first.front()), ' ');
+    ASSERT_EQ(result->second, "abc");
+
+    input = "\nabc";
+    result = parseWhitespace()(input);
+    ASSERT_TRUE(result);
+    ASSERT_EQ(get<char>(result->first.front()), '\n');
+    ASSERT_EQ(result->second, "abc");
+
+    input = "\rabc";
+    result = parseWhitespace()(input);
+    ASSERT_TRUE(result);
+    ASSERT_EQ(get<char>(result->first.front()), '\r');
+    ASSERT_EQ(result->second, "abc");
+
+    input = "\tabc";
+    result = parseWhitespace()(input);
+    ASSERT_TRUE(result);
+    ASSERT_EQ(get<char>(result->first.front()), '\t');
+    ASSERT_EQ(result->second, "abc");
+}

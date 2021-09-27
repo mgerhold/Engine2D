@@ -46,5 +46,6 @@ namespace c2k::JSON {
     [[nodiscard]] Parser parseJSONNumber() noexcept;
     [[nodiscard]] Parser parserMapStringToJSONNumber(Parser parser) noexcept;
     [[nodiscard]] Parser parseOneOrMore(Parser parser) noexcept;
+    [[nodiscard]] Parser parseWhitespace() noexcept;
 
 }// namespace c2k::JSON

@@ -255,4 +255,8 @@ namespace c2k::JSON {
         return parser + parseZeroOrMore(parser);
     }
 
+    Parser parseWhitespace() noexcept {
+        return parseOptionally(' '_c || '\n'_c || '\r'_c || '\t'_c);
+    }
+
 }// namespace c2k::JSON
