@@ -259,4 +259,16 @@ namespace c2k::JSON {
         return parseOptionally(' '_c || '\n'_c || '\r'_c || '\t'_c);
     }
 
+    Parser parseJSONTrue() noexcept {
+        return parseString("true") >> ParsedValue{ JSONTrue{} };
+    }
+
+    Parser parseJSONFalse() noexcept {
+        return parseString("false") >> ParsedValue{ JSONFalse{} };
+    }
+
+    Parser parseJSONNull() noexcept {
+        return parseString("null") >> ParsedValue{ JSONNull{} };
+    }
+
 }// namespace c2k::JSON

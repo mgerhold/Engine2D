@@ -260,3 +260,39 @@ TEST(CombinedParsers, parseWhitespace) {
     ASSERT_EQ(get<char>(result->first.front()), '\t');
     ASSERT_EQ(result->second, "abc");
 }
+
+TEST(CombinedParsers, parseJSONTrue) {
+    using namespace c2k::JSON;
+    std::string input = "true";
+    auto result = parseJSONTrue()(input);
+    ASSERT_TRUE(result);
+    ASSERT_TRUE(holds_alternative<JSONTrue>(result->first.front()));
+
+    input = "false";
+    result = parseJSONTrue()(input);
+    ASSERT_FALSE(result);
+}
+
+TEST(CombinedParsers, parseJSONFalse) {
+    using namespace c2k::JSON;
+    std::string input = "false";
+    auto result = parseJSONFalse()(input);
+    ASSERT_TRUE(result);
+    ASSERT_TRUE(holds_alternative<JSONFalse>(result->first.front()));
+
+    input = "true";
+    result = parseJSONFalse()(input);
+    ASSERT_FALSE(result);
+}
+
+TEST(CombinedParsers, parseJSONNull) {
+    using namespace c2k::JSON;
+    std::string input = "null";
+    auto result = parseJSONNull()(input);
+    ASSERT_TRUE(result);
+    ASSERT_TRUE(holds_alternative<JSONNull>(result->first.front()));
+
+    input = "not_null";
+    result = parseJSONNull()(input);
+    ASSERT_FALSE(result);
+}

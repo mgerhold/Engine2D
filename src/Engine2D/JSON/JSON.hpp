@@ -14,7 +14,14 @@ namespace c2k::JSON {
         double value;
     };
 
-    using ParsedValue = std::vector<std::variant<char, std::string, JSONString, JSONNumber>>;
+    struct JSONTrue { };
+
+    struct JSONFalse { };
+
+    struct JSONNull { };
+
+    using ParsedValue =
+            std::vector<std::variant<char, std::string, JSONString, JSONNumber, JSONTrue, JSONFalse, JSONNull>>;
     using InputString = std::string;
     using ErrorMessage = std::string;
     using ResultPair = std::pair<ParsedValue, InputString>;
@@ -47,5 +54,8 @@ namespace c2k::JSON {
     [[nodiscard]] Parser parserMapStringToJSONNumber(Parser parser) noexcept;
     [[nodiscard]] Parser parseOneOrMore(Parser parser) noexcept;
     [[nodiscard]] Parser parseWhitespace() noexcept;
+    [[nodiscard]] Parser parseJSONTrue() noexcept;
+    [[nodiscard]] Parser parseJSONFalse() noexcept;
+    [[nodiscard]] Parser parseJSONNull() noexcept;
 
 }// namespace c2k::JSON
