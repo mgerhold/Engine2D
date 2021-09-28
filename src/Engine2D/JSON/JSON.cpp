@@ -6,6 +6,105 @@
 
 namespace c2k::JSON {
 
+    JSONArray::JSONArray(std::initializer_list<JSONValue> init) noexcept {
+        for (auto&& value : init) {
+            values.emplace_back(std::make_shared<JSONValue>(value));
+        }
+    }
+
+    bool JSONArray::operator==(const JSONArray& other) const {
+        if (values.size() != other.values.size()) {
+            return false;
+        }
+        for (std::size_t i = 0; i < values.size(); ++i) {
+            if (!values[i] || !other.values[i] || *values[i] != *other.values[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool JSONArray::operator!=(const JSONArray& other) const {
+        return !(*this == other);
+    }
+
+    JSONObject::JSONObject(std::initializer_list<std::pair<JSONString, JSONValue>> init) noexcept {
+        for (auto&& [key, value] : init) {
+            pairs.emplace_back(std::pair(key, std::make_shared<JSONValue>(value)));
+        }
+    }
+
+    bool JSONObject::operator==(const JSONObject& other) const {
+        if (pairs.size() != other.pairs.size()) {
+            return false;
+        }
+        for (std::size_t i = 0; i < pairs.size(); ++i) {
+            const auto& [key0, value0] = pairs[i];
+            const auto& [key1, value1] = other.pairs[i];
+            if (key0 != key1 || !value0 || !value1 || *value0 != *value1) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool JSONObject::operator!=(const JSONObject& other) const {
+        return !(*this == other);
+    }
+
+    bool JSONValue::isString() const noexcept {
+        return is<JSONString>();
+    }
+
+    bool JSONValue::isNumber() const noexcept {
+        return is<JSONNumber>();
+    }
+
+    bool JSONValue::isObject() const noexcept {
+        return is<JSONObject>();
+    }
+    bool JSONValue::isArray() const noexcept {
+        return is<JSONArray>();
+    }
+
+    bool JSONValue::isTrue() const noexcept {
+        return is<JSONTrue>();
+    }
+
+    bool JSONValue::isFalse() const noexcept {
+        return is<JSONFalse>();
+    }
+
+    bool JSONValue::isNull() const noexcept {
+        return is<JSONNull>();
+    }
+
+    tl::expected<JSONString, std::string> JSONValue::asString() const noexcept {
+        return as<JSONString>();
+    }
+
+    tl::expected<JSONNumber, std::string> JSONValue::asNumber() const noexcept {
+        return as<JSONNumber>();
+    }
+
+    tl::expected<JSONObject, std::string> JSONValue::asObject() const noexcept {
+        return as<JSONObject>();
+    }
+    tl::expected<JSONArray, std::string> JSONValue::asArray() const noexcept {
+        return as<JSONArray>();
+    }
+
+    bool JSONValue::operator==(const JSONValue& other) const {
+        if (!mData || !other.mData) {
+            return false;
+        }
+        return *mData == *other.mData;
+    }
+
+    bool JSONValue::operator!=(const JSONValue& other) const {
+        return !(*this == other);
+    }
+
     Parser operator+(const Parser& lhs, const Parser& rhs) noexcept {
         return [=](const InputString& input) -> Result {
             auto firstResult = lhs(input);
@@ -255,8 +354,8 @@ namespace c2k::JSON {
         return parser + parseZeroOrMore(parser);
     }
 
-    Parser parseWhitespace() noexcept {
-        return parseOptionally(' '_c || '\n'_c || '\r'_c || '\t'_c);
+    Parser parseWhitespaceAndDrop() noexcept {
+        return parseAndDrop(parseZeroOrMore(' '_c || '\n'_c || '\r'_c || '\t'_c));
     }
 
     Parser parseJSONTrue() noexcept {
@@ -269,6 +368,103 @@ namespace c2k::JSON {
 
     Parser parseJSONNull() noexcept {
         return parseString("null") >> ParsedValue{ JSONNull{} };
+    }
+
+    Parser parseJSONValue() noexcept {
+        return [](const InputString& input) -> Result {
+            const auto result = (parseWhitespaceAndDrop() +
+                                 (parseJSONString() || parseJSONNumber() || parseJSONObject() || parseJSONArray() ||
+                                  parseJSONTrue() || parseJSONFalse() || parseJSONNull()) +
+                                 parseWhitespaceAndDrop())(input);
+            if (!result) {
+                return result;
+            }
+            assert(result->first.size() == 1);
+            if (holds_alternative<JSONString>(result->first.front())) {
+                return ResultPair{ { JSONValue{ get<JSONString>(result->first.front()) } }, result->second };
+            }
+            if (holds_alternative<JSONNumber>(result->first.front())) {
+                return ResultPair{ { JSONValue{ get<JSONNumber>(result->first.front()) } }, result->second };
+            }
+            if (holds_alternative<JSONObject>(result->first.front())) {
+                return ResultPair{ { JSONValue{ get<JSONObject>(result->first.front()) } }, result->second };
+            }
+            if (holds_alternative<JSONArray>(result->first.front())) {
+                return ResultPair{ { JSONValue{ get<JSONArray>(result->first.front()) } }, result->second };
+            }
+            if (holds_alternative<JSONTrue>(result->first.front())) {
+                return ResultPair{ { JSONValue{ get<JSONTrue>(result->first.front()) } }, result->second };
+            }
+            if (holds_alternative<JSONFalse>(result->first.front())) {
+                return ResultPair{ { JSONValue{ get<JSONFalse>(result->first.front()) } }, result->second };
+            }
+            if (holds_alternative<JSONNull>(result->first.front())) {
+                return ResultPair{ { JSONValue{ get<JSONNull>(result->first.front()) } }, result->second };
+            }
+            return tl::unexpected{ fmt::format(
+                    "error while converting parsed input into JSON value (unexpected type)") };
+        };
+    }
+
+    Parser parseJSONArray() noexcept {
+        return [](const InputString& input) -> Result {
+            // clang-format off
+            const auto result = (
+                    parseAndDrop('['_c) + (
+                        (parseJSONValue() + parseZeroOrMore(parseAndDrop(','_c) + parseJSONValue())) ||
+                        parseWhitespaceAndDrop()
+                    ) +
+                    parseAndDrop(']'_c)
+            )(input);
+            // clang-format on
+            if (!result) {
+                return result;
+            }
+            JSONArray array;
+            for (auto&& value : result->first) {
+                array.values.emplace_back(std::make_shared<JSONValue>(get<JSONValue>(value)));
+            }
+            return ResultPair{ { array }, result->second };
+        };
+    }
+
+    Parser parseJSONObject() noexcept {
+        return [](const InputString& input) -> Result {
+            // clang-format off
+            const auto result = (
+                    parseAndDrop('{'_c) +
+                    (
+                        (
+                            parseWhitespaceAndDrop() +
+                            parseJSONString() +
+                            parseWhitespaceAndDrop() +
+                            parseAndDrop(':'_c) +
+                            parseJSONValue() +
+                            parseZeroOrMore(
+                                parseAndDrop(','_c) +
+                                parseWhitespaceAndDrop() +
+                                parseJSONString() +
+                                parseWhitespaceAndDrop() +
+                                parseAndDrop(':'_c) +
+                                parseJSONValue()
+                            )
+                        ) || parseWhitespaceAndDrop()
+                    ) +
+                    parseAndDrop('}'_c)
+                )(input);
+            // clang-format on
+            if (!result) {
+                return result;
+            }
+            const std::size_t elementCount = result->first.size();
+            assert(elementCount % 2 == 0 && "objects must consist of pairs");
+            JSONObject object;
+            for (std::size_t i = 0; i < elementCount; i += 2) {
+                object.pairs.emplace_back(std::pair(get<JSONString>(result->first[i]),
+                                                    std::make_shared<JSONValue>(get<JSONValue>(result->first[i + 1]))));
+            }
+            return ResultPair{ { object }, result->second };
+        };
     }
 
 }// namespace c2k::JSON

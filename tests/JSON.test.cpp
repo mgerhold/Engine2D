@@ -222,42 +222,48 @@ TEST(CombinedParsers, parseJSONNumber) {
     ASSERT_EQ(result->second, "abc");
 }
 
-TEST(CombinedParsers, parseWhitespace) {
+TEST(CombinedParsers, parseWhitespaceAndDrop) {
     using namespace c2k::JSON;
     std::string input = "";
-    auto result = parseWhitespace()(input);
+    auto result = parseWhitespaceAndDrop()(input);
     ASSERT_TRUE(result);
     ASSERT_EQ(result->first.size(), 0);
     ASSERT_EQ(result->second, "");
 
     input = "abc";
-    result = parseWhitespace()(input);
+    result = parseWhitespaceAndDrop()(input);
     ASSERT_TRUE(result);
     ASSERT_EQ(result->first.size(), 0);
     ASSERT_EQ(result->second, "abc");
 
     input = " abc";
-    result = parseWhitespace()(input);
+    result = parseWhitespaceAndDrop()(input);
     ASSERT_TRUE(result);
-    ASSERT_EQ(get<char>(result->first.front()), ' ');
+    ASSERT_EQ(result->first.size(), 0);
     ASSERT_EQ(result->second, "abc");
 
     input = "\nabc";
-    result = parseWhitespace()(input);
+    result = parseWhitespaceAndDrop()(input);
     ASSERT_TRUE(result);
-    ASSERT_EQ(get<char>(result->first.front()), '\n');
+    ASSERT_EQ(result->first.size(), 0);
     ASSERT_EQ(result->second, "abc");
 
     input = "\rabc";
-    result = parseWhitespace()(input);
+    result = parseWhitespaceAndDrop()(input);
     ASSERT_TRUE(result);
-    ASSERT_EQ(get<char>(result->first.front()), '\r');
+    ASSERT_EQ(result->first.size(), 0);
     ASSERT_EQ(result->second, "abc");
 
     input = "\tabc";
-    result = parseWhitespace()(input);
+    result = parseWhitespaceAndDrop()(input);
     ASSERT_TRUE(result);
-    ASSERT_EQ(get<char>(result->first.front()), '\t');
+    ASSERT_EQ(result->first.size(), 0);
+    ASSERT_EQ(result->second, "abc");
+
+    input = "   \n   \t\r\r  \tabc";
+    result = parseWhitespaceAndDrop()(input);
+    ASSERT_TRUE(result);
+    ASSERT_EQ(result->first.size(), 0);
     ASSERT_EQ(result->second, "abc");
 }
 
@@ -295,4 +301,185 @@ TEST(CombinedParsers, parseJSONNull) {
     input = "not_null";
     result = parseJSONNull()(input);
     ASSERT_FALSE(result);
+}
+
+TEST(CombinedParsers, parseJSONValue) {
+    using namespace c2k::JSON;
+    std::string input = "123abc";
+    auto result = parseJSONValue()(input);
+    ASSERT_TRUE(result);
+    ASSERT_TRUE(get<JSONValue>(result->first.front()).isNumber());
+    auto number = get<JSONValue>(result->first.front()).asNumber();// tl::expected<JSONNumber, std::string>
+    ASSERT_TRUE(number);
+    ASSERT_EQ(number->value, 123.0);
+    ASSERT_EQ(result->second, "abc");
+
+    // comparison check
+    JSONValue jsonNumberValue{ JSONNumber{ .value{ 123.0 } } };
+    ASSERT_EQ(jsonNumberValue, get<JSONValue>(result->first.front()));
+
+    input = "  123   \t\n abc";
+    result = parseJSONValue()(input);
+    ASSERT_TRUE(result);
+    ASSERT_TRUE(get<JSONValue>(result->first.front()).isNumber());
+    number = get<JSONValue>(result->first.front()).asNumber();// tl::expected<JSONNumber, std::string>
+    ASSERT_TRUE(number);
+    ASSERT_EQ(number->value, 123.0);
+    ASSERT_EQ(result->second, "abc");
+
+    input = "  \"text\"   \t\n abc";
+    result = parseJSONValue()(input);
+    ASSERT_TRUE(result);
+    ASSERT_TRUE(get<JSONValue>(result->first.front()).isString());
+    auto string = get<JSONValue>(result->first.front()).asString();// tl::expected<JSONString, std::string>
+    ASSERT_TRUE(string);
+    ASSERT_EQ(string->value, "text");
+    ASSERT_EQ(result->second, "abc");
+
+    input = "  true   \t\n abc";
+    result = parseJSONValue()(input);
+    ASSERT_TRUE(result);
+    ASSERT_TRUE(get<JSONValue>(result->first.front()).isTrue());
+    ASSERT_EQ(result->second, "abc");
+
+    // comparison check
+    JSONValue jsonTrueValue{ JSONTrue{} };
+    ASSERT_EQ(jsonTrueValue, get<JSONValue>(result->first.front()));
+
+    input = "  false   \t\n abc";
+    result = parseJSONValue()(input);
+    ASSERT_TRUE(result);
+    ASSERT_TRUE(get<JSONValue>(result->first.front()).isFalse());
+    ASSERT_EQ(result->second, "abc");
+
+    input = "  null   \t\n abc";
+    result = parseJSONValue()(input);
+    ASSERT_TRUE(result);
+    ASSERT_TRUE(get<JSONValue>(result->first.front()).isNull());
+    ASSERT_EQ(result->second, "abc");
+}
+
+TEST(CombinedParsers, parseJSONArray) {
+    using namespace c2k::JSON;
+    std::string input = "[]";
+    auto result = parseJSONArray()(input);
+    ASSERT_TRUE(result);
+    ASSERT_EQ(get<JSONArray>(result->first.front()).values.size(), 0);
+
+    input = "[123]";
+    result = parseJSONArray()(input);
+    ASSERT_TRUE(result);
+    ASSERT_EQ(get<JSONArray>(result->first.front()).values.size(), 1);
+    auto expected = JSONArray{ JSONNumber{ 123.0 } };
+    ASSERT_EQ(get<JSONArray>(result->first.front()), expected);
+
+    input = "[123, \"text\", true, null]";
+    result = parseJSONArray()(input);
+    ASSERT_TRUE(result);
+    ASSERT_EQ(get<JSONArray>(result->first.front()).values.size(), 4);
+    expected = JSONArray{ JSONNumber{ 123.0 }, JSONString{ "text" }, JSONTrue{}, JSONNull{} };
+    ASSERT_EQ(get<JSONArray>(result->first.front()), expected);
+
+    input = "[123, \"text\", true, null,]";// trailing comma
+    result = parseJSONArray()(input);
+    ASSERT_FALSE(result);
+}
+
+TEST(CombinedParsers, parseJSONObject) {
+    using namespace c2k::JSON;
+    std::string input = "{}";
+    auto result = parseJSONObject()(input);
+    ASSERT_TRUE(result);
+    ASSERT_EQ(get<JSONObject>(result->first.front()).pairs.size(), 0);
+
+    input = R"({"key": "value"})";
+    result = parseJSONObject()(input);
+    ASSERT_TRUE(result);
+    ASSERT_EQ(get<JSONObject>(result->first.front()).pairs.size(), 1);
+    auto expected = JSONObject{ { JSONString{ "key" }, JSONValue{ JSONString{ "value" } } } };
+    ASSERT_EQ(expected, get<JSONObject>(result->first.front()));
+
+    input = R"({"key": "value",
+    "name": "bjarne",
+    "age": 70,
+    "programmer": true})";
+    result = parseJSONObject()(input);
+    ASSERT_TRUE(result);
+    ASSERT_EQ(get<JSONObject>(result->first.front()).pairs.size(), 4);
+    expected = JSONObject{
+        { JSONString{ "key" }, JSONValue{ JSONString{ "value" } } },
+        { JSONString{ "name" }, JSONValue{ JSONString{ "bjarne" } } },
+        { JSONString{ "age" }, JSONValue{ JSONNumber{ 70.0 } } },
+        { JSONString{ "programmer" }, JSONValue{ JSONTrue{} } },
+    };
+    ASSERT_EQ(expected, get<JSONObject>(result->first.front()));
+
+    input = R"({"key": "value",
+    "name": "bjarne",
+    "age": 70,
+    123: "invalid key",
+    "programmer": true})";
+    result = parseJSONObject()(input);
+    ASSERT_FALSE(result);
+}
+
+TEST(CombinedParsers, nestedParsing) {
+    using namespace c2k::JSON;
+    std::string input = R"({"key": "value",
+    "array": [123, "c++", true],
+    "object": {
+        "language": "c++",
+        "versions": [14, 17, 20]
+    }
+})";
+    auto result = parseJSONValue()(input);
+    ASSERT_TRUE(result);
+    auto value = get<JSONValue>(result->first.front());
+    ASSERT_TRUE(value.isObject());
+    auto object = value.asObject().value();
+    ASSERT_EQ(object.pairs.size(), 3);
+    // clang-format off
+    auto expected = JSONObject{
+        { JSONString{ "key" }, JSONValue{ JSONString{ "value" } } },
+        { JSONString{ "array" }, JSONValue{ JSONArray{ JSONNumber{ 123.0 }, JSONString{ "c++" }, JSONTrue{} } } },
+        { JSONString{ "object" }, JSONValue{ JSONObject{
+                                                 { JSONString{ "language" }, JSONValue{ JSONString{ "c++" } } },
+                                                 { JSONString{ "versions" }, JSONValue{ JSONArray{
+                                                                                           JSONNumber{ 14.0 },
+                                                                                           JSONNumber{ 17.0 },
+                                                                                           JSONNumber{ 20.0 }
+                                                                                        }
+                                                                             }
+                                                 }
+                                             }
+                                  }
+        }
+    };
+    // clang-format on
+    ASSERT_EQ(object, expected);
+
+    input = R"({
+"startLifeTime": 3,
+"lifeTimeVariation": 0.05,
+"particlesPerSecond": 100,
+"gravity": {
+  "x": 0,
+  "y": 0,
+  "z": -0.001
+},
+"startScale": {
+  "x": 2,
+  "y": 2
+},
+"endScale": {
+  "x": 25,
+  "y": 25
+},
+"startRotationSpeed": 0,
+"endRotationSpeed": 0,
+"startRotationSpeedVariation": 400,
+"endRotationSpeedVariation": 10
+})";
+    result = parseJSONValue()(input);
+    ASSERT_TRUE(result);
 }
