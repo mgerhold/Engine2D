@@ -81,6 +81,7 @@ namespace c2k::JSON {
         [[nodiscard]] bool operator==(const JSONValue& other) const;
         [[nodiscard]] bool operator!=(const JSONValue& other) const;
         [[nodiscard]] std::string dump(const std::string& indentationStep = "  ") const noexcept;
+        tl::expected<std::monostate, std::string> dumpToFile(const std::filesystem::path& filename) const noexcept;
 
     private:
         template<typename T>

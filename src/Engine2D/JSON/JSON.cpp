@@ -165,6 +165,11 @@ namespace c2k::JSON {
         return result;
     }
 
+    tl::expected<std::monostate, std::string> JSONValue::dumpToFile(
+            const std::filesystem::path& filename) const noexcept {
+        return c2k::FileUtils::writeTextFile(dump(), filename);
+    }
+
     Parser operator+(const Parser& lhs, const Parser& rhs) noexcept {
         return [=](const InputString& input) -> Result {
             auto firstResult = lhs(input);

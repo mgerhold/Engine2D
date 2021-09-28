@@ -493,3 +493,40 @@ TEST(CombinedParsers, parseFile) {
     ASSERT_TRUE(json2);
     ASSERT_EQ(json, json2);
 }
+
+TEST(CombinedParsers, saveAndReadFiles) {
+    using namespace c2k::JSON;
+    // clang-format off
+    const auto json = JSONValue { JSONObject{
+        { JSONString{ "color" }, JSONString{ "blue"} },
+        { JSONString{ "age" }, JSONNumber{ 42.0 } },
+        { JSONString{ "isCool" }, JSONTrue{ } },
+        { JSONString{ "isHot" }, JSONFalse{ } },
+        { JSONString{ "nil" }, JSONNull{ } },
+        { JSONString{ "list" }, JSONArray{
+                JSONValue{ JSONString{ "text" } },
+                JSONValue{ JSONNumber{ 99.0 } },
+                JSONValue{ JSONTrue{ } },
+                JSONValue{ JSONFalse{ } },
+                JSONValue{ JSONNull{ } },
+                JSONValue{ JSONObject{
+                        { JSONString{ "nestedKey" }, JSONValue{ JSONString{ "nestedValue" }}},
+                        { JSONString{ "nestedNumber" }, JSONValue{ JSONNumber{ 43.0 }}}
+                }},
+                JSONValue{ JSONArray{
+                        JSONValue{ JSONTrue{} },
+                        JSONValue{ JSONNull{} },
+                        JSONValue{ JSONNumber{ 44.0 } }
+                }}
+        } },
+        { JSONString{ "nestedObject" }, JSONObject {
+                { JSONString{ "hobby" }, JSONValue{ JSONString{ "tennis" }}}
+        }}
+    }};
+    // clang-format on
+    const auto filename = std::filesystem::current_path() / "tests" / "saveAndReadFiles_test.json";
+    json.dumpToFile(filename);
+    const auto readJSON = fromFile(filename);
+    ASSERT_TRUE(readJSON);
+    ASSERT_EQ(json, readJSON);
+}
