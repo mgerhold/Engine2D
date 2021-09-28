@@ -3,6 +3,7 @@
 //
 
 #include "JSON.hpp"
+#include "../FileUtils/FileUtils.hpp"
 
 namespace c2k::JSON {
 
@@ -103,6 +104,65 @@ namespace c2k::JSON {
 
     bool JSONValue::operator!=(const JSONValue& other) const {
         return !(*this == other);
+    }
+
+    std::string JSONValue::dump(const std::string& indentationStep) const noexcept {
+        return dumpImplementation(indentationStep);
+    }
+
+    std::string JSONValue::dumpImplementation(const std::string& indentationStep,
+                                              const std::uint32_t baseIndentation) const noexcept {
+        const auto addMultipleTimes = [](std::string& string, const std::string& toAppend, std::uint32_t count) {
+            for (std::uint32_t i = 0U; i < count; ++i) {
+                string += toAppend;
+            }
+        };
+        std::string result{};
+        if (isString()) {
+            result += fmt::format("\"{}\"", asString().value().value);
+        } else if (isNumber()) {
+            result += fmt::format("{}", asNumber().value().value);
+        } else if (isTrue()) {
+            result += "true";
+        } else if (isFalse()) {
+            result += "false";
+        } else if (isNull()) {
+            result += "null";
+        } else if (isArray()) {
+            result += "[\n";
+            addMultipleTimes(result, indentationStep, baseIndentation + 1);
+            const auto array = asArray().value();
+            if (!array.values.empty()) {
+                result += array.values.front()->dumpImplementation(indentationStep, baseIndentation + 1);
+            }
+            for (std::size_t i = 1; i < array.values.size(); ++i) {
+                result += ",\n";
+                addMultipleTimes(result, indentationStep, baseIndentation + 1);
+                result += array.values[i]->dumpImplementation(indentationStep, baseIndentation + 1);
+            }
+            result += '\n';
+            addMultipleTimes(result, indentationStep, baseIndentation);
+            result += ']';
+        } else if (isObject()) {
+            result += "{\n";
+            addMultipleTimes(result, indentationStep, baseIndentation + 1);
+            const auto object = asObject().value();
+            if (!object.pairs.empty()) {
+                result += fmt::format(
+                        "\"{}\": {}", object.pairs.front().first.value,
+                        object.pairs.front().second->dumpImplementation(indentationStep, baseIndentation + 1));
+            }
+            for (std::size_t i = 1; i < object.pairs.size(); ++i) {
+                result += ",\n";
+                addMultipleTimes(result, indentationStep, baseIndentation + 1);
+                result += fmt::format("\"{}\": {}", object.pairs[i].first.value,
+                                      object.pairs[i].second->dumpImplementation(indentationStep, baseIndentation + 1));
+            }
+            result += '\n';
+            addMultipleTimes(result, indentationStep, baseIndentation);
+            result += '}';
+        }
+        return result;
     }
 
     Parser operator+(const Parser& lhs, const Parser& rhs) noexcept {
@@ -465,6 +525,18 @@ namespace c2k::JSON {
             }
             return ResultPair{ { object }, result->second };
         };
+    }
+
+    tl::expected<JSONValue, std::string> fromString(const std::string& input) noexcept {
+        const auto result = parseJSONValue()(input);
+        if (!result) {
+            return tl::unexpected(result.error());
+        }
+        return get<JSONValue>(result->first.front());
+    }
+
+    tl::expected<JSONValue, std::string> fromFile(const std::filesystem::path& filename) noexcept {
+        return c2k::FileUtils::readTextFile(filename).and_then(fromString);
     }
 
 }// namespace c2k::JSON

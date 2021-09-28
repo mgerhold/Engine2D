@@ -80,6 +80,7 @@ namespace c2k::JSON {
 
         [[nodiscard]] bool operator==(const JSONValue& other) const;
         [[nodiscard]] bool operator!=(const JSONValue& other) const;
+        [[nodiscard]] std::string dump(const std::string& indentationStep = "  ") const noexcept;
 
     private:
         template<typename T>
@@ -94,6 +95,9 @@ namespace c2k::JSON {
             }
             return get<T>(*mData);
         }
+
+        [[nodiscard]] std::string dumpImplementation(const std::string& indentationStep,
+                                                     std::uint32_t baseIndentation = 0U) const noexcept;
 
     private:
         std::shared_ptr<JSONVariant> mData;
@@ -147,5 +151,8 @@ namespace c2k::JSON {
     [[nodiscard]] Parser parseJSONValue() noexcept;
     [[nodiscard]] Parser parseJSONArray() noexcept;
     [[nodiscard]] Parser parseJSONObject() noexcept;
+
+    [[nodiscard]] tl::expected<JSONValue, std::string> fromString(const std::string& input) noexcept;
+    [[nodiscard]] tl::expected<JSONValue, std::string> fromFile(const std::filesystem::path& filename) noexcept;
 
 }// namespace c2k::JSON
