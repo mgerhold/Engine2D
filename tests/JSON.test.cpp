@@ -486,7 +486,7 @@ TEST(CombinedParsers, nestedParsing) {
 
 TEST(CombinedParsers, parseFile) {
     using namespace c2k::JSON;
-    const auto json = fromFile(std::filesystem::current_path() / "assets" / "scenes" / "assets.json");
+    const auto json = fromFile(std::filesystem::current_path() / "tests" / "assets.json");
     ASSERT_TRUE(json);
     const auto jsonString = json.value().dump();
     const auto json2 = fromString(jsonString);

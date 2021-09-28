@@ -1,0 +1,84 @@
+{
+  "textures": [
+    {
+      "guid": "9043b452-363c-4917-bfde-592a72077e37",
+      "filename": "textures/bjarne.jpg",
+      "group": ""
+    },
+    {
+      "guid": "dff006d0-3c6e-4a22-99ff-2b2af8fdc770",
+      "filename": "textures/nojava.png",
+      "group": ""
+    },
+    {
+      "guid": "c22764c9-9750-4749-810e-10f4c6f50123",
+      "filename": "textures/fire.png",
+      "group": ""
+    },
+    {
+      "guid": "105cefb4-cec3-4bde-a0da-c85f5b6d8bbc",
+      "filename": "textures/icons.png",
+      "group": ""
+    }
+  ],
+  "shaderPrograms": [
+    {
+      "guid": "b520f0eb-1756-41e0-ac07-66c3338bc594",
+      "vertexShaderFilename": "shaders/default.vert",
+      "fragmentShaderFilename": "shaders/default.frag",
+      "group": ""
+    }
+  ],
+  "scripts": [
+    {
+      "guid": "5874d6e9-5529-45bc-829b-d6002ef21d70",
+      "filename": "scripts/test01.lua",
+      "group": ""
+    },
+    {
+      "guid": "afcdc904-20a0-4185-8d8f-d9ba0d61eb37",
+      "filename": "scripts/spritesheettest.lua",
+      "group": ""
+    },
+    {
+      "guid": "9632ed81-76ce-469c-b909-09a754877ae9",
+      "filename": "scripts/entityspawner.lua",
+      "group": ""
+    },
+    {
+      "guid": "43e72b36-75d0-4ba7-93c7-d443d649bacc",
+      "filename": "scripts/clock.lua",
+      "group": ""
+    }
+  ],
+  "spriteSheets": [
+    {
+      "guid": "c15111ea-7ba8-4e65-8f24-40c868498d5b",
+      "filename": "spritesheets/fire.json",
+      "group": "",
+      "texture": "c22764c9-9750-4749-810e-10f4c6f50123"
+    },
+    {
+      "guid": "22171ab7-6b8b-474f-bf24-366724625641",
+      "filename": "spritesheets/icons.json",
+      "group": "",
+      "texture": "105cefb4-cec3-4bde-a0da-c85f5b6d8bbc"
+    }
+  ],
+  "particleSystems": [
+    {
+      "guid": "bd59709a-cc71-4bed-bb46-dc7624686ef6",
+      "filename": "particlesystems/bjarne.json",
+      "group": "",
+      "texture": "9043b452-363c-4917-bfde-592a72077e37",
+      "shaderProgram": "b520f0eb-1756-41e0-ac07-66c3338bc594"
+    },
+    {
+      "guid": "cb15abcf-7a3a-4463-8ee2-93e8435cef63",
+      "filename": "particlesystems/nojava.json",
+      "group": "",
+      "texture": "dff006d0-3c6e-4a22-99ff-2b2af8fdc770",
+      "shaderProgram": "b520f0eb-1756-41e0-ac07-66c3338bc594"
+    }
+  ]
+}
