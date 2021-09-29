@@ -107,11 +107,13 @@ namespace c2k::JSON {
             [[nodiscard]] bool isTrue() const noexcept;
             [[nodiscard]] bool isFalse() const noexcept;
             [[nodiscard]] bool isNull() const noexcept;
+            [[nodiscard]] bool isBool() const noexcept;
 
-            [[nodiscard]] tl::expected<JSONString, std::string> asString() const noexcept;
-            [[nodiscard]] tl::expected<JSONNumber, std::string> asNumber() const noexcept;
+            [[nodiscard]] tl::expected<std::string, std::string> asString() const noexcept;
+            [[nodiscard]] tl::expected<double, std::string> asNumber() const noexcept;
             [[nodiscard]] tl::expected<JSONObject, std::string> asObject() const noexcept;
             [[nodiscard]] tl::expected<JSONArray, std::string> asArray() const noexcept;
+            [[nodiscard]] tl::expected<bool, std::string> asBool() const noexcept;
 
             [[nodiscard]] bool operator==(const JSONValue& other) const;
             [[nodiscard]] bool operator!=(const JSONValue& other) const;
@@ -196,5 +198,7 @@ namespace c2k::JSON {
 
     [[nodiscard]] tl::expected<Value, std::string> fromString(const std::string& input) noexcept;
     [[nodiscard]] tl::expected<Value, std::string> fromFile(const std::filesystem::path& filename) noexcept;
+    // TODO: rename user-defined literal after removing nlohmann::json
+    [[nodiscard]] tl::expected<Value, std::string> operator"" _asjson(const char* input, std::size_t) noexcept;
 
 }// namespace c2k::JSON

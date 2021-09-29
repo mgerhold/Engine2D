@@ -81,19 +81,34 @@ namespace c2k::JSON {
             return is<JSONNull>();
         }
 
-        tl::expected<JSONString, std::string> JSONValue::asString() const noexcept {
-            return as<JSONString>();
+        [[nodiscard]] bool JSONValue::isBool() const noexcept {
+            return isTrue() || isFalse();
         }
 
-        tl::expected<JSONNumber, std::string> JSONValue::asNumber() const noexcept {
-            return as<JSONNumber>();
+        tl::expected<std::string, std::string> JSONValue::asString() const noexcept {
+            return as<JSONString>().map([](JSONString&& jsonString) { return jsonString.value; });
+        }
+
+        tl::expected<double, std::string> JSONValue::asNumber() const noexcept {
+            return as<JSONNumber>().map([](JSONNumber&& jsonNumber) { return jsonNumber.value; });
         }
 
         tl::expected<JSONObject, std::string> JSONValue::asObject() const noexcept {
             return as<JSONObject>();
         }
+
         tl::expected<JSONArray, std::string> JSONValue::asArray() const noexcept {
             return as<JSONArray>();
+        }
+
+        tl::expected<bool, std::string> JSONValue::asBool() const noexcept {
+            if (isTrue()) {
+                return true;
+            }
+            if (isFalse()) {
+                return false;
+            }
+            return tl::unexpected(fmt::format("Invalid JSON value access"));
         }
 
         bool JSONValue::operator==(const JSONValue& other) const {
@@ -120,9 +135,9 @@ namespace c2k::JSON {
             };
             std::string result{};
             if (isString()) {
-                result += fmt::format("\"{}\"", asString().value().value);
+                result += fmt::format("\"{}\"", asString().value());
             } else if (isNumber()) {
-                result += fmt::format("{}", asNumber().value().value);
+                result += fmt::format("{}", asNumber().value());
             } else if (isTrue()) {
                 result += "true";
             } else if (isFalse()) {
@@ -547,6 +562,10 @@ parseAndDrop('}'_c)
 
     tl::expected<Value, std::string> fromFile(const std::filesystem::path& filename) noexcept {
         return c2k::FileUtils::readTextFile(filename).and_then(fromString);
+    }
+
+    tl::expected<Value, std::string> operator""_asjson(const char* input, std::size_t) noexcept {
+        return fromString(input);
     }
 
 

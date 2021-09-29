@@ -311,7 +311,7 @@ TEST(CombinedParsers, parseJSONValue) {
     ASSERT_TRUE(get<JSONValue>(result->first.front()).isNumber());
     auto number = get<JSONValue>(result->first.front()).asNumber();// tl::expected<JSONNumber, std::string>
     ASSERT_TRUE(number);
-    ASSERT_EQ(number->value, 123.0);
+    ASSERT_EQ(number.value(), 123.0);
     ASSERT_EQ(result->second, "abc");
 
     // comparison check
@@ -324,7 +324,7 @@ TEST(CombinedParsers, parseJSONValue) {
     ASSERT_TRUE(get<JSONValue>(result->first.front()).isNumber());
     number = get<JSONValue>(result->first.front()).asNumber();// tl::expected<JSONNumber, std::string>
     ASSERT_TRUE(number);
-    ASSERT_EQ(number->value, 123.0);
+    ASSERT_EQ(number.value(), 123.0);
     ASSERT_EQ(result->second, "abc");
 
     input = "  \"text\"   \t\n abc";
@@ -333,7 +333,7 @@ TEST(CombinedParsers, parseJSONValue) {
     ASSERT_TRUE(get<JSONValue>(result->first.front()).isString());
     auto string = get<JSONValue>(result->first.front()).asString();// tl::expected<JSONString, std::string>
     ASSERT_TRUE(string);
-    ASSERT_EQ(string->value, "text");
+    ASSERT_EQ(string.value(), "text");
     ASSERT_EQ(result->second, "abc");
 
     input = "  true   \t\n abc";
@@ -527,4 +527,28 @@ TEST(CombinedParsers, saveAndReadFiles) {
     const auto readJSON = JSON::fromFile(filename);
     ASSERT_TRUE(readJSON);
     ASSERT_EQ(json, readJSON);
+}
+
+TEST(CombinedParsers, jsonLiterals) {
+    using namespace c2k::JSON;
+    const auto json = R"(
+  {
+    "happy": true,
+    "pi": 3.141
+  }
+  )"_asjson;
+    ASSERT_TRUE(json);
+    const Value expected = { { "happy", true }, { "pi", 3.141 } };
+    ASSERT_EQ(json.value(), expected);
+}
+
+TEST(CombinedParsers, convertingPrimitives) {
+    using namespace c2k;
+    const JSON::Value jsonNumber{ 42 };
+    ASSERT_TRUE(jsonNumber.isNumber());
+    ASSERT_EQ(jsonNumber.asNumber().value(), 42);
+
+    const JSON::Value jsonString{ "json test" };
+    ASSERT_TRUE(jsonString.isString());
+    ASSERT_EQ(jsonString.asString().value(), "json test");
 }
