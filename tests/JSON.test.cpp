@@ -493,15 +493,14 @@ TEST(CombinedParsers, parseFile) {
 
 TEST(CombinedParsers, saveAndReadFiles) {
     using namespace c2k;
-    using namespace c2k::JSON::Implementation_;
     // clang-format off
-    const JSONValue json = {
+    const JSON::Value json = {
         { "color", "blue" },
         { "age", 42.0 },
         { "isCool", true },
         { "isHot", false },
         { "nil", nullptr },
-        /*{ "list", JSONArray{
+        { "list", JSON::Array{
                 "text",
                 99.0,
                 true,
@@ -511,12 +510,12 @@ TEST(CombinedParsers, saveAndReadFiles) {
                     { "nestedKey", "nestedValue" },
                     { "nestedNumber", 43.0 }
                 },
-                JSONValue{ JSONArray{
+                JSON::Array{
                         true,
                         nullptr,
                         44.0
-                }}
-        } },*/
+                }
+        } },
         { "nestedObject", {
                 { "hobby", "tennis" }
             }

@@ -191,6 +191,8 @@ namespace c2k::JSON {
     }// namespace Implementation_
 
     using Value = Implementation_::JSONValue;
+    using Array = Implementation_::JSONArray;
+    using Object = Implementation_::JSONObject;
 
     [[nodiscard]] tl::expected<Value, std::string> fromString(const std::string& input) noexcept;
     [[nodiscard]] tl::expected<Value, std::string> fromFile(const std::filesystem::path& filename) noexcept;
