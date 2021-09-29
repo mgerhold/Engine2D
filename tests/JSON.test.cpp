@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 
 TEST(PrimitiveParsers, parseChar) {
-    using namespace c2k::JSON;
+    using namespace c2k::JSON::Implementation_;
     const std::string input = "abc";
     auto result = parseChar('a')(input);
     ASSERT_TRUE(result);
@@ -19,7 +19,7 @@ TEST(PrimitiveParsers, parseChar) {
 }
 
 TEST(PrimitiveParsers, operatorLogicalOr) {
-    using namespace c2k::JSON;
+    using namespace c2k::JSON::Implementation_;
     std::string input = "abc";
     auto result = (parseChar('a') || parseChar('b'))(input);
     ASSERT_TRUE(result);
@@ -39,7 +39,7 @@ TEST(PrimitiveParsers, operatorLogicalOr) {
 }
 
 TEST(PrimitiveParsers, operatorPlusForTwoParsers) {
-    using namespace c2k::JSON;
+    using namespace c2k::JSON::Implementation_;
     std::string input = "abc";
     auto result = parseCharVecToString(parseChar('a') + parseChar('b'))(input);
     ASSERT_TRUE(result);
@@ -53,7 +53,7 @@ TEST(PrimitiveParsers, operatorPlusForTwoParsers) {
 }
 
 TEST(PrimitiveParsers, parseDigit) {
-    using namespace c2k::JSON;
+    using namespace c2k::JSON::Implementation_;
     std::string input = "01abc";
     auto result = parseDigit()(input);
     ASSERT_TRUE(result);
@@ -62,7 +62,7 @@ TEST(PrimitiveParsers, parseDigit) {
 }
 
 TEST(CombinedParsers, operatorPlus) {
-    using namespace c2k::JSON;
+    using namespace c2k::JSON::Implementation_;
     std::string input = "constexprvolatile";
     auto result = parseCharVecToString('c'_c + 'o'_c + 'n'_c + 's'_c + 't'_c + 'e'_c + 'x'_c + 'p'_c + 'r'_c)(input);
     ASSERT_TRUE(result);
@@ -76,7 +76,7 @@ TEST(CombinedParsers, operatorPlus) {
 }
 
 TEST(CombinedParsers, parseString) {
-    using namespace c2k::JSON;
+    using namespace c2k::JSON::Implementation_;
     std::string input = "constexprvolatile";
     auto result = parseString("constexpr")(input);
     ASSERT_TRUE(result);
@@ -90,7 +90,7 @@ TEST(CombinedParsers, parseString) {
 }
 
 TEST(CombinedParsers, parseZeroOrMore) {
-    using namespace c2k::JSON;
+    using namespace c2k::JSON::Implementation_;
     std::string input = "aaaaab";
     auto result = parseCharVecToString(parseZeroOrMore(parseChar('a')))(input);
     ASSERT_TRUE(result);
@@ -105,7 +105,7 @@ TEST(CombinedParsers, parseZeroOrMore) {
 }
 
 TEST(CombinedParsers, parseJSONString) {
-    using namespace c2k::JSON;
+    using namespace c2k::JSON::Implementation_;
     std::string input = R"("My JSON String"do not match this!)";
     auto result = parseJSONString()(input);
     ASSERT_TRUE(result);
@@ -125,7 +125,7 @@ TEST(CombinedParsers, parseJSONString) {
 }
 
 TEST(CombinedParsers, parseControlCharacter) {
-    using namespace c2k::JSON;
+    using namespace c2k::JSON::Implementation_;
     std::string input = "\1abc";
     auto result = parseControlCharacter()(input);
     ASSERT_TRUE(result);
@@ -139,7 +139,7 @@ TEST(CombinedParsers, parseControlCharacter) {
 }
 
 TEST(CombinedParsers, parseJSONNumber) {
-    using namespace c2k::JSON;
+    using namespace c2k::JSON::Implementation_;
     std::string input = "0abc";
     auto result = parseJSONNumber()(input);
     ASSERT_TRUE(result);
@@ -223,7 +223,7 @@ TEST(CombinedParsers, parseJSONNumber) {
 }
 
 TEST(CombinedParsers, parseWhitespaceAndDrop) {
-    using namespace c2k::JSON;
+    using namespace c2k::JSON::Implementation_;
     std::string input = "";
     auto result = parseWhitespaceAndDrop()(input);
     ASSERT_TRUE(result);
@@ -268,7 +268,7 @@ TEST(CombinedParsers, parseWhitespaceAndDrop) {
 }
 
 TEST(CombinedParsers, parseJSONTrue) {
-    using namespace c2k::JSON;
+    using namespace c2k::JSON::Implementation_;
     std::string input = "true";
     auto result = parseJSONTrue()(input);
     ASSERT_TRUE(result);
@@ -280,7 +280,7 @@ TEST(CombinedParsers, parseJSONTrue) {
 }
 
 TEST(CombinedParsers, parseJSONFalse) {
-    using namespace c2k::JSON;
+    using namespace c2k::JSON::Implementation_;
     std::string input = "false";
     auto result = parseJSONFalse()(input);
     ASSERT_TRUE(result);
@@ -292,7 +292,7 @@ TEST(CombinedParsers, parseJSONFalse) {
 }
 
 TEST(CombinedParsers, parseJSONNull) {
-    using namespace c2k::JSON;
+    using namespace c2k::JSON::Implementation_;
     std::string input = "null";
     auto result = parseJSONNull()(input);
     ASSERT_TRUE(result);
@@ -304,7 +304,7 @@ TEST(CombinedParsers, parseJSONNull) {
 }
 
 TEST(CombinedParsers, parseJSONValue) {
-    using namespace c2k::JSON;
+    using namespace c2k::JSON::Implementation_;
     std::string input = "123abc";
     auto result = parseJSONValue()(input);
     ASSERT_TRUE(result);
@@ -360,7 +360,7 @@ TEST(CombinedParsers, parseJSONValue) {
 }
 
 TEST(CombinedParsers, parseJSONArray) {
-    using namespace c2k::JSON;
+    using namespace c2k::JSON::Implementation_;
     std::string input = "[]";
     auto result = parseJSONArray()(input);
     ASSERT_TRUE(result);
@@ -389,7 +389,7 @@ TEST(CombinedParsers, parseJSONArray) {
 }
 
 TEST(CombinedParsers, parseJSONObject) {
-    using namespace c2k::JSON;
+    using namespace c2k::JSON::Implementation_;
     std::string input = "{}";
     auto result = parseJSONObject()(input);
     ASSERT_TRUE(result);
@@ -427,7 +427,7 @@ TEST(CombinedParsers, parseJSONObject) {
 }
 
 TEST(CombinedParsers, nestedParsing) {
-    using namespace c2k::JSON;
+    using namespace c2k::JSON::Implementation_;
     std::string input = R"({"key": "value",
     "array": [123, "c++", true],
     "object": {
@@ -481,17 +481,19 @@ TEST(CombinedParsers, nestedParsing) {
 }
 
 TEST(CombinedParsers, parseFile) {
-    using namespace c2k::JSON;
-    const auto json = fromFile(std::filesystem::current_path() / "tests" / "assets.json");
+    using namespace c2k;
+    using namespace c2k::JSON::Implementation_;
+    const auto json = JSON::fromFile(std::filesystem::current_path() / "tests" / "assets.json");
     ASSERT_TRUE(json);
     const auto jsonString = json.value().dump();
-    const auto json2 = fromString(jsonString);
+    const auto json2 = JSON::fromString(jsonString);
     ASSERT_TRUE(json2);
     ASSERT_EQ(json, json2);
 }
 
 TEST(CombinedParsers, saveAndReadFiles) {
-    using namespace c2k::JSON;
+    using namespace c2k;
+    using namespace c2k::JSON::Implementation_;
     // clang-format off
     const JSONValue json = {
         { "color", "blue" },
@@ -523,7 +525,7 @@ TEST(CombinedParsers, saveAndReadFiles) {
     // clang-format on
     const auto filename = std::filesystem::current_path() / "tests" / "saveAndReadFiles_test.json";
     json.dumpToFile(filename);
-    const auto readJSON = fromFile(filename);
+    const auto readJSON = JSON::fromFile(filename);
     ASSERT_TRUE(readJSON);
     ASSERT_EQ(json, readJSON);
 }
