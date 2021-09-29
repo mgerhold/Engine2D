@@ -552,3 +552,20 @@ TEST(CombinedParsers, convertingPrimitives) {
     ASSERT_TRUE(jsonString.isString());
     ASSERT_EQ(jsonString.asString().value(), "json test");
 }
+
+struct Person {
+    std::string name;
+    std::string address;
+    int age;
+};
+
+void toJSON(c2k::JSON::Value& json, const Person& person) {
+    json = { { "name", person.name }, { "address", person.address }, { "age", person.age } };
+}
+
+TEST(CombinedParsers, customType) {
+    using namespace c2k;
+    Person person{ .name{ "Klaus Kleber" }, .address{ "Test Street" }, .age{ 42 } };
+    const JSON::Value json{ person };
+    spdlog::info(json.dump());
+}

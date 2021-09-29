@@ -67,6 +67,11 @@ namespace c2k::JSON {
                     std::variant<JSONString, JSONNumber, JSONObject, JSONArray, JSONTrue, JSONFalse, JSONNull>;
 
         public:
+            template<typename T>
+            JSONValue(const T& data) noexcept {
+                toJSON(*this, data);
+            }
+
             JSONValue(double number) noexcept : mData{ std::make_shared<JSONVariant>(JSONNumber{ number }) } { }
             JSONValue(float number) noexcept : mData{ std::make_shared<JSONVariant>(JSONNumber{ number }) } { }
             JSONValue(int number) noexcept
