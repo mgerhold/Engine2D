@@ -371,7 +371,7 @@ namespace c2k::JSON {
 
     Parser parserMapStringToJSONString(Parser parser) noexcept {
         return parserMap(std::move(parser), [](Result&& result) -> Result {
-            return ResultPair{ { JSONString{ .value{ get<std::string>(result->first.front()) } } }, result->second };
+            return ResultPair{ { JSONString{ get<std::string>(result->first.front()) } }, result->second };
         });
     }
 

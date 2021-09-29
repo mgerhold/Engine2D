@@ -315,7 +315,7 @@ TEST(CombinedParsers, parseJSONValue) {
     ASSERT_EQ(result->second, "abc");
 
     // comparison check
-    JSONValue jsonNumberValue{ JSONNumber{ .value{ 123.0 } } };
+    JSONValue jsonNumberValue{ 123.0 };
     ASSERT_EQ(jsonNumberValue, get<JSONValue>(result->first.front()));
 
     input = "  123   \t\n abc";
@@ -343,7 +343,7 @@ TEST(CombinedParsers, parseJSONValue) {
     ASSERT_EQ(result->second, "abc");
 
     // comparison check
-    JSONValue jsonTrueValue{ JSONTrue{} };
+    JSONValue jsonTrueValue{ true };
     ASSERT_EQ(jsonTrueValue, get<JSONValue>(result->first.front()));
 
     input = "  false   \t\n abc";
@@ -365,19 +365,22 @@ TEST(CombinedParsers, parseJSONArray) {
     auto result = parseJSONArray()(input);
     ASSERT_TRUE(result);
     ASSERT_EQ(get<JSONArray>(result->first.front()).values.size(), 0);
+    JSONValue expected = JSONArray{};
+    ASSERT_EQ(get<JSONArray>(result->first.front()), expected);
 
     input = "[123]";
     result = parseJSONArray()(input);
     ASSERT_TRUE(result);
     ASSERT_EQ(get<JSONArray>(result->first.front()).values.size(), 1);
-    auto expected = JSONArray{ JSONNumber{ 123.0 } };
+    expected = JSONArray{ 123.0 };
     ASSERT_EQ(get<JSONArray>(result->first.front()), expected);
 
     input = "[123, \"text\", true, null]";
     result = parseJSONArray()(input);
     ASSERT_TRUE(result);
     ASSERT_EQ(get<JSONArray>(result->first.front()).values.size(), 4);
-    expected = JSONArray{ JSONNumber{ 123.0 }, JSONString{ "text" }, JSONTrue{}, JSONNull{} };
+    expected = JSONArray{ 123.0, "text", true, nullptr };
+    spdlog::info(expected.dump());
     ASSERT_EQ(get<JSONArray>(result->first.front()), expected);
 
     input = "[123, \"text\", true, null,]";// trailing comma
@@ -396,7 +399,7 @@ TEST(CombinedParsers, parseJSONObject) {
     result = parseJSONObject()(input);
     ASSERT_TRUE(result);
     ASSERT_EQ(get<JSONObject>(result->first.front()).pairs.size(), 1);
-    auto expected = JSONObject{ { JSONString{ "key" }, JSONValue{ JSONString{ "value" } } } };
+    JSONValue expected = { { "key", "value" } };
     ASSERT_EQ(expected, get<JSONObject>(result->first.front()));
 
     input = R"({"key": "value",
@@ -407,10 +410,10 @@ TEST(CombinedParsers, parseJSONObject) {
     ASSERT_TRUE(result);
     ASSERT_EQ(get<JSONObject>(result->first.front()).pairs.size(), 4);
     expected = JSONObject{
-        { JSONString{ "key" }, JSONValue{ JSONString{ "value" } } },
-        { JSONString{ "name" }, JSONValue{ JSONString{ "bjarne" } } },
-        { JSONString{ "age" }, JSONValue{ JSONNumber{ 70.0 } } },
-        { JSONString{ "programmer" }, JSONValue{ JSONTrue{} } },
+        { "key", "value" },
+        { "name", "bjarne" },
+        { "age", 70.0 },
+        { "programmer", true },
     };
     ASSERT_EQ(expected, get<JSONObject>(result->first.front()));
 
@@ -439,20 +442,13 @@ TEST(CombinedParsers, nestedParsing) {
     auto object = value.asObject().value();
     ASSERT_EQ(object.pairs.size(), 3);
     // clang-format off
-    auto expected = JSONObject{
-        { JSONString{ "key" }, JSONValue{ JSONString{ "value" } } },
-        { JSONString{ "array" }, JSONValue{ JSONArray{ JSONNumber{ 123.0 }, JSONString{ "c++" }, JSONTrue{} } } },
-        { JSONString{ "object" }, JSONValue{ JSONObject{
-                                                 { JSONString{ "language" }, JSONValue{ JSONString{ "c++" } } },
-                                                 { JSONString{ "versions" }, JSONValue{ JSONArray{
-                                                                                           JSONNumber{ 14.0 },
-                                                                                           JSONNumber{ 17.0 },
-                                                                                           JSONNumber{ 20.0 }
-                                                                                        }
-                                                                             }
-                                                 }
-                                             }
-                                  }
+    JSONValue expected = {
+        { "key", "value" },
+        { "array", JSONArray{ 123, "c++", true } },
+        { "object", {
+                { "language", "c++" },
+                { "versions", JSONArray{ 14, 17, 20 } }
+            }
         }
     };
     // clang-format on
@@ -497,32 +493,33 @@ TEST(CombinedParsers, parseFile) {
 TEST(CombinedParsers, saveAndReadFiles) {
     using namespace c2k::JSON;
     // clang-format off
-    const auto json = JSONValue { JSONObject{
-        { JSONString{ "color" }, JSONString{ "blue"} },
-        { JSONString{ "age" }, JSONNumber{ 42.0 } },
-        { JSONString{ "isCool" }, JSONTrue{ } },
-        { JSONString{ "isHot" }, JSONFalse{ } },
-        { JSONString{ "nil" }, JSONNull{ } },
-        { JSONString{ "list" }, JSONArray{
-                JSONValue{ JSONString{ "text" } },
-                JSONValue{ JSONNumber{ 99.0 } },
-                JSONValue{ JSONTrue{ } },
-                JSONValue{ JSONFalse{ } },
-                JSONValue{ JSONNull{ } },
-                JSONValue{ JSONObject{
-                        { JSONString{ "nestedKey" }, JSONValue{ JSONString{ "nestedValue" }}},
-                        { JSONString{ "nestedNumber" }, JSONValue{ JSONNumber{ 43.0 }}}
-                }},
+    const JSONValue json = {
+        { "color", "blue" },
+        { "age", 42.0 },
+        { "isCool", true },
+        { "isHot", false },
+        { "nil", nullptr },
+        /*{ "list", JSONArray{
+                "text",
+                99.0,
+                true,
+                false,
+                nullptr,
+                {
+                    { "nestedKey", "nestedValue" },
+                    { "nestedNumber", 43.0 }
+                },
                 JSONValue{ JSONArray{
-                        JSONValue{ JSONTrue{} },
-                        JSONValue{ JSONNull{} },
-                        JSONValue{ JSONNumber{ 44.0 } }
+                        true,
+                        nullptr,
+                        44.0
                 }}
-        } },
-        { JSONString{ "nestedObject" }, JSONObject {
-                { JSONString{ "hobby" }, JSONValue{ JSONString{ "tennis" }}}
-        }}
-    }};
+        } },*/
+        { "nestedObject", {
+                { "hobby", "tennis" }
+            }
+        }
+    };
     // clang-format on
     const auto filename = std::filesystem::current_path() / "tests" / "saveAndReadFiles_test.json";
     json.dumpToFile(filename);

@@ -7,6 +7,8 @@
 namespace c2k::JSON {
 
     struct JSONString {
+        JSONString(const char* value) : value{ value } { }
+        JSONString(std::string value) : value{ std::move(value) } { }
         std::string value;
 
         [[nodiscard]] bool operator==(const JSONString&) const = default;
@@ -39,7 +41,7 @@ namespace c2k::JSON {
 
     struct JSONArray {
         JSONArray() = default;
-        JSONArray(std::initializer_list<JSONValue> init) noexcept;
+        explicit JSONArray(std::initializer_list<JSONValue> init) noexcept;
 
         std::vector<std::shared_ptr<JSONValue>> values;
 
@@ -49,7 +51,7 @@ namespace c2k::JSON {
 
     struct JSONObject {
         JSONObject() = default;
-        JSONObject(std::initializer_list<std::pair<JSONString, JSONValue>> init) noexcept;
+        explicit JSONObject(std::initializer_list<std::pair<JSONString, JSONValue>> init) noexcept;
 
         std::vector<std::pair<JSONString, std::shared_ptr<JSONValue>>> pairs;
 
@@ -62,8 +64,38 @@ namespace c2k::JSON {
         using JSONVariant = std::variant<JSONString, JSONNumber, JSONObject, JSONArray, JSONTrue, JSONFalse, JSONNull>;
 
     public:
-        template<typename T>
-        JSONValue(T value) noexcept : mData{ std::make_unique<JSONVariant>(std::move(value)) } { }
+        JSONValue(double number) noexcept : mData{ std::make_shared<JSONVariant>(JSONNumber{ number }) } { }
+        JSONValue(float number) noexcept : mData{ std::make_shared<JSONVariant>(JSONNumber{ number }) } { }
+        JSONValue(int number) noexcept
+            : mData{ std::make_shared<JSONVariant>(JSONNumber{ gsl::narrow_cast<double>(number) }) } { }
+
+        JSONValue(const char* string) noexcept : mData{ std::make_shared<JSONVariant>(JSONString{ string }) } { }
+
+        JSONValue(std::string string) noexcept
+            : mData{ std::make_shared<JSONVariant>(JSONString{ std::move(string) }) } { }
+
+        JSONValue(JSONObject object) noexcept : mData{ std::make_shared<JSONVariant>(std::move(object)) } { }
+
+        JSONValue(std::initializer_list<std::pair<JSONString, JSONValue>> init) noexcept
+            : mData{ std::make_shared<JSONVariant>(JSONObject{ std::move(init) }) } { }
+
+        JSONValue(bool boolVal) noexcept {
+            if (boolVal) {
+                mData = std::make_shared<JSONVariant>(JSONTrue{});
+            } else {
+                mData = std::make_shared<JSONVariant>(JSONFalse{});
+            }
+        }
+
+        JSONValue(std::nullptr_t) noexcept : mData{ std::make_shared<JSONVariant>(JSONNull{}) } { }
+
+        JSONValue(JSONArray value) noexcept : mData{ std::make_shared<JSONVariant>(std::move(value)) } { }
+
+        explicit JSONValue(JSONString value) noexcept : mData{ std::make_shared<JSONVariant>(std::move(value)) } { }
+        explicit JSONValue(JSONNumber value) noexcept : mData{ std::make_shared<JSONVariant>(std::move(value)) } { }
+        explicit JSONValue(JSONTrue value) noexcept : mData{ std::make_shared<JSONVariant>(std::move(value)) } { }
+        explicit JSONValue(JSONFalse value) noexcept : mData{ std::make_shared<JSONVariant>(std::move(value)) } { }
+        explicit JSONValue(JSONNull value) noexcept : mData{ std::make_shared<JSONVariant>(std::move(value)) } { }
 
         [[nodiscard]] bool isString() const noexcept;
         [[nodiscard]] bool isNumber() const noexcept;
