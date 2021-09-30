@@ -239,13 +239,13 @@ namespace c2k::JSON {
 
 #define PASS_ON(...) __VA_ARGS__
 
-#define C2K_JSON_IMPLEMENTATION_TO_JSON_MEMBERS2(MEMBER1, MEMBER2) \
-    { #MEMBER1, val.MEMBER1 }, {                                   \
-#MEMBER2, val.MEMBER2                                      \
+#define C2K_JSON_IMPLEMENTATION_TO_JSON_MEMBERS2(m1, m2) \
+    { #m1, val.m1 }, {                                   \
+#m2, val.m2                                      \
     }
-#define C2K_JSON_IMPLEMENTATION_TO_JSON_MEMBERS3(MEMBER1, MEMBER2, MEMBER3) \
-    { #MEMBER1, val.MEMBER1 }, { #MEMBER2, val.MEMBER2 }, {                 \
-#MEMBER3, val.MEMBER3                                               \
+#define C2K_JSON_IMPLEMENTATION_TO_JSON_MEMBERS3(m1, m2, m3) \
+    { #m1, val.m1 }, { #m2, val.m2 }, {                      \
+#m3, val.m3                                          \
     }
 
 #define GET_MACRO(_1, _2, _3, NAME, ...) NAME
