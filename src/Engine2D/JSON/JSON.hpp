@@ -237,16 +237,13 @@ namespace c2k::JSON {
         return json.asBool();
     }
 
+    // clang-format off
 #define PASS_ON(...) __VA_ARGS__
 
 #define C2K_JSON_IMPLEMENTATION_TO_JSON_MEMBERS2(m1, m2) \
-    { #m1, val.m1 }, {                                   \
-#m2, val.m2                                      \
-    }
+    { #m1, val.m1 }, { #m2, val.m2 }
 #define C2K_JSON_IMPLEMENTATION_TO_JSON_MEMBERS3(m1, m2, m3) \
-    { #m1, val.m1 }, { #m2, val.m2 }, {                      \
-#m3, val.m3                                          \
-    }
+    { #m1, val.m1 }, { #m2, val.m2 }, { #m3, val.m3 }
 
 #define GET_MACRO(_1, _2, _3, NAME, ...) NAME
 #define C2K_JSON_IMPLEMENTATION_TO_JSON_MEMBERS(...)                                                  \
@@ -257,5 +254,7 @@ namespace c2k::JSON {
     inline void toJSON(c2k::JSON::Value& json, const TYPE& val) {                          \
         json = { PASS_ON(PASS_ON(C2K_JSON_IMPLEMENTATION_TO_JSON_MEMBERS)(__VA_ARGS__)) }; \
     }
+
+    // clang-format on
 
 }// namespace c2k::JSON

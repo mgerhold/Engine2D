@@ -370,24 +370,24 @@ namespace c2k::JSON {
 
         Parser parseJSONString() noexcept {
             // clang-format off
-return parserMapStringToJSONString(
-parseCharVecToString(
-parseAndDrop('"'_c) +
-parseZeroOrMore(
-(('\\'_c + '"'_c) >> '"'_val) ||
-(('\\'_c + '\\'_c) >> '\\'_val) ||
-(('\\'_c + '/'_c) >> '/'_val) ||
-(('\\'_c + 'b'_c) >> '\b'_val) ||
-(('\\'_c + 'f'_c) >> '\f'_val) ||
-(('\\'_c + 'n'_c) >> '\n'_val) ||
-(('\\'_c + 'r'_c) >> '\r'_val) ||
-(('\\'_c + 't'_c) >> '\t'_val) ||
-// TODO: \u and 4 hex digits
-(!(parseControlCharacter() || '\\'_c || '"'_c) + parseAnyChar())
-) +
-parseAndDrop('"'_c)
-)
-);
+            return parserMapStringToJSONString(
+                parseCharVecToString(
+                    parseAndDrop('"'_c) +
+                    parseZeroOrMore(
+                        (('\\'_c + '"'_c) >> '"'_val) ||
+                        (('\\'_c + '\\'_c) >> '\\'_val) ||
+                        (('\\'_c + '/'_c) >> '/'_val) ||
+                        (('\\'_c + 'b'_c) >> '\b'_val) ||
+                        (('\\'_c + 'f'_c) >> '\f'_val) ||
+                        (('\\'_c + 'n'_c) >> '\n'_val) ||
+                        (('\\'_c + 'r'_c) >> '\r'_val) ||
+                        (('\\'_c + 't'_c) >> '\t'_val) ||
+                        // TODO: \u and 4 hex digits
+                        (!(parseControlCharacter() || '\\'_c || '"'_c) + parseAnyChar())
+                    ) +
+                    parseAndDrop('"'_c)
+                )
+            );
             // clang-format on
         }
 
