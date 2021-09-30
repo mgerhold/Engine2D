@@ -557,15 +557,90 @@ struct Person {
     std::string name;
     std::string address;
     int age;
+
+    [[nodiscard]] bool operator==(const Person&) const = default;
 };
 
-void toJSON(c2k::JSON::Value& json, const Person& person) {
+/*void toJSON(c2k::JSON::Value& json, const Person& person) {
     json = { { "name", person.name }, { "address", person.address }, { "age", person.age } };
+}*/
+C2K_JSON_DEFINE_TYPE(Person, name, address, age);
+
+template<>
+[[nodiscard]] inline tl::expected<Person, std::string> c2k::JSON::fromJSON(const c2k::JSON::Value& json) noexcept {
+    using namespace c2k::JSON;
+    Person result;
+
+    const auto name = fromJSON<decltype(Person::name)>(json.at("name").value());
+    if (!name) {
+        return tl::unexpected(fmt::format("Unable to deserialize '{}'", "name"));
+    }
+    result.name = name.value();
+
+    const auto address = fromJSON<decltype(Person::address)>(json.at("address").value());
+    if (!name) {
+        return tl::unexpected(fmt::format("Unable to deserialize '{}'", "address"));
+    }
+    result.address = address.value();
+
+    const auto age = fromJSON<decltype(Person::age)>(json.at("age").value());
+    if (!name) {
+        return tl::unexpected(fmt::format("Unable to deserialize '{}'", "age"));
+    }
+    result.age = age.value();
+
+    return result;
 }
 
-TEST(CombinedParsers, customType) {
+struct Course {
+    std::string name;
+    Person teacher;
+
+    [[nodiscard]] bool operator==(const Course&) const = default;
+};
+
+void toJSON(c2k::JSON::Value& json, const Course& course) {
+    json = { { "name", course.name }, { "teacher", course.teacher } };
+}
+
+TEST(CombinedParsers, customTypesToJSON) {
     using namespace c2k;
-    Person person{ .name{ "Klaus Kleber" }, .address{ "Test Street" }, .age{ 42 } };
-    const JSON::Value json{ person };
+    Person person{ .name{ "Edsger W. Dijkstra" }, .address{ "Test Street" }, .age{ 42 } };
+    Course course{ .name{ "Computer Science" }, .teacher{ person } };
+    const JSON::Value json{ course };
     spdlog::info(json.dump());
+    ASSERT_TRUE(json.isObject());
+    ASSERT_TRUE(json.containsKey("name"));
+    ASSERT_EQ(json.at("name")->asString().value(), "Computer Science");
+    ASSERT_TRUE(json.at("teacher")->containsKey("name"));
+    ASSERT_EQ(json.at("teacher")->at("name")->asString().value(), "Edsger W. Dijkstra");
+    ASSERT_TRUE(json.at("teacher")->containsKey("address"));
+    ASSERT_EQ(json.at("teacher")->at("address")->asString().value(), "Test Street");
+    ASSERT_TRUE(json.at("teacher")->containsKey("age"));
+    ASSERT_EQ(json.at("teacher")->at("age")->asNumber().value(), 42);
+}
+
+TEST(CombinedParsers, fromJSON) {
+    using namespace c2k;
+    JSON::Value json{ 42 };
+    const auto number = JSON::fromJSON<double>(json);
+    ASSERT_TRUE(number);
+    ASSERT_EQ(number.value(), 42);
+
+    json = JSON::Value{ "text" };
+    const auto string = JSON::fromJSON<std::string>(json);
+    ASSERT_TRUE(string);
+    ASSERT_EQ(string.value(), "text");
+
+    json = JSON::Value{ true };
+    const auto boolVal = JSON::fromJSON<bool>(json);
+    ASSERT_TRUE(boolVal);
+    ASSERT_EQ(boolVal.value(), true);
+
+    Person person{ .name{ "Edsger W. Dijkstra" }, .address{ "Test Street" }, .age{ 42 } };
+    json = JSON::Value{ person };
+    const auto deserializedPersonExpected = JSON::fromJSON<Person>(json);
+    ASSERT_TRUE(deserializedPersonExpected);
+    Person deserializedPerson = deserializedPersonExpected.value();
+    ASSERT_EQ(deserializedPerson, person);
 }

@@ -125,6 +125,14 @@ namespace c2k::JSON {
             [[nodiscard]] std::string dump(const std::string& indentationStep = "  ") const noexcept;
             tl::expected<std::monostate, std::string> dumpToFile(const std::filesystem::path& filename) const noexcept;
 
+            [[nodiscard]] tl::expected<JSONValue, std::string> at(const std::string& key) const noexcept;
+            [[nodiscard]] bool containsKey(const std::string& key) const noexcept;
+
+            template<typename T>
+            [[nodiscard]] tl::expected<T, std::string> to(const JSONValue& json) const noexcept {
+                return fromJSON<T>(json);
+            }
+
         private:
             template<typename T>
             [[nodiscard]] bool is() const noexcept {
@@ -205,5 +213,49 @@ namespace c2k::JSON {
     [[nodiscard]] tl::expected<Value, std::string> fromFile(const std::filesystem::path& filename) noexcept;
     // TODO: rename user-defined literal after removing nlohmann::json
     [[nodiscard]] tl::expected<Value, std::string> operator"" _asjson(const char* input, std::size_t) noexcept;
+
+    template<typename T>
+    [[nodiscard]] tl::expected<T, std::string> fromJSON(const Value& json) noexcept = delete;
+
+    template<>
+    [[nodiscard]] inline tl::expected<double, std::string> fromJSON(const Value& json) noexcept {
+        return json.asNumber();
+    }
+
+    template<>
+    [[nodiscard]] inline tl::expected<int, std::string> fromJSON(const Value& json) noexcept {
+        return json.asNumber().map([](double number) { return gsl::narrow_cast<int>(number); });
+    }
+
+    template<>
+    [[nodiscard]] inline tl::expected<std::string, std::string> fromJSON(const Value& json) noexcept {
+        return json.asString();
+    }
+
+    template<>
+    [[nodiscard]] inline tl::expected<bool, std::string> fromJSON(const Value& json) noexcept {
+        return json.asBool();
+    }
+
+#define PASS_ON(...) __VA_ARGS__
+
+#define C2K_JSON_IMPLEMENTATION_TO_JSON_MEMBERS2(MEMBER1, MEMBER2) \
+    { #MEMBER1, val.MEMBER1 }, {                                   \
+#MEMBER2, val.MEMBER2                                      \
+    }
+#define C2K_JSON_IMPLEMENTATION_TO_JSON_MEMBERS3(MEMBER1, MEMBER2, MEMBER3) \
+    { #MEMBER1, val.MEMBER1 }, { #MEMBER2, val.MEMBER2 }, {                 \
+#MEMBER3, val.MEMBER3                                               \
+    }
+
+#define GET_MACRO(_1, _2, _3, NAME, ...) NAME
+#define C2K_JSON_IMPLEMENTATION_TO_JSON_MEMBERS(...)                                                  \
+    PASS_ON(PASS_ON(PASS_ON(PASS_ON(GET_MACRO)(__VA_ARGS__, C2K_JSON_IMPLEMENTATION_TO_JSON_MEMBERS3, \
+                                               C2K_JSON_IMPLEMENTATION_TO_JSON_MEMBERS2)))(__VA_ARGS__))
+
+#define C2K_JSON_DEFINE_TYPE(TYPE, ...)                                                    \
+    inline void toJSON(c2k::JSON::Value& json, const TYPE& val) {                          \
+        json = { PASS_ON(PASS_ON(C2K_JSON_IMPLEMENTATION_TO_JSON_MEMBERS)(__VA_ARGS__)) }; \
+    }
 
 }// namespace c2k::JSON

@@ -187,6 +187,29 @@ namespace c2k::JSON {
             return c2k::FileUtils::writeTextFile(dump(), filename);
         }
 
+        tl::expected<JSONValue, std::string> JSONValue::at(const std::string& key) const noexcept {
+            if (!isObject()) {
+                return tl::unexpected(fmt::format("Unable to access this value like an object"));
+            }
+            const auto& object = get<JSONObject>(*mData);
+            const auto findIterator = std::find_if(object.pairs.cbegin(), object.pairs.cend(),
+                                                   [&key](const auto& pair) { return pair.first.value == key; });
+            if (findIterator == object.pairs.cend()) {
+                return tl::unexpected(fmt::format("object does not contain the specified key '{}'", key));
+            }
+            return *(findIterator->second);
+        }
+
+        bool JSONValue::containsKey(const std::string& key) const noexcept {
+            if (!isObject()) {
+                return false;
+            }
+            const auto& object = get<JSONObject>(*mData);
+            const auto findIterator = std::find_if(object.pairs.cbegin(), object.pairs.cend(),
+                                                   [&key](const auto& pair) { return pair.first.value == key; });
+            return findIterator != object.pairs.cend();
+        }
+
         Parser operator+(const Parser& lhs, const Parser& rhs) noexcept {
             return [=](const InputString& input) -> Result {
                 auto firstResult = lhs(input);
