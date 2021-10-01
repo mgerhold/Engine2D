@@ -6,5 +6,12 @@ cmake-build-release-with-profiling/
 cmake-build-debug-remote-host/
 cmake-build-release-remote-host/
 cmake-build-debug-remote-host-coverage/
+cmake-build-gcc-remote-debug/
+cmake-build-gcc-remote-release/
+cmake-build-msvc-debug/
+cmake-build-msvc-release/
+cmake-build-msvc-release-with-profiling/
+cmake-build-clang-debug/
+cmake-build-clang-release/
 /tests/saveAndReadFiles_test.json
 /tests/university.json
