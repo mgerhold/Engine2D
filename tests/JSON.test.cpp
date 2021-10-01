@@ -561,36 +561,7 @@ struct Person {
     [[nodiscard]] bool operator==(const Person&) const = default;
 };
 
-/*void toJSON(c2k::JSON::Value& json, const Person& person) {
-    json = { { "name", person.name }, { "address", person.address }, { "age", person.age } };
-}*/
 C2K_JSON_DEFINE_TYPE(Person, name, address, age);
-
-template<>
-[[nodiscard]] inline tl::expected<Person, std::string> c2k::JSON::fromJSON(const c2k::JSON::Value& json) noexcept {
-    using namespace c2k::JSON;
-    Person result;
-
-    const auto name = fromJSON<decltype(Person::name)>(json.at("name").value());
-    if (!name) {
-        return tl::unexpected(fmt::format("Unable to deserialize '{}'", "name"));
-    }
-    result.name = name.value();
-
-    const auto address = fromJSON<decltype(Person::address)>(json.at("address").value());
-    if (!name) {
-        return tl::unexpected(fmt::format("Unable to deserialize '{}'", "address"));
-    }
-    result.address = address.value();
-
-    const auto age = fromJSON<decltype(Person::age)>(json.at("age").value());
-    if (!name) {
-        return tl::unexpected(fmt::format("Unable to deserialize '{}'", "age"));
-    }
-    result.age = age.value();
-
-    return result;
-}
 
 struct Course {
     std::string name;
@@ -599,9 +570,7 @@ struct Course {
     [[nodiscard]] bool operator==(const Course&) const = default;
 };
 
-void toJSON(c2k::JSON::Value& json, const Course& course) {
-    json = { { "name", course.name }, { "teacher", course.teacher } };
-}
+C2K_JSON_DEFINE_TYPE(Course, name, teacher);
 
 TEST(CombinedParsers, customTypesToJSON) {
     using namespace c2k;
@@ -623,24 +592,168 @@ TEST(CombinedParsers, customTypesToJSON) {
 TEST(CombinedParsers, fromJSON) {
     using namespace c2k;
     JSON::Value json{ 42 };
-    const auto number = JSON::fromJSON<double>(json);
-    ASSERT_TRUE(number);
-    ASSERT_EQ(number.value(), 42);
+    double number;
+    auto result = JSON::fromJSON(json, number);
+    ASSERT_TRUE(result);
+    ASSERT_EQ(number, 42);
 
     json = JSON::Value{ "text" };
-    const auto string = JSON::fromJSON<std::string>(json);
-    ASSERT_TRUE(string);
-    ASSERT_EQ(string.value(), "text");
+    std::string string;
+    result = JSON::fromJSON(json, string);
+    ASSERT_TRUE(result);
+    ASSERT_EQ(string, "text");
 
     json = JSON::Value{ true };
-    const auto boolVal = JSON::fromJSON<bool>(json);
-    ASSERT_TRUE(boolVal);
-    ASSERT_EQ(boolVal.value(), true);
+    bool boolVal;
+    result = JSON::fromJSON(json, boolVal);
+    ASSERT_TRUE(result);
+    ASSERT_EQ(boolVal, true);
 
     Person person{ .name{ "Edsger W. Dijkstra" }, .address{ "Test Street" }, .age{ 42 } };
     json = JSON::Value{ person };
-    const auto deserializedPersonExpected = JSON::fromJSON<Person>(json);
-    ASSERT_TRUE(deserializedPersonExpected);
-    Person deserializedPerson = deserializedPersonExpected.value();
+    Person deserializedPerson;
+    result = fromJSON(json, deserializedPerson);
+    ASSERT_TRUE(result);
     ASSERT_EQ(deserializedPerson, person);
+}
+
+struct Date {
+    int year;
+    int month;
+    int day;
+
+    bool operator==(const Date&) const = default;
+};
+
+C2K_JSON_DEFINE_TYPE(Date, year, month, day);
+
+struct Address {
+    std::string street;
+    std::string city;
+    int zipCode;
+
+    bool operator==(const Address&) const = default;
+};
+
+C2K_JSON_DEFINE_TYPE(Address, street, city, zipCode);
+
+struct Student {
+    std::string name;
+    Address address;
+    Date dateOfBirth;
+    int matriculationNumber;
+
+    bool operator==(const Student&) const = default;
+};
+
+C2K_JSON_DEFINE_TYPE(Student, name, address, dateOfBirth, matriculationNumber);
+
+TEST(CombinedParsers, minimalCompleteExample) {
+    using namespace c2k;
+    // create example dataset
+    Student student{ .name{ "Debbie B. Watson" },
+                     .address{ .street{ "2305 Elm Drive" }, .city{ "Garden City, NY" }, .zipCode{ 11530 } },
+                     .dateOfBirth{ .year{ 1988 }, .month{ 10 }, .day{ 19 } },
+                     .matriculationNumber{ 73390599 } };
+
+    // convert to JSON value
+    const JSON::Value json{ student };
+
+    // serialize to string
+    const auto serialized = json.dump();
+    spdlog::info(serialized);
+
+    // deserialize back from string
+    const tl::expected<JSON::Value, std::string> deserialized = JSON::fromString(serialized);
+
+    ASSERT_TRUE(deserialized);    // did parsing and deserializing work?
+    ASSERT_EQ(json, deserialized);// compare original and deserialized data
+}
+
+TEST(CombinedParsers, stdVector) {
+    using namespace c2k;
+    const auto result = JSON::fromString(R"(["this", "is", "a", "test"])");
+    ASSERT_TRUE(result);
+    const auto json = result.value();
+    spdlog::info(json.dump());
+
+    std::vector<std::string> vector;
+    const auto deserializationResult = JSON::fromJSON(json, vector);
+    ASSERT_TRUE(deserializationResult);
+    ASSERT_EQ(vector.size(), 4);
+    ASSERT_EQ(vector[0], "this");
+    ASSERT_EQ(vector[1], "is");
+    ASSERT_EQ(vector[2], "a");
+    ASSERT_EQ(vector[3], "test");
+
+    const std::vector<std::string> words{ "lorem", "ipsum", "dolor", "sit", "amet" };
+    const auto wordsJSON = JSON::Value{ words };
+    ASSERT_TRUE(wordsJSON.isArray());
+    std::vector<std::string> reconvertedWords;
+    const auto reconversionResult = JSON::fromJSON(words, reconvertedWords);
+    ASSERT_TRUE(reconversionResult);
+    ASSERT_EQ(words, reconvertedWords);
+}
+
+struct Language {
+    std::string name;
+    std::vector<std::string> versions;
+    std::vector<int> versionNumbers;
+
+    bool operator==(const Language&) const = default;
+};
+
+C2K_JSON_DEFINE_TYPE(Language, name, versions, versionNumbers);
+
+TEST(CombinedParsers, stdVectorInsideStruct) {
+    using namespace c2k;
+    const Language cpp{ .name{ "C++" },
+                        .versions{ { "C++ 11", "C++ 14", "C++ 17", "C++ 20", "C++ 23" } },
+                        .versionNumbers{ { 11, 14, 17, 20, 23 } } };
+    const auto json = JSON::Value{ cpp };
+    spdlog::info(json.dump());
+
+    Language reconvertedLanguage;
+    const auto result = fromJSON(json, reconvertedLanguage);
+    ASSERT_TRUE(result);
+    ASSERT_EQ(reconvertedLanguage, cpp);
+}
+
+struct University {
+    std::string name;
+    std::vector<Student> students;
+    bool isPublic;
+
+    bool operator==(const University&) const = default;
+};
+
+C2K_JSON_DEFINE_TYPE(University, name, students, isPublic);
+
+TEST(CombinedParsers, vectorOfUserDefinedStruct) {
+    using namespace c2k;
+    const University university{
+        .name{ "University of Applied Sciences New York" },
+        .students{ { Student{ .name{ "Willie R. Parsons" },
+                              .address{ .street{ "755 Maple Lane" }, .city{ "Birmingham" }, .zipCode{ 35203 } },
+                              .dateOfBirth{ .year{ 1990 }, .month{ 1 }, .day{ 29 } },
+                              .matriculationNumber{ 78574340 } },
+                     Student{ .name{ "Amy R. Johnson" },
+                              .address{ .street{ "403 Timbercrest Road" }, .city{ "Juneau" }, .zipCode{ 99801 } },
+                              .dateOfBirth{ .year{ 1996 }, .month{ 1 }, .day{ 4 } },
+                              .matriculationNumber{ 88542479 } } } },
+        .isPublic{ true }
+    };
+    const auto json = JSON::Value{ university };
+    const auto filename = std::filesystem::current_path() / "tests" / "university.json";
+    const auto saveResult = json.dumpToFile(filename);
+    ASSERT_TRUE(saveResult);
+    const auto readResult = JSON::fromFile(filename);
+    ASSERT_TRUE(readResult);
+    const auto readJSON = readResult.value();
+    const auto deserializationResult = readJSON.as<University>();
+    ASSERT_TRUE(deserializationResult);
+    ASSERT_EQ(university, deserializationResult.value());
+
+    ASSERT_FALSE(readJSON.as<Student>());
+    spdlog::info(readJSON.as<Student>().error());
 }

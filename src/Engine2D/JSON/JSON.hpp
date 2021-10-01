@@ -133,6 +133,16 @@ namespace c2k::JSON {
                 return fromJSON<T>(json);
             }
 
+            template<typename T>
+            [[nodiscard]] tl::expected<T, std::string> as() const noexcept {
+                T result{};
+                const auto success = fromJSON(*this, result);
+                if (!success) {
+                    return tl::unexpected(success.error());
+                }
+                return result;
+            }
+
         private:
             template<typename T>
             [[nodiscard]] bool is() const noexcept {
@@ -140,7 +150,7 @@ namespace c2k::JSON {
             }
 
             template<typename T>
-            [[nodiscard]] tl::expected<T, std::string> as() const noexcept {
+            [[nodiscard]] tl::expected<T, std::string> retrieveAs() const noexcept {
                 if (!is<T>()) {
                     return tl::unexpected(fmt::format("bad JSON value access"));
                 }
@@ -203,6 +213,15 @@ namespace c2k::JSON {
         [[nodiscard]] Parser parseJSONArray() noexcept;
         [[nodiscard]] Parser parseJSONObject() noexcept;
 
+        template<typename T>
+        void toJSON(JSONValue& json, const std::vector<T>& vector) noexcept {
+            JSONArray result;
+            for (const auto& value : vector) {
+                result.values.emplace_back(std::make_shared<JSONValue>(value));
+            }
+            json = JSONValue{ result };
+        }
+
     }// namespace Implementation_
 
     using Value = Implementation_::JSONValue;
@@ -214,47 +233,62 @@ namespace c2k::JSON {
     // TODO: rename user-defined literal after removing nlohmann::json
     [[nodiscard]] tl::expected<Value, std::string> operator"" _asjson(const char* input, std::size_t) noexcept;
 
+    [[nodiscard]] inline tl::expected<std::monostate, std::string> fromJSON(const Value& json,
+                                                                            std::string& out) noexcept {
+        const auto result = json.asString();
+        if (!result) {
+            return tl::unexpected{ result.error() };
+        }
+        out = result.value();
+        return std::monostate{};
+    }
+
+    [[nodiscard]] inline tl::expected<std::monostate, std::string> fromJSON(const Value& json, double& out) noexcept {
+        const auto result = json.asNumber();
+        if (!result) {
+            return tl::unexpected{ result.error() };
+        }
+        out = result.value();
+        return std::monostate{};
+    }
+
+    [[nodiscard]] inline tl::expected<std::monostate, std::string> fromJSON(const Value& json, int& out) noexcept {
+        const auto result = json.asNumber();
+        if (!result) {
+            return tl::unexpected{ result.error() };
+        }
+        out = gsl::narrow_cast<int>(result.value());
+        return std::monostate{};
+    }
+
+    [[nodiscard]] inline tl::expected<std::monostate, std::string> fromJSON(const Value& json, bool& out) noexcept {
+        const auto result = json.asBool();
+        if (!result) {
+            return tl::unexpected{ result.error() };
+        }
+        out = result.value();
+        return std::monostate{};
+    }
+
     template<typename T>
-    [[nodiscard]] tl::expected<T, std::string> fromJSON(const Value& json) noexcept = delete;
-
-    template<>
-    [[nodiscard]] inline tl::expected<double, std::string> fromJSON(const Value& json) noexcept {
-        return json.asNumber();
+    [[nodiscard]] tl::expected<std::monostate, std::string> fromJSON(const Value& json, std::vector<T>& out) noexcept {
+        if (!json.isArray()) {
+            return tl::unexpected(fmt::format("Unable to convert to std::vector (JSON array expected)"));
+        }
+        const auto array = json.asArray().value();
+        std::vector<T> result;
+        for (const auto& value : array.values) {
+            T buffer;
+            const auto convertedExpected = fromJSON(*value, buffer);
+            if (!convertedExpected) {
+                return tl::unexpected(convertedExpected.error());
+            }
+            result.emplace_back(buffer);
+        }
+        out = std::move(result);
+        return std::monostate{};
     }
 
-    template<>
-    [[nodiscard]] inline tl::expected<int, std::string> fromJSON(const Value& json) noexcept {
-        return json.asNumber().map([](double number) { return gsl::narrow_cast<int>(number); });
-    }
-
-    template<>
-    [[nodiscard]] inline tl::expected<std::string, std::string> fromJSON(const Value& json) noexcept {
-        return json.asString();
-    }
-
-    template<>
-    [[nodiscard]] inline tl::expected<bool, std::string> fromJSON(const Value& json) noexcept {
-        return json.asBool();
-    }
-
-    // clang-format off
-#define PASS_ON(...) __VA_ARGS__
-
-#define C2K_JSON_IMPLEMENTATION_TO_JSON_MEMBERS2(m1, m2) \
-    { #m1, val.m1 }, { #m2, val.m2 }
-#define C2K_JSON_IMPLEMENTATION_TO_JSON_MEMBERS3(m1, m2, m3) \
-    { #m1, val.m1 }, { #m2, val.m2 }, { #m3, val.m3 }
-
-#define GET_MACRO(_1, _2, _3, NAME, ...) NAME
-#define C2K_JSON_IMPLEMENTATION_TO_JSON_MEMBERS(...)                                                  \
-    PASS_ON(PASS_ON(PASS_ON(PASS_ON(GET_MACRO)(__VA_ARGS__, C2K_JSON_IMPLEMENTATION_TO_JSON_MEMBERS3, \
-                                               C2K_JSON_IMPLEMENTATION_TO_JSON_MEMBERS2)))(__VA_ARGS__))
-
-#define C2K_JSON_DEFINE_TYPE(TYPE, ...)                                                    \
-    inline void toJSON(c2k::JSON::Value& json, const TYPE& val) {                          \
-        json = { PASS_ON(PASS_ON(C2K_JSON_IMPLEMENTATION_TO_JSON_MEMBERS)(__VA_ARGS__)) }; \
-    }
-
-    // clang-format on
+#include "MacroDefinitions.hpp"
 
 }// namespace c2k::JSON

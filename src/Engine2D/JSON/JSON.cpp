@@ -86,19 +86,19 @@ namespace c2k::JSON {
         }
 
         tl::expected<std::string, std::string> JSONValue::asString() const noexcept {
-            return as<JSONString>().map([](JSONString&& jsonString) { return jsonString.value; });
+            return retrieveAs<JSONString>().map([](JSONString&& jsonString) { return jsonString.value; });
         }
 
         tl::expected<double, std::string> JSONValue::asNumber() const noexcept {
-            return as<JSONNumber>().map([](JSONNumber&& jsonNumber) { return jsonNumber.value; });
+            return retrieveAs<JSONNumber>().map([](JSONNumber&& jsonNumber) { return jsonNumber.value; });
         }
 
         tl::expected<JSONObject, std::string> JSONValue::asObject() const noexcept {
-            return as<JSONObject>();
+            return retrieveAs<JSONObject>();
         }
 
         tl::expected<JSONArray, std::string> JSONValue::asArray() const noexcept {
-            return as<JSONArray>();
+            return retrieveAs<JSONArray>();
         }
 
         tl::expected<bool, std::string> JSONValue::asBool() const noexcept {
