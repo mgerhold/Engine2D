@@ -1,5 +1,5 @@
 {
-  "startLifeTime": 2,
+  "startLifeTime": 3,
   "lifeTimeVariation": 0.05,
   "particlesPerSecond": 100,
   "gravity": {

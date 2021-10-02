@@ -6,6 +6,7 @@
 #include "FileUtils/FileUtils.hpp"
 #include "JSONUtils.hpp"
 #include "ShaderProgram.hpp"
+#include "JSON/JSON.hpp"
 
 namespace c2k {
 
@@ -20,7 +21,7 @@ namespace c2k {
             }
         };
 
-        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Vec2JSON, x, y);
+        C2K_JSON_DEFINE_TYPE(Vec2JSON, x, y);
 
         struct Vec3JSON {
             float x;
@@ -32,7 +33,7 @@ namespace c2k {
             }
         };
 
-        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Vec3JSON, x, y, z);
+        C2K_JSON_DEFINE_TYPE(Vec3JSON, x, y, z);
 
         struct ParticleSystemJSON {
             float startLifeTime;
@@ -47,17 +48,17 @@ namespace c2k {
             float endRotationSpeedVariation;
         };
 
-        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ParticleSystemJSON,
-                                           startLifeTime,
-                                           lifeTimeVariation,
-                                           particlesPerSecond,
-                                           gravity,
-                                           startScale,
-                                           endScale,
-                                           startRotationSpeed,
-                                           endRotationSpeed,
-                                           startRotationSpeedVariation,
-                                           endRotationSpeedVariation);
+        C2K_JSON_DEFINE_TYPE(ParticleSystemJSON,
+                             startLifeTime,
+                             lifeTimeVariation,
+                             particlesPerSecond,
+                             gravity,
+                             startScale,
+                             endScale,
+                             startRotationSpeed,
+                             endRotationSpeed,
+                             startRotationSpeedVariation,
+                             endRotationSpeedVariation);
 
     }// namespace
 
@@ -65,17 +66,11 @@ namespace c2k {
                                                                            const Texture& texture,
                                                                            ShaderProgram& shaderProgram) noexcept {
         using namespace JSONUtils;
-        using namespace std::literals::string_literals;
-        const auto fileContents = FileUtils::readTextFile(filename);
-        if (!fileContents) {
-            return tl::unexpected(
-                    fmt::format("Failed to read particle system file {}: {}", filename.string(), fileContents.error()));
+        const auto readResult = JSON::fromFile(filename).and_then(JSON::as<ParticleSystemJSON>);
+        if (!readResult) {
+            return tl::unexpected(fmt::format("Failed to load particle system: {}", readResult.error()));
         }
-        auto json = nlohmann::json::parse(fileContents.value(), nullptr, false);
-        if (json.is_discarded()) {
-            return tl::unexpected(fmt::format("Failed to parse JSON file {}", filename.string()));
-        }
-        auto particleSystemJSON = json.get<ParticleSystemJSON>();
+        const auto particleSystemJSON = readResult.value();
         return ParticleSystem{ .texture{ &texture },
                                .shaderProgram{ &shaderProgram },
                                .startLifeTime{ particleSystemJSON.startLifeTime },

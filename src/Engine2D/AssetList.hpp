@@ -6,6 +6,7 @@
 
 #include "GUID.hpp"
 #include "JSONUtils.hpp"
+#include "JSON/JSON.hpp"
 
 namespace c2k {
 
@@ -16,7 +17,7 @@ namespace c2k {
             std::string group;
         };
 
-        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(TextureDescription, guid, filename, group);
+        C2K_JSON_DEFINE_TYPE(TextureDescription, guid, filename, group);
 
         struct ShaderProgramDescription {
             GUID guid;
@@ -25,11 +26,7 @@ namespace c2k {
             std::string group;
         };
 
-        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ShaderProgramDescription,
-                                           guid,
-                                           vertexShaderFilename,
-                                           fragmentShaderFilename,
-                                           group);
+        C2K_JSON_DEFINE_TYPE(ShaderProgramDescription, guid, vertexShaderFilename, fragmentShaderFilename, group);
 
         struct SpriteSheetDescription {
             GUID guid;
@@ -38,7 +35,7 @@ namespace c2k {
             GUID texture;
         };
 
-        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(SpriteSheetDescription, guid, filename, group, texture);
+        C2K_JSON_DEFINE_TYPE(SpriteSheetDescription, guid, filename, group, texture);
 
         struct ScriptDescription {
             GUID guid;
@@ -46,7 +43,7 @@ namespace c2k {
             std::string group;
         };
 
-        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ScriptDescription, guid, filename, group);
+        C2K_JSON_DEFINE_TYPE(ScriptDescription, guid, filename, group);
 
         struct ParticleSystemDescription {
             GUID guid;
@@ -56,7 +53,7 @@ namespace c2k {
             GUID shaderProgram;
         };
 
-        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ParticleSystemDescription, guid, filename, group, texture, shaderProgram);
+        C2K_JSON_DEFINE_TYPE(ParticleSystemDescription, guid, filename, group, texture, shaderProgram);
 
         struct List {
             std::vector<TextureDescription> textures;
@@ -66,7 +63,7 @@ namespace c2k {
             std::vector<ParticleSystemDescription> particleSystems;
         };
 
-        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(List, textures, shaderPrograms, spriteSheets, scripts, particleSystems);
+        C2K_JSON_DEFINE_TYPE(List, textures, shaderPrograms, spriteSheets, scripts, particleSystems);
 
     }// namespace AssetDescriptions
 
@@ -80,15 +77,15 @@ namespace c2k {
         }
 
     private:
-        template<typename AssetDescription>
-        void parseCategory(const nlohmann::json& json,
+        /*template<typename AssetDescription>
+        void parseCategory(const JSON::Value& json,
                            const std::string& title,
                            std::vector<AssetDescription>& targetContainer) {
-            if (!json.contains(title)) {
+            if (!json.containsKey(title)) {
                 spdlog::warn("Asset list does not contain assets of category \"{}\"", title);
                 return;
             }
-            auto categoryItems = json[title];
+            auto categoryItems = json.at(title);
             if (!categoryItems.is_array()) {
                 spdlog::error("Items of category \"{}\" must be an array", title);
                 return;
@@ -102,7 +99,7 @@ namespace c2k {
                 targetContainer.push_back(parsed.value());
             }
             spdlog::info("Parsed {} items of category \"{}\"...", targetContainer.size(), title);
-        }
+        }*/
 
     private:
         AssetDescriptions::List mAssetDescriptions;
