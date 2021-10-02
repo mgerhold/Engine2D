@@ -573,7 +573,7 @@ parseAndDrop('}'_c)
         return c2k::FileUtils::readTextFile(filename).and_then(fromString);
     }
 
-    tl::expected<Value, std::string> operator""_asjson(const char* input, std::size_t) noexcept {
+    tl::expected<Value, std::string> operator""_json(const char* input, std::size_t) noexcept {
         return fromString(input);
     }
 

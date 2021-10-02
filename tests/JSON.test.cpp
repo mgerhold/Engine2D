@@ -536,7 +536,7 @@ TEST(CombinedParsers, jsonLiterals) {
     "happy": true,
     "pi": 3.141
   }
-  )"_asjson;
+  )"_json;
     ASSERT_TRUE(json);
     const Value expected = { { "happy", true }, { "pi", 3.141 } };
     ASSERT_EQ(json.value(), expected);
