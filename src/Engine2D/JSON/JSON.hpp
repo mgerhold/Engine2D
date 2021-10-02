@@ -172,38 +172,337 @@ namespace c2k::JSON {
         using Result = tl::expected<ResultPair, ErrorMessage>;
         using Parser = std::function<Result(InputString)>;
 
-        [[nodiscard]] Parser operator+(const Parser& lhs, const Parser& rhs) noexcept;
-        [[nodiscard]] Parser operator||(const Parser& lhs, const Parser& rhs) noexcept;
-        [[nodiscard]] Parser operator"" _c(char c) noexcept;
-        [[nodiscard]] Parser operator>>(const Parser& parser, const ParsedValue& value) noexcept;
-        [[nodiscard]] ParsedValue operator"" _val(char c) noexcept;
-        [[nodiscard]] Parser operator!(const Parser& parser) noexcept;
+        template<typename T>
+        concept ParserConcept = requires(T t, const InputString& input) {
+            { t(input) } -> std::same_as<Result>;
+        };
 
-        [[nodiscard]] Parser parseAnyChar() noexcept;
-        [[nodiscard]] Parser parseChar(char c) noexcept;
-        [[nodiscard]] Parser parseDigit() noexcept;
-        [[nodiscard]] Parser parsePositiveDigit() noexcept;
-        [[nodiscard]] Parser parserMap(Parser parser, std::function<Result(Result&&)> f) noexcept;
-        [[nodiscard]] Parser parserMapValue(Parser parser, ParsedValue value) noexcept;
-        [[nodiscard]] Parser parseCharVecToString(Parser parser) noexcept;
-        [[nodiscard]] Parser parseString(std::string string) noexcept;
-        [[nodiscard]] Parser parseZeroOrMore(Parser parser) noexcept;
-        [[nodiscard]] Parser parseJSONString() noexcept;
-        [[nodiscard]] Parser parseAndDrop(Parser parser) noexcept;
-        [[nodiscard]] Parser parseControlCharacter() noexcept;
-        [[nodiscard]] Parser parserMapStringToJSONString(Parser parser) noexcept;
-        [[nodiscard]] Parser parseOptionally(Parser parser) noexcept;
-        [[nodiscard]] Parser parseSuccess() noexcept;
-        [[nodiscard]] Parser parseJSONNumber() noexcept;
-        [[nodiscard]] Parser parserMapStringToJSONNumber(Parser parser) noexcept;
-        [[nodiscard]] Parser parseOneOrMore(Parser parser) noexcept;
-        [[nodiscard]] Parser parseWhitespaceAndDrop() noexcept;
-        [[nodiscard]] Parser parseJSONTrue() noexcept;
-        [[nodiscard]] Parser parseJSONFalse() noexcept;
-        [[nodiscard]] Parser parseJSONNull() noexcept;
+        [[nodiscard]] inline auto parseAnyChar() noexcept {
+            return [](const InputString& input) -> Result {
+                if (input.empty()) {
+                    return tl::unexpected(fmt::format("Invalid input: Got empty string"));
+                }
+                return ResultPair({ input.front() }, input.substr(1));
+            };
+        }
+
+        [[nodiscard]] inline auto parseChar(char c) noexcept {
+            return [c](const InputString& input) -> Result {
+                return parseAnyChar()(input).and_then([c, &input](Result&& result) -> Result {
+                    if (get<char>(result->first.front()) != c) {
+                        return tl::unexpected(
+                                fmt::format("Invalid input: Got character '{}' (expected '{}')", input.front(), c));
+                    }
+                    return result;
+                });
+            };
+        }
+
+        [[nodiscard]] inline auto operator"" _c(char c) noexcept {
+            return parseChar(c);
+        }
+
+        [[nodiscard]] inline auto parseDigit() noexcept {
+            return [](const InputString& input) -> Result {
+                return parseAnyChar()(input).and_then([&input](Result&& result) -> Result {
+                    if (!std::isdigit(get<char>(result->first.front()))) {
+                        return tl::unexpected(
+                                fmt::format("Invalid input: Got character '{}' (expected digit)", input.front()));
+                    }
+                    return result;
+                });
+            };
+        }
+
+        [[nodiscard]] inline auto parsePositiveDigit() noexcept {
+            return [](const InputString& input) -> Result {
+                const auto result = parseDigit()(input);
+                if (!result) {
+                    return result;
+                }
+                if (get<char>(result->first.front()) == '0') {
+                    return tl::unexpected(
+                            fmt::format("Got {} (positive digit expected)", get<char>(result->first.front())));
+                }
+                return result;
+            };
+        }
+
+        [[nodiscard]] auto parserMap(auto parser, auto f) noexcept {
+            return [=](const InputString& input) -> Result {
+                return parser(input).and_then([&](Result&& result) -> Result { return f(std::move(result)); });
+            };
+        }
+
+        [[nodiscard]] auto parserMapValue(auto parser, ParsedValue value) noexcept {
+            return parserMap(parser, [value = std::move(value)](Result&& result) -> Result {
+                return ResultPair{ std::move(value), result->second };
+            });
+        }
+
+        [[nodiscard]] auto parseCharVecToString(auto parser) noexcept {
+            return parserMap(parser, [](Result&& result) -> Result {
+                std::string string;
+                string.reserve(result->first.size());
+                for (auto&& variant : result->first) {
+                    string += get<char>(variant);
+                }
+                return ResultPair{ { string }, result->second };
+            });
+        }
+
+        [[nodiscard]] inline auto parseString(std::string string) noexcept {
+            return [s = std::move(string)](const InputString& input) -> Result {
+                if (s.empty()) {
+                    return ResultPair{ {}, input };
+                }
+                auto result = parseChar(s.front())(input);
+                if (!result) {
+                    return result;
+                }
+                auto it = s.begin() + 1;
+                while (result && it != s.end()) {
+                    result = parseChar(*it)(result->second);
+                    ++it;
+                }
+                if (!result) {
+                    return result;
+                }
+                return ResultPair{ { s }, result->second };
+            };
+        }
+
+        [[nodiscard]] auto parseZeroOrMore(auto parser) noexcept {
+            return [parser = std::move(parser)](InputString input) -> Result {
+                ParsedValue values;
+                auto result = parser(input);
+                while (result) {
+                    values.insert(values.end(), result->first.begin(), result->first.end());
+                    input = result->second;
+                    result = parser(input);
+                }
+                return ResultPair{ { std::move(values) }, std::move(input) };
+            };
+        }
+
+        [[nodiscard]] auto parseAndDrop(auto parser) noexcept {
+            return parserMapValue(parser, ParsedValue{});
+        }
+
+        [[nodiscard]] inline auto parseControlCharacter() noexcept {
+            return [](const InputString& input) -> Result {
+                auto result = parseAnyChar()(input);
+                if (!result) {
+                    return result;
+                }
+                if (!std::iscntrl(get<char>(result->first.front()))) {
+                    return tl::unexpected(
+                            fmt::format("Expected control character, got '{}'", get<char>(result->first.front())));
+                }
+                return result;
+            };
+        }
+
+        [[nodiscard]] auto parserMapStringToJSONString(auto parser) noexcept {
+            return parserMap(std::move(parser), [](Result&& result) -> Result {
+                return ResultPair{ { JSONString{ get<std::string>(result->first.front()) } }, result->second };
+            });
+        }
+
+        [[nodiscard]] inline auto parseSuccess() noexcept {
+            return [](const InputString& input) -> Result { return ResultPair{ {}, input }; };
+        }
+
+        [[nodiscard]] inline auto operator+(const Parser& lhs, const Parser& rhs) noexcept {
+            return [=](const InputString& input) -> Result {
+                auto firstResult = lhs(input);
+                if (!firstResult) {
+                    return firstResult;
+                }
+                const auto secondResult = rhs(firstResult->second);
+                if (!secondResult) {
+                    return secondResult;
+                }
+                using ranges::views::concat, ranges::to_vector, ranges::views::all;
+                return ResultPair{ to_vector(concat(firstResult->first, secondResult->first)), secondResult->second };
+            };
+        }
+
+        [[nodiscard]] inline auto operator||(const Parser& lhs, const Parser& rhs) noexcept {
+            return [=](const InputString& input) -> Result {
+                const auto firstResult = lhs(input);
+                if (firstResult) {
+                    return firstResult;
+                }
+                const auto secondResult = rhs(input);
+                if (secondResult) {
+                    return secondResult;
+                }
+                return tl::unexpected(
+                        fmt::format("Unable to parse input with either of two parsers: Error was '{}' or '{}'",
+                                    firstResult.error(), secondResult.error()));
+            };
+        }
+
+        [[nodiscard]] inline auto operator>>(const Parser& parser, const ParsedValue& value) noexcept {
+            return parserMapValue(parser, value);
+        }
+
+        [[nodiscard]] inline auto operator"" _val(char c) noexcept {
+            return ParsedValue{ { c } };
+        }
+
+        [[nodiscard]] inline auto operator!(const Parser& parser) noexcept {
+            return [parser = std::move(parser)](const InputString& input) -> Result {
+                auto result = parser(input);
+                if (result) {
+                    return tl::unexpected(
+                            fmt::format("Syntax error: {}", input.substr(0, input.length() - result->second.length())));
+                }
+                return parseSuccess()(input);
+            };
+        }
+
+        [[nodiscard]] inline auto parseJSONString() noexcept {
+            // clang-format off
+            return parserMapStringToJSONString(
+                parseCharVecToString(
+                    parseAndDrop('"'_c) +
+                    parseZeroOrMore(
+                        (('\\'_c + '"'_c) >> '"'_val) ||
+                        (('\\'_c + '\\'_c) >> '\\'_val) ||
+                        (('\\'_c + '/'_c) >> '/'_val) ||
+                        (('\\'_c + 'b'_c) >> '\b'_val) ||
+                        (('\\'_c + 'f'_c) >> '\f'_val) ||
+                        (('\\'_c + 'n'_c) >> '\n'_val) ||
+                        (('\\'_c + 'r'_c) >> '\r'_val) ||
+                        (('\\'_c + 't'_c) >> '\t'_val) ||
+                        // TODO: \u and 4 hex digits
+                        (!(parseControlCharacter() || '\\'_c || '"'_c) + parseAnyChar())
+                    ) +
+                    parseAndDrop('"'_c)
+                )
+            );
+            // clang-format on
+        }
+
+        [[nodiscard]] auto parseOptionally(auto parser) noexcept {
+            return [parser = std::move(parser)](const InputString& input) -> Result {
+                const auto result = parser(input);
+                if (result) {
+                    return result;
+                }
+                return parseSuccess()(input);
+            };
+        }
+
+        [[nodiscard]] auto parserMapStringToJSONNumber(auto parser) noexcept {
+            return parserMap(std::move(parser), [](Result&& result) -> Result {
+                const std::string numberString = get<std::string>(result->first.front());
+                const double number = std::strtod(numberString.c_str(), nullptr);
+                if (std::isinf(number) || std::isnan(number)) {
+                    return tl::unexpected(fmt::format("Value out of range: {}", numberString));
+                }
+                return ResultPair{ { JSONNumber{ .value{ number } } }, result->second };
+            });
+        }
+
+        [[nodiscard]] auto parseOneOrMore(auto parser) noexcept {
+            return parser + parseZeroOrMore(parser);
+        }
+
+        [[nodiscard]] inline auto parseJSONNumber() noexcept {
+            // clang-format off
+            return parserMapStringToJSONNumber(
+                parseCharVecToString(
+                    parseOptionally('-'_c) +
+                    ('0'_c || (parsePositiveDigit() + parseZeroOrMore(parseDigit()))) +
+                    parseOptionally('.'_c + parseOneOrMore(parseDigit())) +
+                    parseOptionally(('E'_c || 'e'_c) + parseOptionally('+'_c || '-'_c) + parseOneOrMore(parseDigit()))
+                )
+            );
+            // clang-format on
+        }
+
+        [[nodiscard]] inline auto parseWhitespaceAndDrop() noexcept {
+            return parseAndDrop(parseZeroOrMore(' '_c || '\n'_c || '\r'_c || '\t'_c));
+        }
+
+        [[nodiscard]] inline auto parseJSONTrue() noexcept {
+            return parseString("true") >> ParsedValue{ JSONTrue{} };
+        }
+
+        [[nodiscard]] inline auto parseJSONFalse() noexcept {
+            return parseString("false") >> ParsedValue{ JSONFalse{} };
+        }
+
+        [[nodiscard]] inline auto parseJSONNull() noexcept {
+            return parseString("null") >> ParsedValue{ JSONNull{} };
+        }
+
         [[nodiscard]] Parser parseJSONValue() noexcept;
-        [[nodiscard]] Parser parseJSONArray() noexcept;
-        [[nodiscard]] Parser parseJSONObject() noexcept;
+
+        [[nodiscard]] inline auto parseJSONArray() noexcept {
+            return [](const InputString& input) -> Result {
+                // clang-format off
+                const auto result = (
+                    parseAndDrop('['_c) + (
+                        (parseJSONValue() + parseZeroOrMore(parseAndDrop(','_c) + parseJSONValue())) ||
+                        parseWhitespaceAndDrop()
+                    ) +
+                    parseAndDrop(']'_c)
+                )(input);
+                // clang-format on
+                if (!result) {
+                    return result;
+                }
+                JSONArray array;
+                for (auto&& value : result->first) {
+                    array.values.emplace_back(std::make_shared<JSONValue>(get<JSONValue>(value)));
+                }
+                return ResultPair{ { array }, result->second };
+            };
+        }
+
+        [[nodiscard]] inline auto parseJSONObject() noexcept {
+            return [](const InputString& input) -> Result {
+                // clang-format off
+                const auto result = (
+                    parseAndDrop('{'_c) +
+                    (
+                        (
+                            parseWhitespaceAndDrop() +
+                            parseJSONString() +
+                            parseWhitespaceAndDrop() +
+                            parseAndDrop(':'_c) +
+                            parseJSONValue() +
+                            parseZeroOrMore(
+                                parseAndDrop(','_c) +
+                                parseWhitespaceAndDrop() +
+                                parseJSONString() +
+                                parseWhitespaceAndDrop() +
+                                parseAndDrop(':'_c) +
+                                parseJSONValue()
+                            )
+                        ) || parseWhitespaceAndDrop()
+                    ) +
+                    parseAndDrop('}'_c)
+                )(input);
+                // clang-format on
+                if (!result) {
+                    return result;
+                }
+                const std::size_t elementCount = result->first.size();
+                assert(elementCount % 2 == 0 && "objects must consist of pairs");
+                JSONObject object;
+                for (std::size_t i = 0; i < elementCount; i += 2) {
+                    object.pairs.emplace_back(
+                            std::pair(get<JSONString>(result->first[i]),
+                                      std::make_shared<JSONValue>(get<JSONValue>(result->first[i + 1]))));
+                }
+                return ResultPair{ { object }, result->second };
+            };
+        }
 
         template<typename T>
         void toJSON(JSONValue& json, const std::vector<T>& vector) noexcept {
