@@ -198,42 +198,6 @@ namespace c2k::JSON {
             return findIterator != object.pairs.cend();
         }
 
-        Parser parseJSONValue() noexcept {
-            return [](const InputString& input) -> Result {
-                const auto result = (parseWhitespaceAndDrop() +
-                                     (parseJSONString() || parseJSONNumber() || parseJSONObject() || parseJSONArray() ||
-                                      parseJSONTrue() || parseJSONFalse() || parseJSONNull()) +
-                                     parseWhitespaceAndDrop())(input);
-                if (!result) {
-                    return result;
-                }
-                assert(result->first.size() == 1);
-                if (holds_alternative<JSONString>(result->first.front())) {
-                    return ResultPair{ { JSONValue{ get<JSONString>(result->first.front()) } }, result->second };
-                }
-                if (holds_alternative<JSONNumber>(result->first.front())) {
-                    return ResultPair{ { JSONValue{ get<JSONNumber>(result->first.front()) } }, result->second };
-                }
-                if (holds_alternative<JSONObject>(result->first.front())) {
-                    return ResultPair{ { JSONValue{ get<JSONObject>(result->first.front()) } }, result->second };
-                }
-                if (holds_alternative<JSONArray>(result->first.front())) {
-                    return ResultPair{ { JSONValue{ get<JSONArray>(result->first.front()) } }, result->second };
-                }
-                if (holds_alternative<JSONTrue>(result->first.front())) {
-                    return ResultPair{ { JSONValue{ get<JSONTrue>(result->first.front()) } }, result->second };
-                }
-                if (holds_alternative<JSONFalse>(result->first.front())) {
-                    return ResultPair{ { JSONValue{ get<JSONFalse>(result->first.front()) } }, result->second };
-                }
-                if (holds_alternative<JSONNull>(result->first.front())) {
-                    return ResultPair{ { JSONValue{ get<JSONNull>(result->first.front()) } }, result->second };
-                }
-                return tl::unexpected{ fmt::format(
-                        "error while converting parsed input into JSON value (unexpected type)") };
-            };
-        }
-
     }// namespace Implementation_
 
     tl::expected<Value, std::string> fromString(const std::string& input) noexcept {
