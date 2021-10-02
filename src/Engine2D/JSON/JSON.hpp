@@ -14,29 +14,24 @@ namespace c2k::JSON {
             std::string value;
 
             [[nodiscard]] bool operator==(const JSONString&) const = default;
-            [[nodiscard]] bool operator!=(const JSONString&) const = default;
         };
 
         struct JSONNumber {
             double value;
 
             [[nodiscard]] bool operator==(const JSONNumber&) const = default;
-            [[nodiscard]] bool operator!=(const JSONNumber&) const = default;
         };
 
         struct JSONTrue {
             [[nodiscard]] bool operator==(const JSONTrue&) const = default;
-            [[nodiscard]] bool operator!=(const JSONTrue&) const = default;
         };
 
         struct JSONFalse {
             [[nodiscard]] bool operator==(const JSONFalse&) const = default;
-            [[nodiscard]] bool operator!=(const JSONFalse&) const = default;
         };
 
         struct JSONNull {
             [[nodiscard]] bool operator==(const JSONNull&) const = default;
-            [[nodiscard]] bool operator!=(const JSONNull&) const = default;
         };
 
         class JSONValue;
@@ -48,7 +43,6 @@ namespace c2k::JSON {
             std::vector<std::shared_ptr<JSONValue>> values;
 
             [[nodiscard]] bool operator==(const JSONArray& other) const;
-            [[nodiscard]] bool operator!=(const JSONArray& other) const;
         };
 
         struct JSONObject {
@@ -58,7 +52,6 @@ namespace c2k::JSON {
             std::vector<std::pair<JSONString, std::shared_ptr<JSONValue>>> pairs;
 
             [[nodiscard]] bool operator==(const JSONObject& other) const;
-            [[nodiscard]] bool operator!=(const JSONObject& other) const;
         };
 
         class JSONValue final {
@@ -121,7 +114,6 @@ namespace c2k::JSON {
             [[nodiscard]] tl::expected<bool, std::string> asBool() const noexcept;
 
             [[nodiscard]] bool operator==(const JSONValue& other) const;
-            [[nodiscard]] bool operator!=(const JSONValue& other) const;
             [[nodiscard]] std::string dump(const std::string& indentationStep = "  ") const noexcept;
             tl::expected<std::monostate, std::string> dumpToFile(const std::filesystem::path& filename) const noexcept;
 
@@ -287,6 +279,11 @@ namespace c2k::JSON {
         }
         out = std::move(result);
         return std::monostate{};
+    }
+
+    template<typename T>
+    [[nodiscard]] tl::expected<T, std::string> as(const Value& value) noexcept {
+        return value.template as<T>();
     }
 
 #include "MacroDefinitions.hpp"

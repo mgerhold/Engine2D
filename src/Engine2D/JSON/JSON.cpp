@@ -26,10 +26,6 @@ namespace c2k::JSON {
             return true;
         }
 
-        bool JSONArray::operator!=(const JSONArray& other) const {
-            return !(*this == other);
-        }
-
         JSONObject::JSONObject(std::initializer_list<std::pair<JSONString, JSONValue>> init) noexcept {
             for (auto&& [key, value] : init) {
                 pairs.emplace_back(std::pair(key, std::make_shared<JSONValue>(value)));
@@ -48,10 +44,6 @@ namespace c2k::JSON {
                 }
             }
             return true;
-        }
-
-        bool JSONObject::operator!=(const JSONObject& other) const {
-            return !(*this == other);
         }
 
         bool JSONValue::isString() const noexcept {
@@ -116,10 +108,6 @@ namespace c2k::JSON {
                 return false;
             }
             return *mData == *other.mData;
-        }
-
-        bool JSONValue::operator!=(const JSONValue& other) const {
-            return !(*this == other);
         }
 
         std::string JSONValue::dump(const std::string& indentationStep) const noexcept {
@@ -214,14 +202,14 @@ namespace c2k::JSON {
             return [=](const InputString& input) -> Result {
                 auto firstResult = lhs(input);
                 if (!firstResult) {
-                    return tl::unexpected(firstResult.error());
+                    return firstResult;
                 }
                 const auto secondResult = rhs(firstResult->second);
                 if (!secondResult) {
-                    return tl::unexpected(secondResult.error());
+                    return secondResult;
                 }
                 using ranges::views::concat, ranges::to_vector, ranges::views::all;
-                return ResultPair(to_vector(concat(firstResult->first, secondResult->first)), secondResult->second);
+                return ResultPair{ to_vector(concat(firstResult->first, secondResult->first)), secondResult->second };
             };
         }
 
@@ -364,7 +352,7 @@ namespace c2k::JSON {
                     input = result->second;
                     result = parser(input);
                 }
-                return ResultPair{ { std::move(values) }, input };
+                return ResultPair{ { std::move(values) }, std::move(input) };
             };
         }
 
@@ -431,16 +419,14 @@ namespace c2k::JSON {
 
         Parser parseJSONNumber() noexcept {
             // clang-format off
-return parserMapStringToJSONNumber(
-parseCharVecToString(
-parseOptionally(parseChar('-')) +
-('0'_c || (parsePositiveDigit() + parseZeroOrMore(parseDigit()))) +
-parseOptionally('.'_c + parseOneOrMore(parseDigit())) +
-parseOptionally(
-('E'_c || 'e'_c) + parseOptionally('+'_c || '-'_c) + parseOneOrMore(parseDigit())
-)
-)
-);
+            return parserMapStringToJSONNumber(
+                parseCharVecToString(
+                    parseOptionally('-'_c) +
+                    ('0'_c || (parsePositiveDigit() + parseZeroOrMore(parseDigit()))) +
+                    parseOptionally('.'_c + parseOneOrMore(parseDigit())) +
+                    parseOptionally(('E'_c || 'e'_c) + parseOptionally('+'_c || '-'_c) + parseOneOrMore(parseDigit()))
+                )
+            );
             // clang-format on
         }
 

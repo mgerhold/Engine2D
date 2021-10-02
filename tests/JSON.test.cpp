@@ -747,13 +747,9 @@ TEST(CombinedParsers, vectorOfUserDefinedStruct) {
     const auto filename = std::filesystem::current_path() / "tests" / "university.json";
     const auto saveResult = json.dumpToFile(filename);
     ASSERT_TRUE(saveResult);
-    const auto readResult = JSON::fromFile(filename);
-    ASSERT_TRUE(readResult);
-    const auto readJSON = readResult.value();
-    const auto deserializationResult = readJSON.as<University>();
+    const auto deserializationResult = JSON::fromFile(filename).and_then(JSON::as<University>);
     ASSERT_TRUE(deserializationResult);
     ASSERT_EQ(university, deserializationResult.value());
 
-    ASSERT_FALSE(readJSON.as<Student>());
-    spdlog::info(readJSON.as<Student>().error());
+    ASSERT_FALSE(JSON::fromFile(filename).and_then(JSON::as<Student>));
 }
