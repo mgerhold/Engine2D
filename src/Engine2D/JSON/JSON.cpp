@@ -198,14 +198,6 @@ namespace c2k::JSON {
             return findIterator != object.pairs.cend();
         }
 
-        /*auto parseJSONArray() noexcept {
-
-        }*/
-
-        /*auto parseJSONObject() noexcept {
-
-        }*/
-
         Parser parseJSONValue() noexcept {
             return [](const InputString& input) -> Result {
                 const auto result = (parseWhitespaceAndDrop() +

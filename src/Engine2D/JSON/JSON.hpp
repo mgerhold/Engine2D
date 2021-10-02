@@ -166,7 +166,7 @@ namespace c2k::JSON {
                                                      JSONValue,
                                                      JSONArray,
                                                      JSONObject>>;
-        using InputString = std::string;
+        using InputString = std::string_view;
         using ErrorMessage = std::string;
         using ResultPair = std::pair<ParsedValue, InputString>;
         using Result = tl::expected<ResultPair, ErrorMessage>;
