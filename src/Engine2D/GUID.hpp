@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "JSON/JSON.hpp"
+
 namespace c2k {
 
     struct GUID : public boost::uuids::uuid {
@@ -47,9 +49,9 @@ namespace c2k {
         }
     };
 
-    void to_json(nlohmann::json& j, const GUID& guid);
+    void toJSON(JSON::Value& json, const GUID& val) noexcept;
 
-    void from_json(const nlohmann::json& j, GUID& guid);
+    [[nodiscard]] tl::expected<std::monostate, std::string> fromJSON(const JSON::Value& json, GUID& out) noexcept;
 
 }// namespace c2k
 

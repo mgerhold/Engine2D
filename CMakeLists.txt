@@ -152,9 +152,6 @@ find_package(Boost REQUIRED COMPONENTS random)
 target_link_libraries(Engine2D PRIVATE ${Boost_LIBRARIES})
 target_include_directories(Engine2D PRIVATE ${Boost_INCLUDE_DIRS})
 
-find_package(nlohmann_json CONFIG REQUIRED)
-target_link_libraries(Engine2D PRIVATE nlohmann_json nlohmann_json::nlohmann_json)
-
 include(FindLua)
 find_package(Lua REQUIRED)
 target_link_libraries(Engine2D PRIVATE ${LUA_LIBRARIES})

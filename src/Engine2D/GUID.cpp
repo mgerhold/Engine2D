@@ -5,13 +5,17 @@
 #include "GUID.hpp"
 
 namespace c2k {
-    void to_json(nlohmann::json& j, const GUID& guid) {
-        j = nlohmann::json{ guid.string() };
+
+    void toJSON(c2k::JSON::Value& json, const GUID& val) noexcept {
+        json = JSON::Value{ val.string() };
     }
 
-    void from_json(const nlohmann::json& j, GUID& guid) {
-        std::string guidString;
-        j.get_to(guidString);
-        guid = GUID::fromString(guidString);
+    tl::expected<std::monostate, std::string> fromJSON(const c2k::JSON::Value& json, GUID& out) noexcept {
+        if (!json.isString()) {
+            return tl::unexpected(fmt::format("Unable to retrieve GUID from JSON (string expected)"));
+        }
+        out = GUID::fromString(json.asString().value());
+        return std::monostate{};
     }
+
 }// namespace c2k

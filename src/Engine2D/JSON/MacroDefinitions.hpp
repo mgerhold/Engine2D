@@ -10,7 +10,6 @@
 #define C2K_JSON_IMPLEMENTATION_TO_JSON_MEMBER(M) { #M, val.M }
 
 #define C2K_JSON_IMPLEMENTATION_FROM_JSON_MEMBER(TYPE, M) \
-    spdlog::info("trying to retrieve {} for type {}", #M, #TYPE); \
     if (!json.containsKey(#M)) { \
         return tl::unexpected(fmt::format("Unable to deserialize type '{}' (missing member '{}')", #TYPE, #M)); \
     }                                                     \
@@ -18,7 +17,7 @@
     if (!M) { \
         return tl::unexpected(fmt::format("Unable to deserialize '{}': {}", #M, M.error())); \
     } \
-    spdlog::info("successfully retrieved {} for type {}", #M, #TYPE); \
+                                                          \
 // the following code was auto-generated with jsonMacroGenerator.py
 
 #define C2K_JSON_IMPLEMENTATION_TO_JSON_MEMBERS1(m1)	\
@@ -4452,7 +4451,7 @@
 // end of auto-generated code
 
 #define C2K_JSON_DEFINE_TYPE(TYPE, ...) \
-inline void toJSON(c2k::JSON::Value& json, const TYPE& val) { \
+inline void toJSON(c2k::JSON::Value& json, const TYPE& val) noexcept { \
     json = { C2K_JSON_IMPLEMENTATION_PASS_ON( \
         C2K_JSON_IMPLEMENTATION_PASS_ON(C2K_JSON_IMPLEMENTATION_TO_JSON_MEMBERS)(__VA_ARGS__)) }; \
 }           \

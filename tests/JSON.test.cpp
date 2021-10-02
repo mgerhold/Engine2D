@@ -593,19 +593,19 @@ TEST(CombinedParsers, fromJSON) {
     using namespace c2k;
     JSON::Value json{ 42 };
     double number;
-    auto result = JSON::fromJSON(json, number);
+    auto result = fromJSON(json, number);
     ASSERT_TRUE(result);
     ASSERT_EQ(number, 42);
 
     json = JSON::Value{ "text" };
     std::string string;
-    result = JSON::fromJSON(json, string);
+    result = fromJSON(json, string);
     ASSERT_TRUE(result);
     ASSERT_EQ(string, "text");
 
     json = JSON::Value{ true };
     bool boolVal;
-    result = JSON::fromJSON(json, boolVal);
+    result = fromJSON(json, boolVal);
     ASSERT_TRUE(result);
     ASSERT_EQ(boolVal, true);
 
@@ -678,7 +678,7 @@ TEST(CombinedParsers, stdVector) {
     spdlog::info(json.dump());
 
     std::vector<std::string> vector;
-    const auto deserializationResult = JSON::fromJSON(json, vector);
+    const auto deserializationResult = fromJSON(json, vector);
     ASSERT_TRUE(deserializationResult);
     ASSERT_EQ(vector.size(), 4);
     ASSERT_EQ(vector[0], "this");
@@ -689,10 +689,9 @@ TEST(CombinedParsers, stdVector) {
     const std::vector<std::string> words{ "lorem", "ipsum", "dolor", "sit", "amet" };
     const auto wordsJSON = JSON::Value{ words };
     ASSERT_TRUE(wordsJSON.isArray());
-    std::vector<std::string> reconvertedWords;
-    const auto reconversionResult = JSON::fromJSON(words, reconvertedWords);
+    const auto reconversionResult = wordsJSON.as<std::vector<std::string>>();
     ASSERT_TRUE(reconversionResult);
-    ASSERT_EQ(words, reconvertedWords);
+    ASSERT_EQ(words, reconversionResult.value());
 }
 
 struct Language {

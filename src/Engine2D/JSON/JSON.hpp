@@ -214,6 +214,90 @@ namespace c2k::JSON {
             json = JSONValue{ result };
         }
 
+        inline void toJSON(JSONValue& json, const std::filesystem::path& path) noexcept {
+            json = JSONValue{ path.string() };
+        }
+
+        [[nodiscard]] inline tl::expected<std::monostate, std::string> fromJSON(const JSONValue& json,
+                                                                                std::string& out) noexcept {
+            const auto result = json.asString();
+            if (!result) {
+                return tl::unexpected{ result.error() };
+            }
+            out = result.value();
+            return std::monostate{};
+        }
+
+        [[nodiscard]] inline tl::expected<std::monostate, std::string> fromJSON(const JSONValue& json,
+                                                                                double& out) noexcept {
+            const auto result = json.asNumber();
+            if (!result) {
+                return tl::unexpected{ result.error() };
+            }
+            out = result.value();
+            return std::monostate{};
+        }
+
+        [[nodiscard]] inline tl::expected<std::monostate, std::string> fromJSON(const JSONValue& json,
+                                                                                float& out) noexcept {
+            const auto result = json.asNumber();
+            if (!result) {
+                return tl::unexpected{ result.error() };
+            }
+            out = gsl::narrow_cast<float>(result.value());
+            return std::monostate{};
+        }
+
+        [[nodiscard]] inline tl::expected<std::monostate, std::string> fromJSON(const JSONValue& json,
+                                                                                int& out) noexcept {
+            const auto result = json.asNumber();
+            if (!result) {
+                return tl::unexpected{ result.error() };
+            }
+            out = gsl::narrow_cast<int>(result.value());
+            return std::monostate{};
+        }
+
+        [[nodiscard]] inline tl::expected<std::monostate, std::string> fromJSON(const JSONValue& json,
+                                                                                bool& out) noexcept {
+            const auto result = json.asBool();
+            if (!result) {
+                return tl::unexpected{ result.error() };
+            }
+            out = result.value();
+            return std::monostate{};
+        }
+
+        template<typename T>
+        [[nodiscard]] tl::expected<std::monostate, std::string> fromJSON(const JSONValue& json,
+                                                                         std::vector<T>& out) noexcept {
+            if (!json.isArray()) {
+                return tl::unexpected(fmt::format("Unable to convert to std::vector (JSON array expected)"));
+            }
+            const auto array = json.asArray().value();
+            std::vector<T> result;
+            for (const auto& value : array.values) {
+                T buffer;
+                const auto convertedExpected = fromJSON(*value, buffer);
+                if (!convertedExpected) {
+                    return tl::unexpected(convertedExpected.error());
+                }
+                result.emplace_back(buffer);
+            }
+            out = std::move(result);
+            return std::monostate{};
+        }
+
+        [[nodiscard]] inline tl::expected<std::monostate, std::string> fromJSON(const JSONValue& json,
+                                                                                std::filesystem::path& out) noexcept {
+            const auto result = json.asString();
+            if (!result) {
+                return tl::unexpected(fmt::format("Unable to convert JSON to filesystem path (string expected)"));
+            }
+            out = std::filesystem::path{ result.value() };
+            return std::monostate{};
+        }
+
     }// namespace Implementation_
 
     using Value = Implementation_::JSONValue;
@@ -222,64 +306,7 @@ namespace c2k::JSON {
 
     [[nodiscard]] tl::expected<Value, std::string> fromString(const std::string& input) noexcept;
     [[nodiscard]] tl::expected<Value, std::string> fromFile(const std::filesystem::path& filename) noexcept;
-    // TODO: rename user-defined literal after removing nlohmann::json
-    [[nodiscard]] tl::expected<Value, std::string> operator"" _asjson(const char* input, std::size_t) noexcept;
-
-    [[nodiscard]] inline tl::expected<std::monostate, std::string> fromJSON(const Value& json,
-                                                                            std::string& out) noexcept {
-        const auto result = json.asString();
-        if (!result) {
-            return tl::unexpected{ result.error() };
-        }
-        out = result.value();
-        return std::monostate{};
-    }
-
-    [[nodiscard]] inline tl::expected<std::monostate, std::string> fromJSON(const Value& json, double& out) noexcept {
-        const auto result = json.asNumber();
-        if (!result) {
-            return tl::unexpected{ result.error() };
-        }
-        out = result.value();
-        return std::monostate{};
-    }
-
-    [[nodiscard]] inline tl::expected<std::monostate, std::string> fromJSON(const Value& json, int& out) noexcept {
-        const auto result = json.asNumber();
-        if (!result) {
-            return tl::unexpected{ result.error() };
-        }
-        out = gsl::narrow_cast<int>(result.value());
-        return std::monostate{};
-    }
-
-    [[nodiscard]] inline tl::expected<std::monostate, std::string> fromJSON(const Value& json, bool& out) noexcept {
-        const auto result = json.asBool();
-        if (!result) {
-            return tl::unexpected{ result.error() };
-        }
-        out = result.value();
-        return std::monostate{};
-    }
-
-    template<typename T>
-    [[nodiscard]] tl::expected<std::monostate, std::string> fromJSON(const Value& json, std::vector<T>& out) noexcept {
-        if (!json.isArray()) {
-            return tl::unexpected(fmt::format("Unable to convert to std::vector (JSON array expected)"));
-        }
-        const auto array = json.asArray().value();
-        std::vector<T> result;
-        for (const auto& value : array.values) {
-            T buffer;
-            const auto convertedExpected = fromJSON(*value, buffer);
-            if (!convertedExpected) {
-                return tl::unexpected(convertedExpected.error());
-            }
-            result.emplace_back(buffer);
-        }
-        out = std::move(result);
-        return std::monostate{};
-    }
+    [[nodiscard]] tl::expected<Value, std::string> operator"" _json(const char* input, std::size_t) noexcept;
 
     template<typename T>
     [[nodiscard]] tl::expected<T, std::string> as(const Value& value) noexcept {

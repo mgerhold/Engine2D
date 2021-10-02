@@ -12,7 +12,6 @@
 #include <spdlog/spdlog.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <nlohmann/json.hpp>
 #include <tl/expected.hpp>
 #include <tl/optional.hpp>
 #pragma warning(push)

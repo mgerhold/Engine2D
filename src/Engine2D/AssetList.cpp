@@ -12,7 +12,13 @@ namespace c2k {
     }
 
     void AssetList::fromFile(const std::filesystem::path& path) noexcept {
-        const auto fileContents = FileUtils::readTextFile(path);
+        const auto result = JSON::fromFile(path).and_then(JSON::as<AssetDescriptions::List>);
+        if (!result) {
+            spdlog::error("Unable to read asset list: {}", result.error());
+            return;
+        }
+        mAssetDescriptions = result.value();
+        /*const auto fileContents = FileUtils::readTextFile(path);
         if (!fileContents) {
             spdlog::error(fmt::format("Unable to read file: {}", path.string()));
             return;
@@ -26,7 +32,7 @@ namespace c2k {
         spdlog::info("Parsed {} textures, {} shader programs, {} sprite sheets, {} scripts, {} particle systems",
                      mAssetDescriptions.textures.size(), mAssetDescriptions.shaderPrograms.size(),
                      mAssetDescriptions.spriteSheets.size(), mAssetDescriptions.scripts.size(),
-                     mAssetDescriptions.particleSystems.size());
+                     mAssetDescriptions.particleSystems.size());*/
     }
 
 }// namespace c2k

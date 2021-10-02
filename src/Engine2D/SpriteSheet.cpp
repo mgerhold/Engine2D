@@ -5,6 +5,7 @@
 #include "SpriteSheet.hpp"
 #include "FileUtils/FileUtils.hpp"
 #include "JSONUtils.hpp"
+#include "JSON/JSON.hpp"
 
 namespace c2k {
 
@@ -13,7 +14,7 @@ namespace c2k {
         int h;
     };
 
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(SizeJSON, w, h);
+    C2K_JSON_DEFINE_TYPE(SizeJSON, w, h);
 
     struct RectJSON {
         int x;
@@ -22,42 +23,38 @@ namespace c2k {
         int h;
     };
 
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(RectJSON, x, y, w, h);
+    C2K_JSON_DEFINE_TYPE(RectJSON, x, y, w, h);
 
     struct FrameJSON {
         RectJSON frame;
         SizeJSON sourceSize;
     };
 
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(FrameJSON, frame, sourceSize);
+    C2K_JSON_DEFINE_TYPE(FrameJSON, frame, sourceSize);
 
     struct MetaJSON {
         SizeJSON size;
     };
 
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(MetaJSON, size);
+    C2K_JSON_DEFINE_TYPE(MetaJSON, size);
 
     struct SpriteSheetJSON {
         std::vector<FrameJSON> frames;
         MetaJSON meta;
     };
 
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(SpriteSheetJSON, frames, meta);
+    C2K_JSON_DEFINE_TYPE(SpriteSheetJSON, frames, meta);
 
     tl::expected<SpriteSheet, std::string> SpriteSheet::loadFromFile(const std::filesystem::path& filename,
                                                                      const Texture& texture) noexcept {
         using namespace JSONUtils;
         using namespace std::literals::string_literals;
-        const auto fileContents = FileUtils::readTextFile(filename);
-        if (!fileContents) {
-            return tl::unexpected(fmt::format("Error while reading sprite sheet file {}: {}", filename.string(),
-                                              fileContents.error()));
+        const auto readResult = JSON::fromFile(filename).and_then(JSON::as<SpriteSheetJSON>);
+        if (!readResult) {
+            return tl::unexpected(
+                    fmt::format("Unable to read sprite sheet information from JSON: {}", readResult.error()));
         }
-        auto json = nlohmann::json::parse(fileContents.value(), nullptr, false);
-        if (json.is_discarded()) {
-            return tl::unexpected(fmt::format("Failed to parse JSON file {}", filename.string()));
-        }
-        auto spriteSheetJSON = json.get<SpriteSheetJSON>();
+        const auto spriteSheetJSON = readResult.value();
         const float textureWidth = static_cast<float>(spriteSheetJSON.meta.size.w);
         const float textureHeight = static_cast<float>(spriteSheetJSON.meta.size.h);
         SpriteSheet spriteSheet;
