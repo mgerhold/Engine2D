@@ -140,6 +140,19 @@ namespace c2k::JSON::Implementation_ {
         };
     }
 
+    template<typename... Parsers>
+    [[nodiscard]] auto parserOr(Parsers... parsers) noexcept {
+        static_assert(sizeof...(parsers) >= 2);
+        return [... parsers = std::move(parsers)](InputString input) -> Result {
+            Result result;
+            ([&]() -> bool {
+                result = parsers(input);
+                return static_cast<bool>(result);
+            }() || ...);
+            return std::move(result);
+        };
+    }
+
     [[nodiscard]] inline auto operator||(ParserConcept auto lhs, ParserConcept auto rhs) noexcept {
         return [lhs = std::move(lhs), rhs = std::move(rhs)](const InputString input) -> Result {
             auto firstResult = lhs(input);// not const to allow implicit move on return

@@ -372,7 +372,7 @@ TEST(CombinedParsers, largerJSONfile) {
     const auto filename = std::filesystem::current_path() / "tests" / "spritesheet_test.json";
     tl::expected<std::string, std::string> fileReadResult;
     tl::expected<JSON::Value, std::string> parseResult;
-    std::uint32_t numIterations{ 1000U };
+    std::uint32_t numIterations{ 100U };
     SpriteSheetJSON spriteSheet;
     {
         auto timer = ScopedTimer{ "Reading text file from disk" };
