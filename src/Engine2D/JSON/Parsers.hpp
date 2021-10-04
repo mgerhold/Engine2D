@@ -121,11 +121,6 @@ namespace c2k::JSON::Implementation_ {
         [[nodiscard]] tl::expected<JSONValue, std::string> at(const std::string& key) const noexcept;
         [[nodiscard]] bool containsKey(const std::string& key) const noexcept;
 
-        /*template<typename T>
-        [[nodiscard]] tl::expected<T, std::string> to(const JSONValue& json) const noexcept {
-            return fromJSON<T>(json);
-        }*/
-
         template<typename T>
         [[nodiscard]] tl::expected<T, std::string> as() const noexcept {
             T result{};

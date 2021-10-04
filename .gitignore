@@ -16,3 +16,4 @@ cmake-build-clang-release/
 /tests/saveAndReadFiles_test.json
 /tests/university.json
 /cmake-build-msvc-debug-with-profiling/
+/cmake-build-gcc-remote-release-with-profiling/

@@ -327,9 +327,7 @@ TEST(CombinedParsers, vectorOfUserDefinedStruct) {
     const auto filename = std::filesystem::current_path() / "tests" / "university.json";
     const auto saveResult = json.dumpToFile(filename);
     ASSERT_TRUE(saveResult);
-    const auto parseResult = JSON::fromFile(filename);
-    ASSERT_TRUE(parseResult);
-    const auto deserializationResult = parseResult->as<University>();
+    const auto deserializationResult = JSON::fromFile(filename).and_then(JSON::as<University>);
     ASSERT_TRUE(deserializationResult);
     ASSERT_EQ(university, deserializationResult.value());
 
@@ -372,7 +370,7 @@ TEST(CombinedParsers, largerJSONfile) {
     const auto filename = std::filesystem::current_path() / "tests" / "spritesheet_test.json";
     tl::expected<std::string, std::string> fileReadResult;
     tl::expected<JSON::Value, std::string> parseResult;
-    std::uint32_t numIterations{ 100U };
+    std::uint32_t numIterations{ 1U };
     SpriteSheetJSON spriteSheet;
     {
         auto timer = ScopedTimer{ "Reading text file from disk" };
