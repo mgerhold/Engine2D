@@ -153,7 +153,7 @@ namespace c2k::JSON::Implementation_ {
         };
     }
 
-    [[nodiscard]] inline auto operator||(ParserConcept auto lhs, ParserConcept auto rhs) noexcept {
+    /*[[nodiscard]] inline auto operator||(ParserConcept auto lhs, ParserConcept auto rhs) noexcept {
         return [lhs = std::move(lhs), rhs = std::move(rhs)](const InputString input) -> Result {
             auto firstResult = lhs(input);// not const to allow implicit move on return
             if (firstResult) {
@@ -168,7 +168,7 @@ namespace c2k::JSON::Implementation_ {
             }
             return secondResult;
         };
-    }
+    }*/
 
     [[nodiscard]] inline auto operator>>(ParserConcept auto parser, ParsedValue value) noexcept {
         return parserMapValue(std::move(parser), std::move(value));
@@ -198,26 +198,24 @@ namespace c2k::JSON::Implementation_ {
             }
             input = result->second;
             return parserMapStringToJSONString(
-                            parseCharVecToString(
-                                parseZeroOrMore(
-                                    (
-                                        (
-                                            (
-                                                ((('\\'_c + '"'_c) >> '"'_val) || (('\\'_c + '\\'_c) >> '\\'_val)) ||
-                                                ((('\\'_c + '/'_c) >> '/'_val) || (('\\'_c + 'b'_c) >> '\b'_val))
-                                            ) ||
-                                            (
-                                                ((('\\'_c + 'f'_c) >> '\f'_val) || (('\\'_c + 'n'_c) >> '\n'_val)) ||
-                                                ((('\\'_c + 'r'_c) >> '\r'_val) || (('\\'_c + 't'_c) >> '\t'_val))
-                                            )
-                                        ) ||
-                                        // TODO: \u and 4 hex digits
-                                        (!(((parseControlCharacter() || '\\'_c) || '"'_c)) + parseAnyChar())
-                                    )
-                                ) +
-                                parseAndDrop('"'_c)
-                            )
-                        )(input);
+                        parseCharVecToString(
+                            parseZeroOrMore(
+                                parserOr(
+                                    ('\\'_c + '"'_c) >> '"'_val,
+                                    ('\\'_c + '\\'_c) >> '\\'_val,
+                                    ('\\'_c + '/'_c) >> '/'_val,
+                                    ('\\'_c + 'b'_c) >> '\b'_val,
+                                    ('\\'_c + 'f'_c) >> '\f'_val,
+                                    ('\\'_c + 'n'_c) >> '\n'_val,
+                                    ('\\'_c + 'r'_c) >> '\r'_val,
+                                    ('\\'_c + 'r'_c) >> '\r'_val,
+                                    // TODO: \u and 4 hex digits
+                                    (!parserOr(parseControlCharacter(), '\\'_c, '"'_c)) + parseAnyChar()
+                                )
+                            ) +
+                            parseAndDrop('"'_c)
+                        )
+                    )(input);
             // clang-format on
         };
     }
@@ -258,16 +256,16 @@ namespace c2k::JSON::Implementation_ {
             return parserMapStringToJSONNumber(
                 parseCharVecToString(
                     parseOptionally('-'_c) +
-                    ('0'_c || (parsePositiveDigit() + parseZeroOrMore(parseDigit()))) +
+                    parserOr('0'_c, (parsePositiveDigit() + parseZeroOrMore(parseDigit()))) +
                     parseOptionally('.'_c + parseOneOrMore(parseDigit())) +
-                    parseOptionally(('E'_c || 'e'_c) + parseOptionally(('+'_c || '-'_c)) + parseOneOrMore(parseDigit()))
+                    parseOptionally(parserOr('E'_c, 'e'_c) + parseOptionally(parserOr('+'_c, '-'_c)) + parseOneOrMore(parseDigit()))
                 )
             );
         // clang-format on
     }
 
     [[nodiscard]] inline auto parseWhitespaceAndDrop() noexcept {
-        return parseAndDrop(parseZeroOrMore(' '_c || '\n'_c || '\r'_c || '\t'_c));
+        return parseAndDrop(parseZeroOrMore(parserOr(' '_c, '\n'_c, '\r'_c, '\t'_c)));
     }
 
     [[nodiscard]] inline auto parseJSONTrue() noexcept {
@@ -287,8 +285,8 @@ namespace c2k::JSON::Implementation_ {
             // clang-format off
             auto result = (
                 parseAndDrop('['_c) + (
-                    (
-                        (parseJSONValue() + parseZeroOrMore(parseAndDrop(','_c) + parseJSONValue())) ||
+                    parserOr(
+                        (parseJSONValue() + parseZeroOrMore(parseAndDrop(','_c) + parseJSONValue())),
                         parseWhitespaceAndDrop()
                     )
                 ) +
@@ -315,7 +313,7 @@ namespace c2k::JSON::Implementation_ {
             input = result->second;
             // clang-format off
                 result = (
-                    (
+                    parserOr(
                         (
                             (
                                 parseWhitespaceAndDrop() +
@@ -338,7 +336,7 @@ namespace c2k::JSON::Implementation_ {
                                     )
                                 )
                             )
-                        ) ||
+                        ),
                         parseWhitespaceAndDrop()
                     ) +
                     parseAndDrop('}'_c)
@@ -363,12 +361,14 @@ namespace c2k::JSON::Implementation_ {
     Result ParseJSONValueLambda::operator()(const InputString input) const {
         // clang-format off
         const auto result = (parseWhitespaceAndDrop() +
-                                (
-                                    (
-                                        (parseJSONString() || parseJSONNumber()) ||
-                                        (parseJSONObject() || parseJSONArray())
-                                    ) ||
-                                    ((parseJSONTrue() || parseJSONFalse()) || parseJSONNull())
+                                parserOr(
+                                    parseJSONString(),
+                                    parseJSONNumber(),
+                                    parseJSONObject(),
+                                    parseJSONArray(),
+                                    parseJSONTrue(),
+                                    parseJSONFalse(),
+                                    parseJSONNull()
                                 ) +
                                 parseWhitespaceAndDrop())(input);
         // clang-format on
