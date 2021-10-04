@@ -8,6 +8,20 @@
 
 namespace c2k::JSON {
 
+    enum class DeserializationError {
+        UnableToDeserialize,
+        KeyNotFound,
+        StringExpected,
+        DoubleExpected,
+        FloatExpected,
+        IntExpected,
+        BoolExpected,
+        PathExpected,
+        VectorExpected,
+    };
+
+    using DeserializationResult = tl::expected<std::monostate, DeserializationError>;
+
     namespace Implementation_ {
 
         template<typename T>
@@ -23,61 +37,55 @@ namespace c2k::JSON {
             json = JSONValue{ path.string() };
         }
 
-        [[nodiscard]] inline tl::expected<std::monostate, std::string> fromJSON(const JSONValue& json,
-                                                                                std::string& out) noexcept {
+        [[nodiscard]] inline DeserializationResult fromJSON(const JSONValue& json, std::string& out) noexcept {
             const auto result = json.asString();
             if (!result) {
-                return tl::unexpected{ result.error() };
+                return tl::unexpected{ DeserializationError::StringExpected };
             }
             out = result.value();
             return std::monostate{};
         }
 
-        [[nodiscard]] inline tl::expected<std::monostate, std::string> fromJSON(const JSONValue& json,
-                                                                                double& out) noexcept {
+        [[nodiscard]] inline DeserializationResult fromJSON(const JSONValue& json, double& out) noexcept {
             const auto result = json.asNumber();
             if (!result) {
-                return tl::unexpected{ result.error() };
+                return tl::unexpected{ DeserializationError::DoubleExpected };
             }
             out = result.value();
             return std::monostate{};
         }
 
-        [[nodiscard]] inline tl::expected<std::monostate, std::string> fromJSON(const JSONValue& json,
-                                                                                float& out) noexcept {
+        [[nodiscard]] inline DeserializationResult fromJSON(const JSONValue& json, float& out) noexcept {
             const auto result = json.asNumber();
             if (!result) {
-                return tl::unexpected{ result.error() };
+                return tl::unexpected{ DeserializationError::FloatExpected };
             }
             out = gsl::narrow_cast<float>(result.value());
             return std::monostate{};
         }
 
-        [[nodiscard]] inline tl::expected<std::monostate, std::string> fromJSON(const JSONValue& json,
-                                                                                int& out) noexcept {
+        [[nodiscard]] inline DeserializationResult fromJSON(const JSONValue& json, int& out) noexcept {
             const auto result = json.asNumber();
             if (!result) {
-                return tl::unexpected{ result.error() };
+                return tl::unexpected{ DeserializationError::IntExpected };
             }
             out = gsl::narrow_cast<int>(result.value());
             return std::monostate{};
         }
 
-        [[nodiscard]] inline tl::expected<std::monostate, std::string> fromJSON(const JSONValue& json,
-                                                                                bool& out) noexcept {
+        [[nodiscard]] inline DeserializationResult fromJSON(const JSONValue& json, bool& out) noexcept {
             const auto result = json.asBool();
             if (!result) {
-                return tl::unexpected{ result.error() };
+                return tl::unexpected{ DeserializationError::BoolExpected };
             }
             out = result.value();
             return std::monostate{};
         }
 
         template<typename T>
-        [[nodiscard]] tl::expected<std::monostate, std::string> fromJSON(const JSONValue& json,
-                                                                         std::vector<T>& out) noexcept {
+        [[nodiscard]] DeserializationResult fromJSON(const JSONValue& json, std::vector<T>& out) noexcept {
             if (!json.isArray()) {
-                return tl::unexpected(fmt::format("Unable to convert to std::vector (JSON array expected)"));
+                return tl::unexpected{ DeserializationError::VectorExpected };
             }
             const auto array = json.asArray().value();
             std::vector<T> result;
@@ -93,11 +101,11 @@ namespace c2k::JSON {
             return std::monostate{};
         }
 
-        [[nodiscard]] inline tl::expected<std::monostate, std::string> fromJSON(const JSONValue& json,
-                                                                                std::filesystem::path& out) noexcept {
+        [[nodiscard]] inline DeserializationResult fromJSON(const JSONValue& json,
+                                                            std::filesystem::path& out) noexcept {
             const auto result = json.asString();
             if (!result) {
-                return tl::unexpected(fmt::format("Unable to convert JSON to filesystem path (string expected)"));
+                return tl::unexpected{ DeserializationError::PathExpected };
             }
             out = std::filesystem::path{ result.value() };
             return std::monostate{};
@@ -114,7 +122,7 @@ namespace c2k::JSON {
     [[nodiscard]] tl::expected<Value, std::string> operator"" _json(const char* input, std::size_t) noexcept;
 
     template<typename T>
-    [[nodiscard]] tl::expected<T, std::string> as(const Value& value) noexcept {
+    [[nodiscard]] auto as(const Value& value) noexcept {
         return value.template as<T>();
     }
 

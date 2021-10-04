@@ -49,12 +49,16 @@ namespace c2k {
                                                                      const Texture& texture) noexcept {
         using namespace JSONUtils;
         using namespace std::literals::string_literals;
-        const auto readResult = JSON::fromFile(filename).and_then(JSON::as<SpriteSheetJSON>);
+        const auto readResult = JSON::fromFile(filename);
         if (!readResult) {
-            return tl::unexpected(
-                    fmt::format("Unable to read sprite sheet information from JSON: {}", readResult.error()));
+            return tl::unexpected{ fmt::format("Unable to read sprite sheet information from JSON: {}",
+                                               readResult.error()) };
         }
-        const auto spriteSheetJSON = readResult.value();
+        const auto deserializationResult = readResult->as<SpriteSheetJSON>();
+        if (!deserializationResult) {
+            return tl::unexpected{ fmt::format("Unable to deserialize sprite sheet") };
+        }
+        const auto spriteSheetJSON = deserializationResult.value();
         const float textureWidth = static_cast<float>(spriteSheetJSON.meta.size.w);
         const float textureHeight = static_cast<float>(spriteSheetJSON.meta.size.h);
         SpriteSheet spriteSheet;

@@ -52,13 +52,17 @@ namespace c2k::JSON::Implementation_ {
         [[nodiscard]] bool operator==(const JSONObject& other) const;
     };
 
+    struct ConversionError { };
+
     class JSONValue final {
     private:
         using JSONVariant = std::variant<JSONString, JSONNumber, JSONObject, JSONArray, JSONTrue, JSONFalse, JSONNull>;
 
     public:
+        JSONValue() noexcept : JSONValue{ JSONNull{} } { }
+
         template<typename T>
-        JSONValue(const T& data) noexcept {
+        explicit JSONValue(const T& data) noexcept {
             toJSON(*this, data);
         }
 
@@ -117,17 +121,17 @@ namespace c2k::JSON::Implementation_ {
         [[nodiscard]] tl::expected<JSONValue, std::string> at(const std::string& key) const noexcept;
         [[nodiscard]] bool containsKey(const std::string& key) const noexcept;
 
-        template<typename T>
+        /*template<typename T>
         [[nodiscard]] tl::expected<T, std::string> to(const JSONValue& json) const noexcept {
             return fromJSON<T>(json);
-        }
+        }*/
 
         template<typename T>
         [[nodiscard]] tl::expected<T, std::string> as() const noexcept {
             T result{};
             const auto success = fromJSON(*this, result);
             if (!success) {
-                return tl::unexpected(success.error());
+                return tl::unexpected{ fmt::format("Unable to deserialize from JSON value") };
             }
             return result;
         }
@@ -164,13 +168,27 @@ namespace c2k::JSON::Implementation_ {
                                                  JSONArray,
                                                  JSONObject>>;
     using InputString = std::string_view;
-    using ErrorMessage = std::string;
+    enum class ErrorType {
+        InvalidSyntax,
+        CharExpected,
+        InvalidChar,
+        InvalidString,
+        DigitExpected,
+        PositiveDigitExpected,
+        ControlCharExpected,
+        NumberOutOfRange,
+        ValueExpected,
+    };
+    struct ErrorDescription {
+        std::size_t remainingInputLength;
+        ErrorType type;
+    };
     using ResultPair = std::pair<ParsedValue, InputString>;
-    using Result = tl::expected<ResultPair, ErrorMessage>;
+    using Result = tl::expected<ResultPair, ErrorDescription>;
     using Parser = std::function<Result(InputString)>;
 
     struct ParseJSONValueLambda {
-        Result operator()(const InputString& input) const;
+        Result operator()(const InputString input) const;
     };
 
     [[nodiscard]] inline ParseJSONValueLambda parseJSONValue() noexcept {

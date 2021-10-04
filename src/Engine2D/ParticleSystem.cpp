@@ -66,11 +66,15 @@ namespace c2k {
                                                                            const Texture& texture,
                                                                            ShaderProgram& shaderProgram) noexcept {
         using namespace JSONUtils;
-        const auto readResult = JSON::fromFile(filename).and_then(JSON::as<ParticleSystemJSON>);
-        if (!readResult) {
-            return tl::unexpected(fmt::format("Failed to load particle system: {}", readResult.error()));
+        const auto parseResult = JSON::fromFile(filename);
+        if (!parseResult) {
+            return tl::unexpected(fmt::format("Failed to parse particle system: {}", parseResult.error()));
         }
-        const auto particleSystemJSON = readResult.value();
+        const auto deserializationResult = parseResult->as<ParticleSystemJSON>();
+        if (!deserializationResult) {
+            return tl::unexpected(fmt::format("Unable to deserialize particle system"));
+        }
+        const auto particleSystemJSON = deserializationResult.value();
         return ParticleSystem{ .texture{ &texture },
                                .shaderProgram{ &shaderProgram },
                                .startLifeTime{ particleSystemJSON.startLifeTime },

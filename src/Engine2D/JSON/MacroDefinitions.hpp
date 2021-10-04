@@ -7,15 +7,15 @@
 // clang-format off
 #define C2K_JSON_IMPLEMENTATION_PASS_ON(...) __VA_ARGS__
 
-#define C2K_JSON_IMPLEMENTATION_TO_JSON_MEMBER(M) { #M, val.M }
+#define C2K_JSON_IMPLEMENTATION_TO_JSON_MEMBER(M) { #M, c2k::JSON::Value{ val.M } }
 
 #define C2K_JSON_IMPLEMENTATION_FROM_JSON_MEMBER(TYPE, M) \
     if (!json.containsKey(#M)) { \
-        return tl::unexpected(fmt::format("Unable to deserialize type '{}' (missing member '{}')", #TYPE, #M)); \
+        return tl::unexpected{ c2k::JSON::DeserializationError::KeyNotFound }; \
     }                                                     \
     const auto M = fromJSON(json.at(#M).value(), result.M); \
     if (!M) { \
-        return tl::unexpected(fmt::format("Unable to deserialize '{}': {}", #M, M.error())); \
+        return tl::unexpected{ c2k::JSON::DeserializationError::UnableToDeserialize }; \
     } \
                                                           \
 // the following code was auto-generated with jsonMacroGenerator.py
@@ -4452,11 +4452,11 @@
 
 #define C2K_JSON_DEFINE_TYPE(TYPE, ...) \
 inline void toJSON(c2k::JSON::Value& json, const TYPE& val) noexcept { \
-    json = { C2K_JSON_IMPLEMENTATION_PASS_ON( \
-        C2K_JSON_IMPLEMENTATION_PASS_ON(C2K_JSON_IMPLEMENTATION_TO_JSON_MEMBERS)(__VA_ARGS__)) }; \
+    json = c2k::JSON::Value{ { C2K_JSON_IMPLEMENTATION_PASS_ON( \
+        C2K_JSON_IMPLEMENTATION_PASS_ON(C2K_JSON_IMPLEMENTATION_TO_JSON_MEMBERS)(__VA_ARGS__)) } }; \
 }           \
             \
-[[nodiscard]] inline tl::expected<std::monostate, std::string> fromJSON(const c2k::JSON::Value& json, TYPE& out) noexcept { \
+[[nodiscard]] inline c2k::JSON::DeserializationResult fromJSON(const c2k::JSON::Value& json, TYPE& out) noexcept { \
     using namespace c2k::JSON; \
     TYPE result; \
     C2K_JSON_IMPLEMENTATION_PASS_ON( \

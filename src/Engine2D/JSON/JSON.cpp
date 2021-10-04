@@ -203,7 +203,8 @@ namespace c2k::JSON {
     tl::expected<Value, std::string> fromString(const std::string& input) noexcept {
         const auto result = Implementation_::parseJSONValue()(input);
         if (!result) {
-            return tl::unexpected(result.error());
+            // TODO: improve error message
+            return tl::unexpected{ fmt::format("Unable to parse string") };
         }
         return get<Value>(result->first.front());
     }

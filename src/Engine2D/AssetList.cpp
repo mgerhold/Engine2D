@@ -12,27 +12,17 @@ namespace c2k {
     }
 
     void AssetList::fromFile(const std::filesystem::path& path) noexcept {
-        const auto result = JSON::fromFile(path).and_then(JSON::as<AssetDescriptions::List>);
-        if (!result) {
-            spdlog::error("Unable to read asset list: {}", result.error());
+        const auto parseResult = JSON::fromFile(path);
+        if (!parseResult) {
+            spdlog::error("Unable to parse asset list: {}", parseResult.error());
             return;
         }
-        mAssetDescriptions = result.value();
-        /*const auto fileContents = FileUtils::readTextFile(path);
-        if (!fileContents) {
-            spdlog::error(fmt::format("Unable to read file: {}", path.string()));
+        const auto deserializationResult = parseResult->as<AssetDescriptions::List>();
+        if (!deserializationResult) {
+            spdlog::error("Unable to deserialize asset list");
             return;
         }
-        auto json = nlohmann::json::parse(fileContents.value(), nullptr, false);
-        if (json.is_discarded()) {
-            spdlog::error("Failed to parse JSON file {}", path.string());
-            return;
-        }
-        mAssetDescriptions = json.get<AssetDescriptions::List>();
-        spdlog::info("Parsed {} textures, {} shader programs, {} sprite sheets, {} scripts, {} particle systems",
-                     mAssetDescriptions.textures.size(), mAssetDescriptions.shaderPrograms.size(),
-                     mAssetDescriptions.spriteSheets.size(), mAssetDescriptions.scripts.size(),
-                     mAssetDescriptions.particleSystems.size());*/
+        mAssetDescriptions = deserializationResult.value();
     }
 
 }// namespace c2k
