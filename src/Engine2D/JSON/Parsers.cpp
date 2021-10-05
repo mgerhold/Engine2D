@@ -93,7 +93,8 @@ namespace c2k::JSON::Implementation_ {
             ParsedValue values;
             auto result = parser(input);
             while (result) {
-                values.insert(values.end(), result->first.begin(), result->first.end());
+                values.reserve(values.size() + result->first.size());
+                std::move(result->first.begin(), result->first.end(), std::back_inserter(values));
                 input = result->second;
                 result = parser(input);
             }
