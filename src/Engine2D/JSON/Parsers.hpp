@@ -56,48 +56,41 @@ namespace c2k::JSON::Implementation_ {
 
     class JSONValue final {
     private:
-        using JSONVariant = std::variant<JSONString, JSONNumber, JSONObject, JSONArray, JSONTrue, JSONFalse, JSONNull>;
+        using JSONVariant = std::
+                variant<std::monostate, JSONString, JSONNumber, JSONObject, JSONArray, JSONTrue, JSONFalse, JSONNull>;
 
     public:
-        JSONValue() noexcept : JSONValue{ JSONNull{} } { }
+        JSONValue() noexcept : mData{ JSONNull{} } { }
 
         template<typename T>
         explicit JSONValue(const T& data) noexcept {
             toJSON(*this, data);
         }
 
-        JSONValue(double number) noexcept : mData{ std::make_shared<JSONVariant>(JSONNumber{ number }) } { }
-        JSONValue(float number) noexcept : mData{ std::make_shared<JSONVariant>(JSONNumber{ number }) } { }
-        JSONValue(int number) noexcept
-            : mData{ std::make_shared<JSONVariant>(JSONNumber{ gsl::narrow_cast<double>(number) }) } { }
+        JSONValue(double number) noexcept : mData{ JSONVariant{ JSONNumber{ number } } } { }
+        JSONValue(float number) noexcept : mData{ JSONVariant{ JSONNumber{ number } } } { }
+        JSONValue(int number) noexcept : mData{ JSONVariant{ JSONNumber{ gsl::narrow_cast<double>(number) } } } { }
 
-        JSONValue(const char* string) noexcept : mData{ std::make_shared<JSONVariant>(JSONString{ string }) } { }
+        JSONValue(const char* string) noexcept : mData{ JSONVariant{ JSONString{ string } } } { }
 
-        JSONValue(std::string string) noexcept
-            : mData{ std::make_shared<JSONVariant>(JSONString{ std::move(string) }) } { }
+        JSONValue(std::string string) noexcept : mData{ JSONVariant{ JSONString{ std::move(string) } } } { }
 
-        JSONValue(JSONObject object) noexcept : mData{ std::make_shared<JSONVariant>(std::move(object)) } { }
+        JSONValue(JSONObject object) noexcept : mData{ JSONVariant{ std::move(object) } } { }
 
         JSONValue(std::initializer_list<std::pair<JSONString, JSONValue>> init) noexcept
-            : mData{ std::make_shared<JSONVariant>(JSONObject{ std::move(init) }) } { }
+            : mData{ JSONVariant{ JSONObject{ std::move(init) } } } { }
 
-        JSONValue(bool boolVal) noexcept {
-            if (boolVal) {
-                mData = std::make_shared<JSONVariant>(JSONTrue{});
-            } else {
-                mData = std::make_shared<JSONVariant>(JSONFalse{});
-            }
-        }
+        JSONValue(bool boolVal) noexcept : mData{ boolVal ? JSONVariant{ JSONTrue{} } : JSONVariant{ JSONFalse{} } } { }
 
-        JSONValue(std::nullptr_t) noexcept : mData{ std::make_shared<JSONVariant>(JSONNull{}) } { }
+        JSONValue(std::nullptr_t) noexcept : mData{ JSONVariant{ JSONNull{} } } { }
 
-        JSONValue(JSONArray value) noexcept : mData{ std::make_shared<JSONVariant>(std::move(value)) } { }
+        JSONValue(JSONArray value) noexcept : mData{ JSONVariant{ std::move(value) } } { }
 
-        explicit JSONValue(JSONString value) noexcept : mData{ std::make_shared<JSONVariant>(std::move(value)) } { }
-        explicit JSONValue(JSONNumber value) noexcept : mData{ std::make_shared<JSONVariant>(std::move(value)) } { }
-        explicit JSONValue(JSONTrue value) noexcept : mData{ std::make_shared<JSONVariant>(std::move(value)) } { }
-        explicit JSONValue(JSONFalse value) noexcept : mData{ std::make_shared<JSONVariant>(std::move(value)) } { }
-        explicit JSONValue(JSONNull value) noexcept : mData{ std::make_shared<JSONVariant>(std::move(value)) } { }
+        explicit JSONValue(JSONString value) noexcept : mData{ std::move(value) } { }
+        explicit JSONValue(JSONNumber value) noexcept : mData{ std::move(value) } { }
+        explicit JSONValue(JSONTrue value) noexcept : mData{ std::move(value) } { }
+        explicit JSONValue(JSONFalse value) noexcept : mData{ std::move(value) } { }
+        explicit JSONValue(JSONNull value) noexcept : mData{ std::move(value) } { }
 
         [[nodiscard]] bool isString() const noexcept;
         [[nodiscard]] bool isNumber() const noexcept;
@@ -134,7 +127,7 @@ namespace c2k::JSON::Implementation_ {
     private:
         template<typename T>
         [[nodiscard]] bool is() const noexcept {
-            return holds_alternative<T>(*mData);
+            return holds_alternative<T>(mData);
         }
 
         template<typename T>
@@ -142,14 +135,14 @@ namespace c2k::JSON::Implementation_ {
             if (!is<T>()) {
                 return tl::unexpected(fmt::format("bad JSON value access"));
             }
-            return get<T>(*mData);
+            return get<T>(mData);
         }
 
         [[nodiscard]] std::string dumpImplementation(const std::string& indentationStep,
                                                      std::uint32_t baseIndentation = 0U) const noexcept;
 
     private:
-        std::shared_ptr<JSONVariant> mData;
+        JSONVariant mData;
     };
 
     using ParsedValue = std::vector<std::variant<char,

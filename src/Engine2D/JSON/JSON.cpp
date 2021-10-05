@@ -104,10 +104,10 @@ namespace c2k::JSON {
         }
 
         bool JSONValue::operator==(const JSONValue& other) const {
-            if (!mData || !other.mData) {
+            if (holds_alternative<std::monostate>(mData) || holds_alternative<std::monostate>(other.mData)) {
                 return false;
             }
-            return *mData == *other.mData;
+            return mData == other.mData;
         }
 
         std::string JSONValue::dump(const std::string& indentationStep) const noexcept {
@@ -179,7 +179,7 @@ namespace c2k::JSON {
             if (!isObject()) {
                 return tl::unexpected(fmt::format("Unable to access this value like an object"));
             }
-            const auto& object = get<JSONObject>(*mData);
+            const auto& object = get<JSONObject>(mData);
             const auto findIterator = std::find_if(object.pairs.cbegin(), object.pairs.cend(),
                                                    [&key](const auto& pair) { return pair.first.value == key; });
             if (findIterator == object.pairs.cend()) {
@@ -192,7 +192,7 @@ namespace c2k::JSON {
             if (!isObject()) {
                 return false;
             }
-            const auto& object = get<JSONObject>(*mData);
+            const auto& object = get<JSONObject>(mData);
             const auto findIterator = std::find_if(object.pairs.cbegin(), object.pairs.cend(),
                                                    [&key](const auto& pair) { return pair.first.value == key; });
             return findIterator != object.pairs.cend();
