@@ -11,7 +11,7 @@ namespace c2k::JSON::Implementation_ {
         { t(input) } -> std::same_as<Result>;
     };
 
-    [[nodiscard]] inline auto parseAnyChar() noexcept {
+    [[nodiscard]] consteval inline auto parseAnyChar() noexcept {
         return [](const InputString input) -> Result {
             if (input.empty()) {
                 return tl::unexpected{ ErrorDescription{ .remainingInputLength{ input.length() },
@@ -21,7 +21,7 @@ namespace c2k::JSON::Implementation_ {
         };
     }
 
-    [[nodiscard]] inline auto parseChar(char c) noexcept {
+    [[nodiscard]] consteval inline auto parseChar(char c) noexcept {
         return [c](const InputString input) -> Result {
             if (input.empty() || input.front() != c) {
                 return tl::unexpected{ ErrorDescription{ .remainingInputLength{ input.length() },
@@ -31,11 +31,11 @@ namespace c2k::JSON::Implementation_ {
         };
     }
 
-    [[nodiscard]] inline auto operator"" _c(char c) noexcept {
+    [[nodiscard]] consteval inline auto operator"" _c(char c) noexcept {
         return parseChar(c);
     }
 
-    [[nodiscard]] inline auto parseDigit() noexcept {
+    [[nodiscard]] consteval inline auto parseDigit() noexcept {
         return [](const InputString input) -> Result {
             if (input.empty() || !std::isdigit(input.front())) {
                 return tl::unexpected{ ErrorDescription{ .remainingInputLength{ input.length() },
@@ -45,7 +45,7 @@ namespace c2k::JSON::Implementation_ {
         };
     }
 
-    [[nodiscard]] inline auto parsePositiveDigit() noexcept {
+    [[nodiscard]] consteval inline auto parsePositiveDigit() noexcept {
         return [](const InputString input) -> Result {
             if (input.empty() || input.front() == '0' || !std::isdigit(input.front())) {
                 return tl::unexpected{ ErrorDescription{ .remainingInputLength{ input.length() },
@@ -55,19 +55,19 @@ namespace c2k::JSON::Implementation_ {
         };
     }
 
-    [[nodiscard]] auto parserMap(auto parser, auto f) noexcept {
+    [[nodiscard]] constexpr auto parserMap(ParserConcept auto parser, auto f) noexcept {
         return [parser = std::move(parser), f = std::move(f)](const InputString input) -> Result {
             return parser(input).and_then([&](Result&& result) -> Result { return f(std::move(result)); });
         };
     }
 
-    [[nodiscard]] auto parserMapValue(auto parser, ParsedValue value) noexcept {
+    [[nodiscard]] constexpr auto parserMapValue(ParserConcept auto parser, ParsedValue value) noexcept {
         return parserMap(std::move(parser), [value = std::move(value)](Result&& result) -> Result {
             return ResultPair{ value, result->second };
         });
     }
 
-    [[nodiscard]] auto parseCharVecToString(auto parser) noexcept {
+    [[nodiscard]] constexpr auto parseCharVecToString(ParserConcept auto parser) noexcept {
         return parserMap(std::move(parser), [](Result&& result) -> Result {
             std::string string;
             string.reserve(result->first.size());
@@ -78,7 +78,7 @@ namespace c2k::JSON::Implementation_ {
         });
     }
 
-    [[nodiscard]] inline auto parseString(std::string_view string) noexcept {
+    [[nodiscard]] consteval inline auto parseString(std::string_view string) noexcept {
         return [=](const InputString input) -> Result {
             if (input.length() < string.length() || !input.starts_with(string)) {
                 return tl::unexpected{ ErrorDescription{ .remainingInputLength{ input.length() },
@@ -88,7 +88,7 @@ namespace c2k::JSON::Implementation_ {
         };
     }
 
-    [[nodiscard]] auto parseZeroOrMore(auto parser) noexcept {
+    [[nodiscard]] constexpr auto parseZeroOrMore(ParserConcept auto parser) noexcept {
         return [parser = std::move(parser)](InputString input) -> Result {
             ParsedValue values;
             auto result = parser(input);
@@ -101,11 +101,11 @@ namespace c2k::JSON::Implementation_ {
         };
     }
 
-    [[nodiscard]] auto parseAndDrop(auto parser) noexcept {
+    [[nodiscard]] constexpr auto parseAndDrop(ParserConcept auto parser) noexcept {
         return parserMapValue(std::move(parser), ParsedValue{});
     }
 
-    [[nodiscard]] inline auto parseControlCharacter() noexcept {
+    [[nodiscard]] consteval inline auto parseControlCharacter() noexcept {
         return [](const InputString input) -> Result {
             if (input.empty() || !std::iscntrl(input.front())) {
                 return tl::unexpected{ ErrorDescription{ .remainingInputLength{ input.length() },
@@ -115,13 +115,13 @@ namespace c2k::JSON::Implementation_ {
         };
     }
 
-    [[nodiscard]] auto parserMapStringToJSONString(auto parser) noexcept {
+    [[nodiscard]] constexpr auto parserMapStringToJSONString(ParserConcept auto parser) noexcept {
         return parserMap(std::move(parser), [](Result&& result) -> Result {
             return ResultPair{ { JSONString{ std::move(get<std::string>(result->first.front())) } }, result->second };
         });
     }
 
-    [[nodiscard]] auto concat(ParserConcept auto... parsers) noexcept {
+    [[nodiscard]] constexpr auto concat(ParserConcept auto... parsers) noexcept {
         static_assert(sizeof...(parsers) >= 2);
         return [=](const InputString input) -> Result {
             Result result = ResultPair{ {}, input };
@@ -143,7 +143,7 @@ namespace c2k::JSON::Implementation_ {
         };
     }
 
-    [[nodiscard]] auto parserOr(ParserConcept auto... parsers) noexcept {
+    [[nodiscard]] constexpr auto parserOr(ParserConcept auto... parsers) noexcept {
         static_assert(sizeof...(parsers) >= 2);
         return [=](InputString input) -> Result {
             Result result;
@@ -155,7 +155,7 @@ namespace c2k::JSON::Implementation_ {
         };
     }
 
-    [[nodiscard]] inline auto operator>>(ParserConcept auto parser, ParsedValue value) noexcept {
+    [[nodiscard]] constexpr inline auto operator>>(ParserConcept auto parser, ParsedValue value) noexcept {
         return parserMapValue(std::move(parser), std::move(value));
     }
 
@@ -163,7 +163,7 @@ namespace c2k::JSON::Implementation_ {
         return ParsedValue{ { c } };
     }
 
-    [[nodiscard]] inline auto operator!(ParserConcept auto parser) noexcept {
+    [[nodiscard]] constexpr inline auto operator!(ParserConcept auto parser) noexcept {
         return [parser = std::move(parser)](const InputString input) -> Result {
             auto result = parser(input);
             if (result) {
@@ -174,7 +174,7 @@ namespace c2k::JSON::Implementation_ {
         };
     }
 
-    [[nodiscard]] inline auto parseJSONString() noexcept {
+    [[nodiscard]] constexpr inline auto parseJSONString() noexcept {
         return [](InputString input) -> Result {
             // clang-format off
             return parserMapStringToJSONString(
@@ -203,7 +203,7 @@ namespace c2k::JSON::Implementation_ {
         };
     }
 
-    [[nodiscard]] auto parseOptionally(auto parser) noexcept {
+    [[nodiscard]] constexpr auto parseOptionally(ParserConcept auto parser) noexcept {
         return [parser = std::move(parser)](const InputString input) -> Result {
             auto result = parser(input);
             if (result) {
@@ -213,7 +213,7 @@ namespace c2k::JSON::Implementation_ {
         };
     }
 
-    [[nodiscard]] auto parserMapStringToJSONNumber(auto parser) noexcept {
+    [[nodiscard]] constexpr auto parserMapStringToJSONNumber(ParserConcept auto parser) noexcept {
         return parserMap(std::move(parser), [](Result&& result) -> Result {
             const double number = std::strtod(get<std::string>(result->first.front()).c_str(), nullptr);
             if (std::isinf(number) || std::isnan(number)) {
@@ -224,7 +224,7 @@ namespace c2k::JSON::Implementation_ {
         });
     }
 
-    [[nodiscard]] auto parseOneOrMore(auto parser) noexcept {
+    [[nodiscard]] constexpr auto parseOneOrMore(ParserConcept auto parser) noexcept {
         return [parser = std::move(parser)](const InputString input) -> Result {
             auto result = parser(input);
             if (!result) {
@@ -234,7 +234,7 @@ namespace c2k::JSON::Implementation_ {
         };
     }
 
-    [[nodiscard]] inline auto parseJSONNumber() noexcept {
+    [[nodiscard]] constexpr inline auto parseJSONNumber() noexcept {
         // clang-format off
         return parserMapStringToJSONNumber(
             parseCharVecToString(
@@ -271,7 +271,7 @@ namespace c2k::JSON::Implementation_ {
         return parseString("null") >> ParsedValue{ JSONNull{} };
     }
 
-    [[nodiscard]] inline auto parseJSONArray() noexcept {
+    [[nodiscard]] constexpr inline auto parseJSONArray() noexcept {
         return [](const InputString input) -> Result {
             // clang-format off
             auto result = (
@@ -306,7 +306,7 @@ namespace c2k::JSON::Implementation_ {
         };
     }
 
-    [[nodiscard]] inline auto parseJSONObject() noexcept {
+    [[nodiscard]] constexpr inline auto parseJSONObject() noexcept {
         return [](InputString input) -> Result {
             // clang-format off
             auto result = (
