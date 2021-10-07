@@ -108,11 +108,12 @@ add_definitions(-DBOOST_UUID_FORCE_AUTO_LINK)
 
 foreach (target ${TARGET_LIST})
     # set warning levels
-    if (MSVC)
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         target_compile_options(${target} PUBLIC /W4 /permissive- /bigobj)
-        set_target_properties(${target} PROPERTIES LINK_FLAGS "$<$<CONFIG:Release>:/LTCG>")
-    else ()
+    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         target_compile_options(${target} PUBLIC -Wall -Wextra -pedantic -Wconversion -pthread -ltbb)
+    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+        target_compile_options(${target} PUBLIC -Wall -Wextra -pedantic -Wconversion -pthread)
     endif ()
 
     # define DEBUG_BUILD
@@ -150,6 +151,9 @@ target_link_libraries(Engine2D PRIVATE tl::optional)
 
 find_package(spdlog CONFIG REQUIRED)
 target_link_libraries(Engine2D PRIVATE spdlog::spdlog spdlog::spdlog_header_only)
+
+find_package(nlohmann_json CONFIG REQUIRED)
+target_link_libraries(Engine2D PRIVATE nlohmann_json nlohmann_json::nlohmann_json)
 
 find_package(glm CONFIG REQUIRED)
 target_link_libraries(Engine2D PRIVATE glm::glm)

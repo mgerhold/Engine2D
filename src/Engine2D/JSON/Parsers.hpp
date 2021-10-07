@@ -166,6 +166,9 @@ namespace c2k::JSON::Implementation_ {
         ControlCharExpected,
         NumberOutOfRange,
         ValueExpected,
+        TrueExpected,
+        FalseExpected,
+        NullExpected,
     };
     struct ErrorDescription {
         std::size_t remainingInputLength;

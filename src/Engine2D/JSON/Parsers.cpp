@@ -55,27 +55,30 @@ namespace c2k::JSON::Implementation_ {
         };
     }
 
-    [[nodiscard]] constexpr auto parserMap(ParserConcept auto parser, auto f) noexcept {
-        return [parser = std::move(parser), f = std::move(f)](const InputString input) -> Result {
-            return parser(input).and_then([&](Result&& result) -> Result { return f(std::move(result)); });
+
+    [[nodiscard]] constexpr auto parserMapValue(ParserConcept auto parser, ParsedValue value) noexcept {
+        return [parser = std::move(parser), value = std::move(value)](const InputString input) -> Result {
+            const auto result = parser(input);
+            if (!result) {
+                return result;
+            }
+            return ResultPair{ value, result->second };
         };
     }
 
-    [[nodiscard]] constexpr auto parserMapValue(ParserConcept auto parser, ParsedValue value) noexcept {
-        return parserMap(std::move(parser), [value = std::move(value)](Result&& result) -> Result {
-            return ResultPair{ value, result->second };
-        });
-    }
-
     [[nodiscard]] constexpr auto parseCharVecToString(ParserConcept auto parser) noexcept {
-        return parserMap(std::move(parser), [](Result&& result) -> Result {
+        return [parser = std::move(parser)](const InputString input) -> Result {
+            const auto result = parser(input);
+            if (!result) {
+                return result;
+            }
             std::string string;
             string.reserve(result->first.size());
             for (const auto& variant : result->first) {
                 string += get<char>(variant);
             }
             return ResultPair{ { std::move(string) }, result->second };
-        });
+        };
     }
 
     [[nodiscard]] consteval inline auto parseString(std::string_view string) noexcept {
@@ -117,9 +120,13 @@ namespace c2k::JSON::Implementation_ {
     }
 
     [[nodiscard]] constexpr auto parserMapStringToJSONString(ParserConcept auto parser) noexcept {
-        return parserMap(std::move(parser), [](Result&& result) -> Result {
+        return [parser = std::move(parser)](const InputString input) -> Result {
+            const auto result = parser(input);
+            if (!result) {
+                return result;
+            }
             return ResultPair{ { JSONString{ std::move(get<std::string>(result->first.front())) } }, result->second };
-        });
+        };
     }
 
     [[nodiscard]] constexpr auto concat(ParserConcept auto... parsers) noexcept {
@@ -184,6 +191,7 @@ namespace c2k::JSON::Implementation_ {
                                 parseAndDrop('"'_c),
                                 parseZeroOrMore(
                                     parserOr(
+                                        concat((!parserOr(parseControlCharacter(), '\\'_c, '"'_c)), parseAnyChar()),
                                         concat('\\'_c, '"'_c) >> '"'_val,
                                         concat('\\'_c, '\\'_c) >> '\\'_val,
                                         concat('\\'_c, '/'_c) >> '/'_val,
@@ -191,9 +199,8 @@ namespace c2k::JSON::Implementation_ {
                                         concat('\\'_c, 'f'_c) >> '\f'_val,
                                         concat('\\'_c, 'n'_c) >> '\n'_val,
                                         concat('\\'_c, 'r'_c) >> '\r'_val,
-                                        concat('\\'_c, 'r'_c) >> '\r'_val,
+                                        concat('\\'_c, 'r'_c) >> '\r'_val
                                         // TODO: \u and 4 hex digits
-                                        concat((!parserOr(parseControlCharacter(), '\\'_c, '"'_c)), parseAnyChar())
                                     )
                                 ),
                                 parseAndDrop('"'_c)
@@ -215,23 +222,34 @@ namespace c2k::JSON::Implementation_ {
     }
 
     [[nodiscard]] constexpr auto parserMapStringToJSONNumber(ParserConcept auto parser) noexcept {
-        return parserMap(std::move(parser), [](Result&& result) -> Result {
+        return [parser = std::move(parser)](const InputString input) -> Result {
+            const auto result = parser(input);
+            if (!result) {
+                return result;
+            }
             const double number = std::strtod(get<std::string>(result->first.front()).c_str(), nullptr);
             if (std::isinf(number) || std::isnan(number)) {
                 return tl::unexpected{ ErrorDescription{ .remainingInputLength{ result->second.length() },
                                                          .type{ ErrorType::NumberOutOfRange } } };
             }
             return ResultPair{ { JSONNumber{ .value{ number } } }, result->second };
-        });
+        };
     }
 
     [[nodiscard]] constexpr auto parseOneOrMore(ParserConcept auto parser) noexcept {
-        return [parser = std::move(parser)](const InputString input) -> Result {
+        return [parser = std::move(parser)](InputString input) -> Result {
+            ParsedValue values;
             auto result = parser(input);
             if (!result) {
                 return result;
             }
-            return parseZeroOrMore(parser)(input);
+            while (result) {
+                values.reserve(values.size() + result->first.size());
+                std::move(result->first.begin(), result->first.end(), std::back_inserter(values));
+                input = result->second;
+                result = parser(input);
+            }
+            return ResultPair{ { std::move(values) }, input };
         };
     }
 
@@ -256,20 +274,47 @@ namespace c2k::JSON::Implementation_ {
         // clang-format on
     }
 
-    [[nodiscard]] inline auto parseWhitespaceAndDrop() noexcept {
-        return parseAndDrop(parseZeroOrMore(parserOr(' '_c, '\n'_c, '\r'_c, '\t'_c)));
+    [[nodiscard]] consteval inline auto parseWhitespaceAndDrop() noexcept {
+        return [](InputString input) -> Result {
+            while (!input.empty() &&
+                   (input.front() == ' ' || input.front() == '\n' || input.front() == '\r' || input.front() == '\t')) {
+                input = input.substr(1);
+            }
+            return ResultPair{ {}, input };
+        };
     }
 
-    [[nodiscard]] inline auto parseJSONTrue() noexcept {
-        return parseString("true") >> ParsedValue{ JSONTrue{} };
+    [[nodiscard]] consteval inline auto parseJSONTrue() noexcept {
+        constexpr std::size_t tokenLength{ 4 };
+        return [](const InputString input) -> Result {
+            if (input.length() < tokenLength || !input.starts_with("true")) {
+                return tl::unexpected{ ErrorDescription{ .remainingInputLength{ input.length() },
+                                                         .type{ ErrorType::TrueExpected } } };
+            }
+            return ResultPair{ { JSONTrue{} }, input.substr(tokenLength) };
+        };
     }
 
-    [[nodiscard]] inline auto parseJSONFalse() noexcept {
-        return parseString("false") >> ParsedValue{ JSONFalse{} };
+    [[nodiscard]] consteval inline auto parseJSONFalse() noexcept {
+        constexpr std::size_t tokenLength{ 5 };
+        return [](const InputString input) -> Result {
+            if (input.length() < tokenLength || !input.starts_with("false")) {
+                return tl::unexpected{ ErrorDescription{ .remainingInputLength{ input.length() },
+                                                         .type{ ErrorType::FalseExpected } } };
+            }
+            return ResultPair{ { JSONFalse{} }, input.substr(tokenLength) };
+        };
     }
 
-    [[nodiscard]] inline auto parseJSONNull() noexcept {
-        return parseString("null") >> ParsedValue{ JSONNull{} };
+    [[nodiscard]] consteval inline auto parseJSONNull() noexcept {
+        constexpr std::size_t tokenLength{ 4 };
+        return [](const InputString input) -> Result {
+            if (input.length() < tokenLength || !input.starts_with("null")) {
+                return tl::unexpected{ ErrorDescription{ .remainingInputLength{ input.length() },
+                                                         .type{ ErrorType::NullExpected } } };
+            }
+            return ResultPair{ { JSONNull{} }, input.substr(tokenLength) };
+        };
     }
 
     [[nodiscard]] constexpr inline auto parseJSONArray() noexcept {
@@ -314,22 +359,20 @@ namespace c2k::JSON::Implementation_ {
                 concat(
                     parseAndDrop('{'_c),
                     parserOr(
-                        (
-                            concat(
-                                parseWhitespaceAndDrop(),
-                                parseJSONString(),
-                                parseWhitespaceAndDrop(),
-                                parseAndDrop(':'_c),
-                                parseJSONValue(),
-                                parseZeroOrMore(
-                                    concat(
-                                        parseAndDrop(','_c),
-                                        parseWhitespaceAndDrop(),
-                                        parseJSONString(),
-                                        parseWhitespaceAndDrop(),
-                                        parseAndDrop(':'_c),
-                                        parseJSONValue()
-                                    )
+                        concat(
+                            parseWhitespaceAndDrop(),
+                            parseJSONString(),
+                            parseWhitespaceAndDrop(),
+                            parseAndDrop(':'_c),
+                            parseJSONValue(),
+                            parseZeroOrMore(
+                                concat(
+                                    parseAndDrop(','_c),
+                                    parseWhitespaceAndDrop(),
+                                    parseJSONString(),
+                                    parseWhitespaceAndDrop(),
+                                    parseAndDrop(':'_c),
+                                    parseJSONValue()
                                 )
                             )
                         ),
@@ -358,36 +401,36 @@ namespace c2k::JSON::Implementation_ {
     Result ParseJSONValueLambda::operator()(const InputString input) const {
         // clang-format off
         auto result = (
-                                concat(
-                                    parseWhitespaceAndDrop(),
-                                    parserOr(
-                                        parseJSONString(),
-                                        parseJSONNumber(),
-                                        parseJSONObject(),
-                                        parseJSONArray(),
-                                        parseJSONTrue(),
-                                        parseJSONFalse(),
-                                        parseJSONNull()
-                                    ),
-                                    parseWhitespaceAndDrop()
-                                )
-                            )(input);
+            concat(
+                parseWhitespaceAndDrop(),
+                parserOr(
+                    parseJSONObject(),
+                    parseJSONArray(),
+                    parseJSONString(),
+                    parseJSONNumber(),
+                    parseJSONTrue(),
+                    parseJSONFalse(),
+                    parseJSONNull()
+                ),
+                parseWhitespaceAndDrop()
+            )
+        )(input);
         // clang-format on
         if (!result) {
             return result;
         }
         assert(result->first.size() == 1);
-        if (holds_alternative<JSONString>(result->first.front())) {
-            return ResultPair{ { JSONValue{ std::move(get<JSONString>(result->first.front())) } }, result->second };
-        }
-        if (holds_alternative<JSONNumber>(result->first.front())) {
-            return ResultPair{ { JSONValue{ std::move(get<JSONNumber>(result->first.front())) } }, result->second };
-        }
         if (holds_alternative<JSONObject>(result->first.front())) {
             return ResultPair{ { JSONValue{ std::move(get<JSONObject>(result->first.front())) } }, result->second };
         }
         if (holds_alternative<JSONArray>(result->first.front())) {
             return ResultPair{ { JSONValue{ std::move(get<JSONArray>(result->first.front())) } }, result->second };
+        }
+        if (holds_alternative<JSONString>(result->first.front())) {
+            return ResultPair{ { JSONValue{ std::move(get<JSONString>(result->first.front())) } }, result->second };
+        }
+        if (holds_alternative<JSONNumber>(result->first.front())) {
+            return ResultPair{ { JSONValue{ std::move(get<JSONNumber>(result->first.front())) } }, result->second };
         }
         if (holds_alternative<JSONTrue>(result->first.front())) {
             return ResultPair{ { JSONValue{ std::move(get<JSONTrue>(result->first.front())) } }, result->second };
