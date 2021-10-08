@@ -179,7 +179,7 @@ namespace c2k::JSON::Implementation_ {
     using Parser = std::function<Result(InputString)>;
 
     struct ParseJSONValueLambda {
-        Result operator()(const InputString input) const;
+        Result operator()(InputString input) const;
     };
 
     [[nodiscard]] inline ParseJSONValueLambda parseJSONValue() noexcept {
