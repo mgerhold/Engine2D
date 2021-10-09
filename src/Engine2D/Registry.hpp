@@ -144,6 +144,11 @@ namespace c2k {
             return mComponentHolder.template typeIdentifier<Type>();
         }
 
+        template<typename T>
+        void registerType() noexcept {
+            mComponentHolder.template registerType<T>();
+        }
+
     private:
         using Generation = Entity;
         using Identifier = Entity;

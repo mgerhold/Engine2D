@@ -34,9 +34,9 @@ namespace c2k {
         mRegistry.createEntity(TransformComponent{ .position{ 0.0f, 0.0f, 0.7f } }, RootComponent{},
                                ParticleEmitterComponent{ .particleSystem{ &mAssetDatabase.particleSystem(
                                        GUID::fromString("bd59709a-cc71-4bed-bb46-dc7624686ef6")) } });
-        mRegistry.createEntity(TransformComponent{ .position{ 100.0f, 0.0f, 0.7f } }, RootComponent{},
+        /*mRegistry.createEntity(TransformComponent{ .position{ 100.0f, 0.0f, 0.7f } }, RootComponent{},
                                ParticleEmitterComponent{ .particleSystem{ &mAssetDatabase.particleSystem(
-                                       GUID::fromString("cb15abcf-7a3a-4463-8ee2-93e8435cef63")) } });
+                                       GUID::fromString("cb15abcf-7a3a-4463-8ee2-93e8435cef63")) } });*/
         // entity with spritesheettest.lua script attached
         mRegistry.createEntity(ScriptComponent{
                 .script{ &mAssetDatabase.scriptMutable(GUID::fromString("afcdc904-20a0-4185-8d8f-d9ba0d61eb37")) } });

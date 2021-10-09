@@ -185,6 +185,11 @@ namespace c2k {
             return mSparseSets;
         }
 
+        template<typename T>
+        void registerType() noexcept {
+            growIfNecessaryAndGetTypeIdentifier<T>();
+        }
+
     private:
         template<typename Component>
         [[nodiscard]] SparseSet& getComponentMutable() noexcept {

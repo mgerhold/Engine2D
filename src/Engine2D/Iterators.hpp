@@ -1,3 +1,4 @@
+#include <cassert>
 
 namespace c2k {
 

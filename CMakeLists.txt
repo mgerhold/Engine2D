@@ -18,6 +18,7 @@ endif ()
 set(TARGET_LIST
         Engine2D
         Sandbox
+        Demo
         )
 
 add_library(Engine2D STATIC
@@ -94,10 +95,10 @@ add_library(Engine2D STATIC
         src/Engine2D/JSON/MacroDefinitions.hpp
         src/Engine2D/JSON/Parsers.cpp
         src/Engine2D/JSON/Parsers.hpp)
-target_include_directories(Engine2D PUBLIC ${PROJECT_SOURCE_DIR}/vendor)
+target_include_directories(Engine2D PUBLIC ${PROJECT_SOURCE_DIR}/src/Engine2D)
+
 add_executable(Sandbox src/Sandbox/main.cpp src/Sandbox/Sandbox.hpp src/Sandbox/Sandbox.cpp)
-target_include_directories(Sandbox PUBLIC ${PROJECT_SOURCE_DIR}/src/Engine2D)
-add_dependencies(Sandbox Engine2D)
+add_executable(Demo src/Demo/Main.cpp src/Demo/Demo.hpp src/Demo/Demo.cpp)
 
 # enable profiling if desired
 if (ENABLE_PROFILING)
@@ -130,9 +131,12 @@ foreach (target ${TARGET_LIST})
     set_target_properties(${target} PROPERTIES OUTPUT_NAME_MINSIZEREL ${target}-minsizerel)
 endforeach ()
 
+set_property(TARGET Engine2D PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+
 # precompiled headers
 target_precompile_headers(Engine2D PRIVATE "src/Engine2D/pch.hpp")
 target_precompile_headers(Sandbox PRIVATE "src/Engine2D/pch.hpp")
+target_precompile_headers(Demo PRIVATE "src/Engine2D/pch.hpp")
 
 find_package(glfw3 CONFIG REQUIRED)
 target_link_libraries(Engine2D PRIVATE glfw)
@@ -150,7 +154,7 @@ find_package(tl-optional CONFIG REQUIRED)
 target_link_libraries(Engine2D PRIVATE tl::optional)
 
 find_package(spdlog CONFIG REQUIRED)
-target_link_libraries(Engine2D PRIVATE spdlog::spdlog spdlog::spdlog_header_only)
+target_link_libraries(Engine2D PUBLIC spdlog::spdlog spdlog::spdlog_header_only)
 
 find_package(nlohmann_json CONFIG REQUIRED)
 target_link_libraries(Engine2D PRIVATE nlohmann_json nlohmann_json::nlohmann_json)
@@ -165,8 +169,8 @@ find_path(STB_INCLUDE_DIRS "stb.h")
 target_include_directories(Engine2D PRIVATE ${STB_INCLUDE_DIRS})
 
 find_package(Boost REQUIRED COMPONENTS random)
-target_link_libraries(Engine2D PRIVATE ${Boost_LIBRARIES})
-target_include_directories(Engine2D PRIVATE ${Boost_INCLUDE_DIRS})
+target_link_libraries(Engine2D PUBLIC ${Boost_LIBRARIES})
+target_include_directories(Engine2D PUBLIC ${Boost_INCLUDE_DIRS})
 
 include(FindLua)
 find_package(Lua REQUIRED)
@@ -180,7 +184,9 @@ find_package(magic_enum CONFIG REQUIRED)
 target_link_libraries(Engine2D PRIVATE magic_enum::magic_enum)
 
 target_link_libraries(Sandbox PRIVATE spdlog::spdlog spdlog::spdlog_header_only)
+
 target_link_libraries(Sandbox PRIVATE Engine2D)
+target_link_libraries(Demo PRIVATE Engine2D)
 
 enable_testing()
 add_subdirectory(tests)

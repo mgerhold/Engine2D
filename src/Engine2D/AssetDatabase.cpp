@@ -7,7 +7,7 @@
 namespace c2k {
 
     AssetDatabase::AssetDatabase() noexcept {
-        auto expectedDebugTexture = Texture::createFromFillColor(1, 1, 3, Color{ .r{ 255 }, .g{ 0 }, .b{ 255 } });
+        auto expectedDebugTexture = Texture::createFromFillColor(1, 1, 3, Color{ 1.0f, 0.0f, 1.0f, 1.0f });
         if (expectedDebugTexture) {
             mDebugFallbackTexture = std::move(expectedDebugTexture.value());
 #ifdef DEBUG_BUILD

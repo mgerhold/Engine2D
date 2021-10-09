@@ -4,9 +4,15 @@
 
 #include "ScopedTimer.hpp"
 
+#ifdef __clang__
+#define SOURCE_LOCATION std::experimental::source_location
+#else
+#define SOURCE_LOCATION std::source_location
+#endif
+
 namespace c2k {
 
-    ScopedTimer::ScopedTimer(const char* name, std::source_location sourceLocation) noexcept
+    ScopedTimer::ScopedTimer(const char* name, SOURCE_LOCATION sourceLocation) noexcept
         : mName(name),
           mSourceLocation{ sourceLocation },
           startTime{ std::chrono::high_resolution_clock::now() } {
@@ -35,7 +41,7 @@ namespace c2k {
     }
 
     std::string ScopedTimer::sourceLocationToString(const std::string& name,
-                                                    const std::source_location& sourceLocation) noexcept {
+                                                    const SOURCE_LOCATION& sourceLocation) noexcept {
         auto path = std::filesystem::path(sourceLocation.file_name());
         if (name.empty()) {
             return fmt::format("[{}, {}]{}", path.filename().string(), sourceLocation.line(),

@@ -39,6 +39,7 @@ namespace c2k {
     void Renderer::endFrame() noexcept {
         flushCommandBuffer();
         flushVertexAndIndexData();
+        spdlog::info("Drawing {} quads in {} batches", mRenderStats.numTriangles / 2, mRenderStats.numBatches);
     }
 
     void Renderer::drawQuad(const glm::vec3& translation,
@@ -169,11 +170,9 @@ namespace c2k {
             glm::vec2{ renderCommand.textureRect.right, renderCommand.textureRect.top },
             glm::vec2{ renderCommand.textureRect.left, renderCommand.textureRect.top }
         };
-        const auto color = renderCommand.color.normalized(); /* TODO: change members of Color struct to float
-                                                                  to avoid normalization */
         for (std::size_t i = 0; i < 4; ++i) {
             mVertexIterator->position = renderCommand.transformMatrix * positions[i];
-            mVertexIterator->color = color;
+            mVertexIterator->color = renderCommand.color;
             mVertexIterator->texCoords = texCoords[i];
             mVertexIterator->texIndex = textureIndex;
             ++mVertexIterator;
@@ -197,8 +196,7 @@ namespace c2k {
     }
 
     void Renderer::setClearColor(const Color& color) noexcept {
-        const auto normalized = color.normalized();
-        glClearColor(normalized.r, normalized.g, normalized.b, normalized.a);
+        glClearColor(color.r, color.g, color.b, color.a);
     }
 
 }// namespace c2k

@@ -1,6 +1,11 @@
 {
   "textures": [
     {
+      "guid": "29b0ca4a-b46d-43c6-af6d-a365c5fba48f",
+      "filename": "textures/mantis.png",
+      "group": ""
+    },
+    {
       "guid": "9043b452-363c-4917-bfde-592a72077e37",
       "filename": "textures/bjarne.jpg",
       "group": ""
@@ -68,9 +73,9 @@
   "particleSystems": [
     {
       "guid": "bd59709a-cc71-4bed-bb46-dc7624686ef6",
-      "filename": "particlesystems/bjarne.json",
+      "filename": "particlesystems/mantis.json",
       "group": "",
-      "texture": "9043b452-363c-4917-bfde-592a72077e37",
+      "texture": "29b0ca4a-b46d-43c6-af6d-a365c5fba48f",
       "shaderProgram": "b520f0eb-1756-41e0-ac07-66c3338bc594"
     },
     {

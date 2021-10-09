@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Iterators.hpp"
+#include <functional>
 
 namespace c2k {
 

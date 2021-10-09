@@ -4,6 +4,12 @@
 
 #pragma once
 
+#ifdef __clang__
+#define SOURCE_LOCATION std::experimental::source_location
+#else
+#define SOURCE_LOCATION std::source_location
+#endif
+
 #ifndef ENABLE_PROFILING
 #define ENABLE_PROFILING 0
 #endif
@@ -24,6 +30,12 @@
 #define SCOPED_TIMER_NAMED(name)
 #endif
 
+#include <cstdint>
+#include <source_location>
+#include <string>
+#include <chrono>
+#include <unordered_map>
+
 namespace c2k {
 
     class ScopedTimer {
@@ -37,18 +49,17 @@ namespace c2k {
         };
 
     public:
-        ScopedTimer(const char* name = "",
-                    std::source_location sourceLocation = std::source_location::current()) noexcept;
+        ScopedTimer(const char* name = "", SOURCE_LOCATION sourceLocation = SOURCE_LOCATION::current()) noexcept;
         ~ScopedTimer();
         static void logResults() noexcept;
 
     private:
         static std::string sourceLocationToString(const std::string& name,
-                                                  const std::source_location& sourceLocation) noexcept;
+                                                  const SOURCE_LOCATION& sourceLocation) noexcept;
 
     private:
         std::string mName;
-        std::source_location mSourceLocation;
+        SOURCE_LOCATION mSourceLocation;
         std::chrono::time_point<std::chrono::high_resolution_clock> startTime;
         static inline uint64_t sCurrentDepth{ 0ULL };
         static inline std::unordered_map<std::string, Measurement> sMeasurements{};
