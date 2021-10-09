@@ -56,6 +56,7 @@ namespace c2k {
     }
 
     void Application::run() noexcept {
+        registerComponentTypes();
         setup();
         auto timeMeasurements = setupTimeMeasurements();
         while (!glfwWindowShouldClose(mWindow.getGLFWWindowPointer())) {
@@ -139,8 +140,19 @@ namespace c2k {
         }
     }
 
+    void Application::registerComponentTypes() noexcept {
+        mRegistry.registerType<RootComponent>();
+        mRegistry.registerType<RelationshipComponent>();
+        mRegistry.registerType<TransformComponent>();
+        mRegistry.registerType<DynamicSpriteComponent>();
+        mRegistry.registerType<SpriteSheetAnimationComponent>();
+        mRegistry.registerType<CameraComponent>();
+        mRegistry.registerType<ScriptComponent>();
+        mRegistry.registerType<ParticleEmitterComponent>();
+        mRegistry.registerType<ParticleComponent>();
+    }
+
     void Application::handleParticleEmitters() noexcept {
-        // TODO: remove from local scope to avoid heap allocations every frame
         for (auto&& [entity, particleEmitter, transform, root] :
              mRegistry.componentsMutable<ParticleEmitterComponent, TransformComponent, RootComponent>()) {
             const double spawnInterval = 1.0 / particleEmitter.particleSystem->particlesPerSecond;

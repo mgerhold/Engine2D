@@ -21,7 +21,9 @@ namespace c2k {
 
     class Application {
     public:
-        Application(const std::string& title, WindowSize size, OpenGLVersion version) noexcept;
+        Application(const std::string& title = "c2k application",
+                    WindowSize size = WindowSize{ .width{ 800 }, .height{ 600 } },
+                    OpenGLVersion version = OpenGLVersion{ .major{ 4 }, .minor{ 5 } }) noexcept;
         Application(const Application&) = delete;
         Application(Application&&) = delete;
         virtual ~Application() noexcept;
@@ -40,6 +42,7 @@ namespace c2k {
         void handleParticleEmitters() noexcept;
         void handleParticles() noexcept;
         void refreshWindowTitle() noexcept;
+        void registerComponentTypes() noexcept;
 
     protected:
         Input mInput;
