@@ -5,6 +5,13 @@
 #include <Entity.hpp>
 #include <SparseSet.hpp>
 #include <gtest/gtest.h>
+#include <cstdint>
+#include <memory>
+#include <new>
+#include <range/v3/all.hpp>
+#include <type_traits>
+#include <utility>
+#include <Iterators.hpp>
 
 using namespace c2k;
 

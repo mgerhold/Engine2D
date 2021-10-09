@@ -39,7 +39,7 @@ namespace c2k {
     void Renderer::endFrame() noexcept {
         flushCommandBuffer();
         flushVertexAndIndexData();
-        spdlog::info("Drawing {} quads in {} batches", mRenderStats.numTriangles / 2, mRenderStats.numBatches);
+        //spdlog::info("Drawing {} quads in {} batches", mRenderStats.numTriangles / 2, mRenderStats.numBatches);
     }
 
     void Renderer::drawQuad(const glm::vec3& translation,

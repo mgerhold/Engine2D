@@ -3,6 +3,7 @@
 //
 
 #include "Hash.hpp"
+#include <utility>
 
 namespace c2k::Hash {
 

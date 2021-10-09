@@ -7,6 +7,7 @@
 #include "Component.hpp"
 #include "AssetDatabase.hpp"
 #include "ApplicationContext.hpp"
+#include <utility>
 
 namespace c2k::BufferedScriptCommands {
 

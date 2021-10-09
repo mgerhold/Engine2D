@@ -5,6 +5,8 @@
 #pragma once
 
 #include "Color.hpp"
+#include <tl/expected.hpp>
+#include <filesystem>
 
 namespace c2k {
 

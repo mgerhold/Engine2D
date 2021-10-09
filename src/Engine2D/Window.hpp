@@ -6,6 +6,9 @@
 
 #include "WindowSize.hpp"
 #include "OpenGLVersion.hpp"
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <string>
 
 namespace c2k {
 

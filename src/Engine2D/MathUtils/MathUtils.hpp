@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <glm/glm.hpp>
+
 namespace c2k::MathUtils {
 
     [[nodiscard]] glm::vec2 lerp(const glm::vec2& a, const glm::vec2& b, float t) noexcept;

@@ -7,6 +7,7 @@
 #include "../ApplicationContext.hpp"
 #include "../Entity.hpp"
 #include "../GUID.hpp"
+#include <sol/sol.hpp>
 
 namespace c2k::ScriptUtils {
 

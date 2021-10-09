@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <glm/glm.hpp>
+
 namespace c2k {
 
     struct Color : public glm::vec4 {

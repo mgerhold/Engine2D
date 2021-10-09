@@ -5,6 +5,8 @@
 #pragma once
 
 #include "GUID.hpp"
+#include <glad/glad.h>
+#include <unordered_map>
 
 namespace c2k {
 

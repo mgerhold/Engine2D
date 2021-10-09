@@ -9,6 +9,8 @@
 #include "Entity.hpp"
 #include "ApplicationContext.hpp"
 #include "GUID.hpp"
+#include <sol/sol.hpp>
+#include <memory>
 
 namespace c2k {
 

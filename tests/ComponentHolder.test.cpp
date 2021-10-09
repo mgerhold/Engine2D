@@ -4,8 +4,17 @@
 
 #include <ComponentHolder.hpp>
 #include <TypeIdentifier.hpp>
+#include <ComponentHolderPairIterator.hpp>
 #include <Entity.hpp>
 #include <gtest/gtest.h>
+#include <range/v3/all.hpp>
+#include <gsl/gsl>
+#include <array>
+#include <iterator>
+#include <new>
+#include <utility>
+#include <vector>
+#include <cstddef>
 
 using namespace c2k;
 

@@ -5,7 +5,12 @@
 #pragma once
 
 #include "Iterators.hpp"
+#include <cassert>
+#include <cstdint>
+#include <cstddef>
 #include <functional>
+#include <new>
+#include <utility>
 
 namespace c2k {
 

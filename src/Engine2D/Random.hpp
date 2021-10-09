@@ -4,6 +4,10 @@
 
 #pragma once
 
+#include <glm/glm.hpp>
+#include <limits>
+#include <random>
+
 namespace c2k {
 
     class Random {

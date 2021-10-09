@@ -4,6 +4,11 @@
 
 #include "Window.hpp"
 #include "Input.hpp"
+#include "OpenGLVersion.hpp"
+#include <spdlog/spdlog.h>
+#include <gsl/gsl>
+#include <exception>
+#include <iostream>
 
 namespace c2k {
 

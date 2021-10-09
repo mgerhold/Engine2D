@@ -3,6 +3,7 @@
 //
 
 #include "Texture.hpp"
+#include <gsl/gsl>
 
 namespace c2k {
 
@@ -72,11 +73,11 @@ namespace c2k {
         auto bufferLength{ static_cast<std::size_t>(width * height * numChannels) };
         auto buffer = std::make_unique<unsigned char[]>(bufferLength);
         for (auto i : ints(0, width * height)) {
-            buffer[i * numChannels + 0] = fillColor.r;
-            buffer[i * numChannels + 1] = fillColor.g;
-            buffer[i * numChannels + 2] = fillColor.b;
+            buffer[i * numChannels + 0] = gsl::narrow_cast<unsigned char>(fillColor.r * 255);
+            buffer[i * numChannels + 1] = gsl::narrow_cast<unsigned char>(fillColor.g * 255);
+            buffer[i * numChannels + 2] = gsl::narrow_cast<unsigned char>(fillColor.b * 255);
             if (numChannels == 4) {
-                buffer[i * numChannels + 3] = fillColor.a;
+                buffer[i * numChannels + 3] = gsl::narrow_cast<unsigned char>(fillColor.a * 255);
             }
         }
         return createFromMemory(width, height, numChannels, buffer.get());

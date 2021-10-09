@@ -8,6 +8,7 @@
 #include "SparseSet.hpp"
 #include "TypeIdentifier.hpp"
 #include "ComponentHolderPairIterator.hpp"
+#include <gsl/gsl>
 
 namespace c2k {
 

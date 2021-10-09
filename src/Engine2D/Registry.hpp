@@ -8,6 +8,7 @@
 #include "Entity.hpp"
 #include "TypeIdentifier.hpp"
 #include "Component.hpp"
+#include <tl/optional.hpp>
 
 namespace c2k {
 

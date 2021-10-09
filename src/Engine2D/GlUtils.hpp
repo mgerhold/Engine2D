@@ -4,6 +4,9 @@
 
 #pragma once
 
+#include "glad/glad.h"
+#include <cstddef>
+
 namespace c2k::GLUtils {
 
     bool isIntegralType(GLenum dataType);

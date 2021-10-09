@@ -129,14 +129,17 @@ foreach (target ${TARGET_LIST})
     set_target_properties(${target} PROPERTIES OUTPUT_NAME_RELWITHDEBINFO ${target}-relwithdebinfo)
     set_target_properties(${target} PROPERTIES OUTPUT_NAME_RELEASE ${target}-release)
     set_target_properties(${target} PROPERTIES OUTPUT_NAME_MINSIZEREL ${target}-minsizerel)
-endforeach ()
 
-set_property(TARGET Engine2D PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+    if (CMAKE_BUILD_TYPE STREQUAL "Release")
+        message("Enabling LTO for target ${target}")
+        set_property(TARGET ${target} PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+    else ()
+        message("Not enabling LTO for target ${target} (not a release build)")
+    endif ()
+endforeach ()
 
 # precompiled headers
 target_precompile_headers(Engine2D PRIVATE "src/Engine2D/pch.hpp")
-target_precompile_headers(Sandbox PRIVATE "src/Engine2D/pch.hpp")
-target_precompile_headers(Demo PRIVATE "src/Engine2D/pch.hpp")
 
 find_package(glfw3 CONFIG REQUIRED)
 target_link_libraries(Engine2D PRIVATE glfw)

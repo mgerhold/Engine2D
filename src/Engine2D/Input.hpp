@@ -4,6 +4,13 @@
 
 #pragma once
 
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <cstdint>
+#include <array>
+#include <cstddef>
+#include <vector>
+
 namespace c2k {
 
     enum class Key : std::size_t {

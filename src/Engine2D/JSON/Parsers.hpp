@@ -4,6 +4,10 @@
 
 #pragma once
 
+#include <variant>
+#include <tl/expected.hpp>
+#include <spdlog/spdlog.h>
+
 namespace c2k::JSON::Implementation_ {
 
     struct JSONString {

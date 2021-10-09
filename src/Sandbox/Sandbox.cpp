@@ -3,9 +3,26 @@
 //
 
 #include "Sandbox.hpp"
-#include "Image.hpp"
-#include "Texture.hpp"
+#include "AssetDatabase.hpp"
+#include "Color.hpp"
 #include "Component.hpp"
+#include "GUID.hpp"
+#include "Random.hpp"
+#include "Registry.hpp"
+#include "Sprite.hpp"
+#include "SpriteSheet.hpp"
+#include "Texture.hpp"
+#include "Time.hpp"
+
+#include <spdlog/spdlog.h>
+#include <glm/glm.hpp>
+#include <filesystem>
+#include <range/v3/all.hpp>
+
+#include <memory>
+#include <new>
+#include <utility>
+#include <vector>
 
 namespace c2k {
 

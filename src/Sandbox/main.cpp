@@ -1,4 +1,8 @@
+#include "OpenGLVersion.hpp"
 #include "Sandbox.hpp"
+#include "WindowSize.hpp"
+#include <cstdlib>
+#include <memory>
 
 int main() {
     using namespace c2k;

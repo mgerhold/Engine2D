@@ -3,8 +3,9 @@
 //
 
 #include "Sprite.hpp"
-#include "Texture.hpp"
 #include "SpriteSheet.hpp"
+#include <memory>
+#include <vector>
 
 namespace c2k {
 

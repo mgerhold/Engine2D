@@ -14,6 +14,8 @@
 #include "ScriptUtils/ScriptUtils.hpp"
 #include "ParticleSystem.hpp"
 #include "Sprite.hpp"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace c2k {
 

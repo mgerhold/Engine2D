@@ -4,7 +4,19 @@
 
 #include <Registry.hpp>
 #include <TypeIdentifier.hpp>
+#include <ComponentHolderPairIterator.hpp>
+#include <Entity.hpp>
 #include <gtest/gtest.h>
+#include <range/v3/all.hpp>
+#include <tl/optional.hpp>
+#include <gsl/gsl>
+#include <array>
+#include <cstddef>
+#include <iterator>
+#include <new>
+#include <tuple>
+#include <utility>
+#include <vector>
 
 using namespace c2k;
 

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Rect.hpp"
+#include <cstddef>
 
 namespace c2k {
 

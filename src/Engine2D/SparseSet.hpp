@@ -7,6 +7,13 @@
 #include "TypeErasedVector.hpp"
 #include "Entity.hpp"
 
+#include <cassert>
+#include <cstddef>
+#include <range/v3/all.hpp>
+#include <type_traits>
+#include <utility>
+#include <vector>
+
 namespace c2k {
 
     class SparseSet final {

@@ -4,6 +4,12 @@
 
 #include <GUID.hpp>
 #include <gtest/gtest.h>
+#include <boost/uuid/uuid.hpp>
+#include <range/v3/all.hpp>
+#include <algorithm>
+#include <utility>
+#include <vector>
+#include <cstddef>
 
 TEST(GUIDTests, NoDuplicates) {
     using ranges::views::ints;

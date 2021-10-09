@@ -7,6 +7,7 @@
 #include "Image.hpp"
 #include "Color.hpp"
 #include "GUID.hpp"
+#include <glad/glad.h>
 
 namespace c2k {
 

@@ -3,6 +3,9 @@
 //
 
 #include "Input.hpp"
+#include <assert.h>
+#include <gsl/gsl>
+#include <range/v3/all.hpp>
 
 namespace c2k {
 

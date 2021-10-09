@@ -3,7 +3,16 @@
 //
 
 #include <TypeErasedVector.hpp>
+#include <Iterators.hpp>
 #include <gtest/gtest.h>
+#include <range/v3/all.hpp>
+#include <gsl/gsl>
+#include <memory>
+#include <new>
+#include <string>
+#include <type_traits>
+#include <utility>
+#include <cstddef>
 
 using namespace c2k;
 
