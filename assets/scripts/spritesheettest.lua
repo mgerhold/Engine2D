@@ -46,10 +46,4 @@ function update(entity)
     if input:keyPressed(Key.Escape) then
         c2k.application.quit()
     end
-    if input:mousePressed(MouseButton.Left) then
-        print("Left mouse button pressed")
-    end
-    if input:mouseReleased(MouseButton.Left) then
-        print("Left mouse button released")
-    end
 end

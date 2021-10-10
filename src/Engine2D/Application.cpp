@@ -56,6 +56,11 @@ namespace c2k {
     }
 
     void Application::run() noexcept {
+#ifdef DEBUG_BUILD
+        spdlog::info("This is the debug build");
+#else
+        spdlog::info("This is the release build");
+#endif
         registerComponentTypes();
         setup();
         auto timeMeasurements = setupTimeMeasurements();

@@ -19,7 +19,7 @@ zoomSpeed = 0.4
 
 -- awake is called when this script is attached onto an entity
 function onAttach(entity)
-    rotationSpeeds[entity.id] = math.random(10, 60) -- create random rotation speeds for the current entity
+    rotationSpeeds[entity.id] = math.random(-60, 60) -- create random rotation speeds for the current entity
     maxNumSpawnedEntities = maxNumSpawnedEntities + 1
     transforms[entity.id] = entity:getTransform() -- cache handle to transform component
     time = c2k.getTime() -- cache time handle

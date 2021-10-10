@@ -1,5 +1,5 @@
 {
-  "startLifeTime": 3,
+  "startLifeTime": 5,
   "lifeTimeVariation": 0.05,
   "particlesPerSecond": 20000,
   "gravity": {
@@ -8,12 +8,12 @@
     "z": -0.001
   },
   "startScale": {
-    "x": 0.5,
-    "y": 0.5
+    "x": 0.05,
+    "y": 0.05
   },
   "endScale": {
-    "x": 2,
-    "y": 2
+    "x": 4,
+    "y": 4
   },
   "startRotationSpeed": 0,
   "endRotationSpeed": 0,

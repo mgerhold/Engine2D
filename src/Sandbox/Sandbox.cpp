@@ -27,16 +27,11 @@
 namespace c2k {
 
     void Sandbox::setup() noexcept {
-#ifdef DEBUG_BUILD
-        spdlog::info("This is the debug build");
-#else
-        spdlog::info("This is the release build");
-#endif
         mAssetDatabase.loadFromList(AssetDatabase::assetPath() / "scenes" / "assets.json");
 
         const auto spriteSheetGUID{ GUID::fromString("c15111ea-7ba8-4e65-8f24-40c868498d5b") };
         const auto fireTextureGUID{ GUID::fromString("c22764c9-9750-4749-810e-10f4c6f50123") };
-        const auto textureGUID{ GUID::fromString("9043b452-363c-4917-bfde-592a72077e37") };
+        const auto textureGUID{ GUID::fromString("29b0ca4a-b46d-43c6-af6d-a365c5fba48f") };
         const auto shaderGUID{ GUID::fromString("b520f0eb-1756-41e0-ac07-66c3338bc594") };
 
         mAssetDatabase.textureMutable(fireTextureGUID).setFiltering(Texture::Filtering::Nearest);
@@ -61,7 +56,7 @@ namespace c2k {
         mRegistry.createEntity(ScriptComponent{
                 .script{ &mAssetDatabase.scriptMutable(GUID::fromString("9632ed81-76ce-469c-b909-09a754877ae9")) } });
         const auto anchor =
-                mRegistry.createEntity(TransformComponent{ .position{ 0.0f, 180.0f, 0.6f } }, RootComponent{});
+                mRegistry.createEntity(TransformComponent{ .position{ 0.0f, 180.0f, 0.9f } }, RootComponent{});
         mRegistry.createEntity(
                 TransformComponent{ .scale{ fireTextureSize * 2.0f } },
                 DynamicSpriteComponent{
@@ -101,8 +96,8 @@ namespace c2k {
 
         constexpr int numEntities = 100;
         for ([[maybe_unused]] auto _ : ranges::views::ints(0, numEntities)) {
-            const glm::vec3 position{ mRandom.range(-2000.0f, 2000.0f), mRandom.range(-2000.0f, 2000.0f), 0.0f };
-            mRegistry.createEntity(TransformComponent{ .position{ position }, .scale{ textureSize } },
+            const glm::vec3 position{ mRandom.range(-2000.0f, 2000.0f), mRandom.range(-2000.0f, 2000.0f), 0.8f };
+            mRegistry.createEntity(TransformComponent{ .position{ position }, .scale{ textureSize * 2.0f } },
                                    DynamicSpriteComponent{
                                            .shaderProgram{ &mAssetDatabase.shaderProgramMutable(shaderGUID) },
                                            .sprite{ Sprite::fromTexture(mAssetDatabase.texture(textureGUID)) },
