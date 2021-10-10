@@ -7,6 +7,8 @@
 #include <variant>
 #include <tl/expected.hpp>
 #include <spdlog/spdlog.h>
+#include <gsl/gsl>
+#include <filesystem>
 
 namespace c2k::JSON::Implementation_ {
 
