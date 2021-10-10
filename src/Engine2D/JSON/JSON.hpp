@@ -5,6 +5,8 @@
 #pragma once
 
 #include "Parsers.hpp"
+#include <gsl/gsl>
+#include <filesystem>
 
 namespace c2k::JSON {
 
