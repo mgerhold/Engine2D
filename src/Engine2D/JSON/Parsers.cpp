@@ -101,12 +101,18 @@ namespace c2k::JSON::Implementation_ {
                 input = result->second;
                 result = parser(input);
             }
-            return ResultPair{ { std::move(values) }, input };
+            return ResultPair{ std::move(values), input };
         };
     }
 
     [[nodiscard]] constexpr auto parseAndDrop(ParserConcept auto parser) noexcept {
-        return parserMapValue(std::move(parser), ParsedValue{});
+        return [parser = std::move(parser)](const InputString input) -> Result {
+            const auto result = parser(input);
+            if (!result) {
+                return result;
+            }
+            return ResultPair{ {}, result->second };
+        };
     }
 
     [[nodiscard]] consteval inline auto parseControlCharacter() noexcept {
@@ -249,7 +255,7 @@ namespace c2k::JSON::Implementation_ {
                 input = result->second;
                 result = parser(input);
             }
-            return ResultPair{ { std::move(values) }, input };
+            return ResultPair{ std::move(values), input };
         };
     }
 
