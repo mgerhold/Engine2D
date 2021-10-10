@@ -70,7 +70,7 @@ namespace c2k {
         if (!parseResult) {
             return tl::unexpected(fmt::format("Failed to parse particle system: {}", parseResult.error()));
         }
-        const auto deserializationResult = parseResult->as<ParticleSystemJSON>();
+        const auto deserializationResult = parseResult->as(std::type_identity<ParticleSystemJSON>{});
         if (!deserializationResult) {
             return tl::unexpected(fmt::format("Unable to deserialize particle system"));
         }

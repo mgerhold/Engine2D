@@ -4,6 +4,8 @@
 
 #include "JSON.hpp"
 #include "../FileUtils/FileUtils.hpp"
+#include "Parsers.hpp"
+
 
 namespace c2k::JSON {
     namespace Implementation_ {
@@ -28,7 +30,9 @@ namespace c2k::JSON {
 
         JSONObject::JSONObject(std::initializer_list<std::pair<JSONString, JSONValue>> init) noexcept {
             for (auto&& [key, value] : init) {
-                pairs.emplace_back(std::pair(key, std::make_shared<JSONValue>(value)));
+                if (!value.isEmpty()) {
+                    pairs.emplace_back(std::pair(key, std::make_shared<JSONValue>(value)));
+                }
             }
         }
 
@@ -75,6 +79,10 @@ namespace c2k::JSON {
 
         [[nodiscard]] bool JSONValue::isBool() const noexcept {
             return isTrue() || isFalse();
+        }
+
+        bool JSONValue::isEmpty() const noexcept {
+            return holds_alternative<std::monostate>(mData);
         }
 
         tl::expected<std::string, std::string> JSONValue::asString() const noexcept {

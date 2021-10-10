@@ -10,13 +10,16 @@
 #define C2K_JSON_IMPLEMENTATION_TO_JSON_MEMBER(M) { #M, c2k::JSON::Value{ val.M } }
 
 #define C2K_JSON_IMPLEMENTATION_FROM_JSON_MEMBER(TYPE, M) \
-    if (!json.containsKey(#M)) { \
-        return tl::unexpected{ c2k::JSON::DeserializationError::KeyNotFound }; \
-    }                                                     \
-    const auto M = fromJSON(json.at(#M).value(), result.M); \
-    if (!M) { \
-        return tl::unexpected{ c2k::JSON::DeserializationError::UnableToDeserialize }; \
-    } \
+    if (!json.containsKey(#M)) {                          \
+        if constexpr(!c2k::JSON::isOptional(result.M)) {   \
+            return tl::unexpected{ c2k::JSON::DeserializationError::KeyNotFound }; \
+        }                                                  \
+    } else {                                                     \
+        const auto M = fromJSON(json.at(#M).value(), result.M); \
+        if (!M) { \
+            return tl::unexpected{ c2k::JSON::DeserializationError::UnableToDeserialize }; \
+        }                                                     \
+    }                                                       \
                                                           \
 // the following code was auto-generated with jsonMacroGenerator.py
 

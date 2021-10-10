@@ -271,7 +271,7 @@ TEST(CombinedParsers, stdVector) {
     const std::vector<std::string> words{ "lorem", "ipsum", "dolor", "sit", "amet" };
     const auto wordsJSON = JSON::Value{ words };
     ASSERT_TRUE(wordsJSON.isArray());
-    const auto reconversionResult = wordsJSON.as<std::vector<std::string>>();
+    const auto reconversionResult = wordsJSON.as(std::type_identity<std::vector<std::string>>{});
     ASSERT_TRUE(reconversionResult);
     ASSERT_EQ(words, reconversionResult.value());
 }
@@ -399,7 +399,7 @@ TEST(CombinedParsers, largerJSONfile) {
         for (decltype(numIterations) i{ 0U }; i < numIterations; ++i) {
             {
                 auto timer = ScopedTimer{ "[c2k] Deserializing JSON value" };
-                spriteSheet = parseResult->as<SpriteSheetJSON>().value();
+                spriteSheet = parseResult->as(std::type_identity<SpriteSheetJSON>{}).value();
             }
             {
                 auto timer = ScopedTimer{ "[nlohmann] Deserializing JSON value" };
@@ -410,4 +410,43 @@ TEST(CombinedParsers, largerJSONfile) {
     spdlog::info("Read {} sprite frames", spriteSheet.frames.size());
     ASSERT_EQ(spriteSheet.frames.size(), 60);
     ScopedTimer::logResults();
+}
+
+struct Form {
+    std::string name;
+    std::optional<int> age;
+    std::optional<Address> address;
+
+    bool operator==(const Form&) const = default;
+};
+
+C2K_JSON_DEFINE_TYPE(Form, name, age, address);
+
+TEST(CombinedParsers, optional) {
+    using namespace c2k;
+    auto json = JSON::fromString(R"({
+    "name": "John",
+    "address": {
+        "street": "3253 Oak Drive",
+        "city": "Beekmantown, NY",
+        "zipCode": 12901
+    }
+})");
+    Form john{ .name{ "John" },
+               .age{},
+               .address{ Address{ .street{ "3253 Oak Drive" }, .city{ "Beekmantown, NY" }, .zipCode{ 12901 } } } };
+    auto johnSerialized = JSON::Value{ john };
+    spdlog::info(johnSerialized.dump());
+
+    Form mary{ .name{ "Mary" }, .age{ 42 }, .address{} };
+    auto marySerialized = JSON::Value{ mary };
+    spdlog::info(marySerialized.dump());
+
+    auto johnDeserialized = JSON::as<Form>(johnSerialized);
+    ASSERT_TRUE(johnDeserialized);
+    ASSERT_EQ(john, johnDeserialized);
+
+    auto maryDeserialized = JSON::as<Form>(marySerialized);
+    ASSERT_TRUE(maryDeserialized);
+    ASSERT_EQ(mary, maryDeserialized);
 }

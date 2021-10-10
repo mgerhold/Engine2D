@@ -9,6 +9,7 @@
 #include <spdlog/spdlog.h>
 #include <gsl/gsl>
 #include <filesystem>
+#include <type_traits>
 
 namespace c2k::JSON::Implementation_ {
 
@@ -106,6 +107,7 @@ namespace c2k::JSON::Implementation_ {
         [[nodiscard]] bool isFalse() const noexcept;
         [[nodiscard]] bool isNull() const noexcept;
         [[nodiscard]] bool isBool() const noexcept;
+        [[nodiscard]] bool isEmpty() const noexcept;
 
         [[nodiscard]] tl::expected<std::string, std::string> asString() const noexcept;
         [[nodiscard]] tl::expected<double, std::string> asNumber() const noexcept;
@@ -121,13 +123,24 @@ namespace c2k::JSON::Implementation_ {
         [[nodiscard]] bool containsKey(const std::string& key) const noexcept;
 
         template<typename T>
-        [[nodiscard]] tl::expected<T, std::string> as() const noexcept {
+        [[nodiscard]] tl::expected<T, std::string> as(std::type_identity<T>) const noexcept {
             T result{};
             const auto success = fromJSON(*this, result);
             if (!success) {
                 return tl::unexpected{ fmt::format("Unable to deserialize from JSON value") };
             }
             return result;
+        }
+
+        template<typename T>
+        [[nodiscard]] tl::expected<std::optional<T>, std::string> as(
+                std::type_identity<std::optional<T>>) const noexcept {
+            T result{};
+            const auto success = fromJSON(*this, result);
+            if (!success) {
+                return std::optional<T>{};
+            }
+            return std::optional<T>{ result };
         }
 
     private:

@@ -55,7 +55,6 @@ namespace c2k::JSON::Implementation_ {
         };
     }
 
-
     [[nodiscard]] constexpr auto parserMapValue(ParserConcept auto parser, ParsedValue value) noexcept {
         return [parser = std::move(parser), value = std::move(value)](const InputString input) -> Result {
             const auto result = parser(input);

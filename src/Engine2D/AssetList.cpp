@@ -17,7 +17,7 @@ namespace c2k {
             spdlog::error("Unable to parse asset list: {}", parseResult.error());
             return;
         }
-        const auto deserializationResult = parseResult->as<AssetDescriptions::List>();
+        const auto deserializationResult = parseResult->as(std::type_identity<AssetDescriptions::List>{});
         if (!deserializationResult) {
             spdlog::error("Unable to deserialize asset list");
             return;

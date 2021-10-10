@@ -54,7 +54,7 @@ namespace c2k {
             return tl::unexpected{ fmt::format("Unable to read sprite sheet information from JSON: {}",
                                                readResult.error()) };
         }
-        const auto deserializationResult = readResult->as<SpriteSheetJSON>();
+        const auto deserializationResult = readResult->as(std::type_identity<SpriteSheetJSON>{});
         if (!deserializationResult) {
             return tl::unexpected{ fmt::format("Unable to deserialize sprite sheet") };
         }

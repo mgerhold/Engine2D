@@ -10,6 +10,16 @@
 
 namespace c2k::JSON {
 
+    template<typename T>
+    constexpr bool isOptional(const T&) {
+        return false;
+    }
+
+    template<typename T>
+    constexpr bool isOptional(const std::optional<T>&) {
+        return true;
+    }
+
     enum class DeserializationError {
         UnableToDeserialize,
         KeyNotFound,
@@ -34,6 +44,13 @@ namespace c2k::JSON {
             }
             json = JSONValue{ result };
         }
+
+        template<typename T>
+        void toJSON(JSONValue& json, const std::optional<T>& optional) noexcept {
+            json = optional ? JSONValue{ optional.value() } : JSONValue{ std::monostate{} };
+        }
+
+        inline void toJSON(JSONValue&, const std::monostate&) noexcept { }
 
         inline void toJSON(JSONValue& json, const std::filesystem::path& path) noexcept {
             json = JSONValue{ path.string() };
@@ -91,6 +108,7 @@ namespace c2k::JSON {
             }
             const auto array = json.asArray().value();
             std::vector<T> result;
+            result.reserve(array.values.size());
             for (const auto& value : array.values) {
                 T buffer;
                 const auto convertedExpected = fromJSON(*value, buffer);
@@ -100,6 +118,17 @@ namespace c2k::JSON {
                 result.emplace_back(buffer);
             }
             out = std::move(result);
+            return std::monostate{};
+        }
+
+        template<typename T>
+        [[nodiscard]] DeserializationResult fromJSON(const JSONValue& json, std::optional<T>& out) noexcept {
+            T buffer{};
+            auto result = fromJSON(json, buffer);
+            if (!result) {
+                return result;
+            }
+            out = buffer;
             return std::monostate{};
         }
 
@@ -125,7 +154,7 @@ namespace c2k::JSON {
 
     template<typename T>
     [[nodiscard]] auto as(const Value& value) noexcept {
-        return value.template as<T>();
+        return value.as(std::type_identity<T>{});
     }
 
 #include "MacroDefinitions.hpp"
