@@ -7,6 +7,7 @@
 #include "Parsers.hpp"
 #include <gsl/gsl>
 #include <filesystem>
+#include <variant>
 
 namespace c2k::JSON {
 
@@ -37,6 +38,11 @@ namespace c2k::JSON {
     namespace Implementation_ {
 
         template<typename T>
+        void toJSON(JSONValue& json, const T& value) noexcept {
+            json = JSONValue{ value };
+        }
+
+        template<typename T>
         void toJSON(JSONValue& json, const std::vector<T>& vector) noexcept {
             JSONArray result;
             for (const auto& value : vector) {
@@ -48,6 +54,17 @@ namespace c2k::JSON {
         template<typename T>
         void toJSON(JSONValue& json, const std::optional<T>& optional) noexcept {
             json = optional ? JSONValue{ optional.value() } : JSONValue{ std::monostate{} };
+        }
+
+        template<typename... T>
+        void toJSON(JSONValue& json, const std::variant<T...>& variant) noexcept {
+            ([&]() -> bool {
+                if (holds_alternative<T>(variant)) {
+                    toJSON(json, get<T>(variant));
+                    return true;
+                }
+                return false;
+            }() || ...);
         }
 
         inline void toJSON(JSONValue&, const std::monostate&) noexcept { }
@@ -130,6 +147,29 @@ namespace c2k::JSON {
             }
             out = buffer;
             return std::monostate{};
+        }
+
+        template<typename... T>
+        [[nodiscard]] DeserializationResult fromJSON(const JSONValue& json, std::variant<T...>& out) noexcept {
+            using Variant = std::variant<T...>;
+            DeserializationResult result;
+            bool success = ([&]() -> bool {
+                holds_alternative<T>(out);// <- GCC doesn't compile without this because it complains
+                                          // that there would be no unexpanded parameter pack inside
+                                          // the fold expression operand
+                T buffer{};
+                result = fromJSON(json, buffer);
+                if (!result) {
+                    return false;
+                }
+                out = Variant{ std::move(buffer) };
+                success = true;
+                return true;
+            }() || ...);
+            if (success) {
+                return std::monostate{};
+            }
+            return result;
         }
 
         [[nodiscard]] inline DeserializationResult fromJSON(const JSONValue& json,

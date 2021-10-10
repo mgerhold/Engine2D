@@ -6,6 +6,9 @@
 #include <ScopedTimer.hpp>
 #include <FileUtils/FileUtils.hpp>
 #include <gtest/gtest.h>
+#include <optional>
+#include <variant>
+#include <vector>
 
 TEST(CombinedParsers, nestedParsing) {
     using namespace c2k::JSON::Implementation_;
@@ -432,6 +435,7 @@ TEST(CombinedParsers, optional) {
         "zipCode": 12901
     }
 })");
+    ASSERT_TRUE(json);
     Form john{ .name{ "John" },
                .age{},
                .address{ Address{ .street{ "3253 Oak Drive" }, .city{ "Beekmantown, NY" }, .zipCode{ 12901 } } } };
@@ -442,11 +446,118 @@ TEST(CombinedParsers, optional) {
     auto marySerialized = JSON::Value{ mary };
     spdlog::info(marySerialized.dump());
 
-    auto johnDeserialized = JSON::as<Form>(johnSerialized);
+    auto johnDeserialized = JSON::as<Form>(json.value());
     ASSERT_TRUE(johnDeserialized);
     ASSERT_EQ(john, johnDeserialized);
 
     auto maryDeserialized = JSON::as<Form>(marySerialized);
     ASSERT_TRUE(maryDeserialized);
     ASSERT_EQ(mary, maryDeserialized);
+}
+
+struct Rect {
+    float width;
+    float height;
+
+    bool operator==(const Rect&) const = default;
+};
+
+C2K_JSON_DEFINE_TYPE(Rect, width, height);
+
+struct Circle {
+    float radius;
+
+    bool operator==(const Circle&) const = default;
+};
+
+C2K_JSON_DEFINE_TYPE(Circle, radius);
+
+struct ShapeInfo {
+    std::string name;
+    std::variant<Rect, Circle> shape;
+
+    bool operator==(const ShapeInfo&) const = default;
+};
+
+C2K_JSON_DEFINE_TYPE(ShapeInfo, name, shape);
+
+TEST(CombinedParsers, variant) {
+    using namespace c2k;
+    auto myFavoriteRect =
+            ShapeInfo{ .name{ "my favorite rect" }, .shape{ Rect{ .width{ 100.0f }, .height{ 50.0f } } } };
+    auto rectSerialized = JSON::Value{ myFavoriteRect };
+    spdlog::info(rectSerialized.dump());
+    auto json = JSON::fromString(R"({
+    "name": "my favorite rect",
+    "shape": {
+        "width": 100,
+        "height": 50
+    }
+})");
+    ASSERT_TRUE(json);
+    auto rectDeserialized = JSON::as<ShapeInfo>(json.value());
+    ASSERT_TRUE(rectDeserialized);
+    ASSERT_EQ(rectDeserialized, myFavoriteRect);
+
+    json = JSON::fromString(R"({
+        "name": "this is no valid shape",
+        "shape": {
+            "width": 100,
+            "color": "red"
+        }
+})");
+    ASSERT_TRUE(json);
+    auto deserializationSuccess = JSON::as<ShapeInfo>(json.value());
+    ASSERT_FALSE(deserializationSuccess);
+
+    auto circle = ShapeInfo{ .name{ "a circle" }, .shape{ Circle{ .radius{ 3.14f } } } };
+    auto circleSerialized = JSON::Value{ circle };
+    auto circleJSONString = circleSerialized.dump();
+    auto parseResult = JSON::fromString(circleJSONString);
+    ASSERT_TRUE(parseResult);
+    auto circleDeserialized = JSON::as<ShapeInfo>(parseResult.value());
+    ASSERT_TRUE(circleDeserialized);
+    ASSERT_EQ(circle, circleDeserialized.value());
+    spdlog::info("Circle radius = {}", get<Circle>(circleDeserialized.value().shape).radius);
+}
+
+struct PersonInfo {
+    std::string name;
+    std::optional<std::variant<int, Date>> ageInfo;
+
+    bool operator==(const PersonInfo&) const = default;
+};
+
+C2K_JSON_DEFINE_TYPE(PersonInfo, name, ageInfo);
+
+TEST(CombinedParsers, optionalVariant) {
+    using namespace c2k;
+    const auto dawna = PersonInfo{ .name{ "Dawna L. Lopez" }, .ageInfo{ 42 } };
+    const auto dawnaSerialized = JSON::Value{ dawna };
+    const auto dawnaDeserialized = JSON::as<PersonInfo>(dawnaSerialized);
+    ASSERT_TRUE(dawnaDeserialized);
+    ASSERT_EQ(dawna, dawnaDeserialized.value());
+
+    const auto maria = PersonInfo{ .name{ "Maria J. Davis" }, .ageInfo{} };
+    const auto mariaSerialized = JSON::Value{ maria };
+    const auto mariaDeserialized = JSON::as<PersonInfo>(mariaSerialized);
+    ASSERT_TRUE(mariaDeserialized);
+    ASSERT_EQ(maria, mariaDeserialized.value());
+
+    const auto wesleyString = R"({
+  "name": "Wesley L. King",
+  "ageInfo": {
+    "year": 1944,
+    "month": 6,
+    "day": 12
+  }
+})";
+    const auto wesleyParsed = JSON::fromString(wesleyString);
+    ASSERT_TRUE(wesleyParsed);
+    ASSERT_EQ(wesleyString, wesleyParsed->dump());// maybe should not compare these
+    const auto wesleyDeserialized = JSON::as<PersonInfo>(wesleyParsed.value());
+    ASSERT_TRUE(wesleyDeserialized);
+    const auto wesleyExpected =
+            PersonInfo{ .name{ "Wesley L. King" }, .ageInfo{ Date{ .year{ 1944 }, .month{ 6 }, .day{ 12 } } } };
+    ASSERT_EQ(wesleyDeserialized.value(), wesleyExpected);
 }
