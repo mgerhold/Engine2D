@@ -76,9 +76,7 @@ namespace c2k {
             ImGui_ImplOpenGL3_NewFrame();
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();
-            ImGui::Begin("Window title");
-            ImGui::Text("Hello dear ImGui!");
-            ImGui::End();
+            ImGui::ShowDemoWindow();
             ImGui::Render();
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
