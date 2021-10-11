@@ -85,5 +85,11 @@
       "texture": "dff006d0-3c6e-4a22-99ff-2b2af8fdc770",
       "shaderProgram": "b520f0eb-1756-41e0-ac07-66c3338bc594"
     }
+  ],
+  "animations": [
+    {
+      "guid": "11d93892-4542-4177-9c83-00647858fbe3",
+      "filename": "animations/fire.json"
+    }
   ]
 }

@@ -14,6 +14,7 @@
 #include "ScriptUtils/ScriptUtils.hpp"
 #include "ParticleSystem.hpp"
 #include "Sprite.hpp"
+#include "Animation.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -49,9 +50,9 @@ namespace c2k {
 
     struct SpriteSheetAnimationComponent {
         const SpriteSheet* spriteSheet;
+        const Animation* animation;
         double lastFrameChange;
-        double frameTime;
-        int currentFrame;
+        int currentFrame{ 0 };
     };
 
     struct CameraComponent {

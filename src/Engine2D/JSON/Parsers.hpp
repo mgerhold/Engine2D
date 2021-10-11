@@ -10,6 +10,7 @@
 #include <gsl/gsl>
 #include <filesystem>
 #include <type_traits>
+#include <optional>
 
 namespace c2k::JSON::Implementation_ {
 

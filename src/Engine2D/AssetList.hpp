@@ -55,15 +55,23 @@ namespace c2k {
 
         C2K_JSON_DEFINE_TYPE(ParticleSystemDescription, guid, filename, group, texture, shaderProgram);
 
-        struct List {
-            std::vector<TextureDescription> textures;
-            std::vector<ShaderProgramDescription> shaderPrograms;
-            std::vector<SpriteSheetDescription> spriteSheets;
-            std::vector<ScriptDescription> scripts;
-            std::vector<ParticleSystemDescription> particleSystems;
+        struct AnimationDescription {
+            GUID guid;
+            std::filesystem::path filename;
         };
 
-        C2K_JSON_DEFINE_TYPE(List, textures, shaderPrograms, spriteSheets, scripts, particleSystems);
+        C2K_JSON_DEFINE_TYPE(AnimationDescription, guid, filename);
+
+        struct List {
+            std::optional<std::vector<TextureDescription>> textures;
+            std::optional<std::vector<ShaderProgramDescription>> shaderPrograms;
+            std::optional<std::vector<SpriteSheetDescription>> spriteSheets;
+            std::optional<std::vector<ScriptDescription>> scripts;
+            std::optional<std::vector<ParticleSystemDescription>> particleSystems;
+            std::optional<std::vector<AnimationDescription>> animations;
+        };
+
+        C2K_JSON_DEFINE_TYPE(List, textures, shaderPrograms, spriteSheets, scripts, particleSystems, animations);
 
     }// namespace AssetDescriptions
 
@@ -75,31 +83,6 @@ namespace c2k {
         [[nodiscard]] const AssetDescriptions::List& assetDescriptions() const noexcept {
             return mAssetDescriptions;
         }
-
-    private:
-        /*template<typename AssetDescription>
-        void parseCategory(const JSON::Value& json,
-                           const std::string& title,
-                           std::vector<AssetDescription>& targetContainer) {
-            if (!json.containsKey(title)) {
-                spdlog::warn("Asset list does not contain assets of category \"{}\"", title);
-                return;
-            }
-            auto categoryItems = json.at(title);
-            if (!categoryItems.is_array()) {
-                spdlog::error("Items of category \"{}\" must be an array", title);
-                return;
-            }
-            for (const auto& item : categoryItems) {
-                const auto parsed = AssetDescription::deserialize(item);
-                if (!parsed) {
-                    spdlog::error("Failed to parse item: {}", to_string(item));
-                    continue;
-                }
-                targetContainer.push_back(parsed.value());
-            }
-            spdlog::info("Parsed {} items of category \"{}\"...", targetContainer.size(), title);
-        }*/
 
     private:
         AssetDescriptions::List mAssetDescriptions;

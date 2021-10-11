@@ -16,28 +16,45 @@ namespace c2k {
         } else {
             spdlog::error("Unable to create debug texture");
         }
+        mDebugFallbackAnimation = Animation::fromFramerate(50.0);
     }
 
     void AssetDatabase::loadFromList(const AssetList& list) noexcept {
         const auto assets = assetPath();
-        for (const auto& textureDescription : list.assetDescriptions().textures) {
-            loadTexture(assets / textureDescription.filename, textureDescription.guid);
+        if (list.assetDescriptions().textures) {
+            for (const auto& textureDescription : list.assetDescriptions().textures.value()) {
+                loadTexture(assets / textureDescription.filename, textureDescription.guid);
+            }
         }
-        for (const auto& shaderProgramDescription : list.assetDescriptions().shaderPrograms) {
-            loadShaderProgram(assets / shaderProgramDescription.vertexShaderFilename,
-                              assets / shaderProgramDescription.fragmentShaderFilename, shaderProgramDescription.guid);
+        if (list.assetDescriptions().shaderPrograms) {
+            for (const auto& shaderProgramDescription : list.assetDescriptions().shaderPrograms.value()) {
+                loadShaderProgram(assets / shaderProgramDescription.vertexShaderFilename,
+                                  assets / shaderProgramDescription.fragmentShaderFilename,
+                                  shaderProgramDescription.guid);
+            }
         }
-        for (const auto& spriteSheetDescription : list.assetDescriptions().spriteSheets) {
-            loadSpriteSheet(assets / spriteSheetDescription.filename, spriteSheetDescription.guid,
-                            texture(spriteSheetDescription.texture));
+        if (list.assetDescriptions().spriteSheets) {
+            for (const auto& spriteSheetDescription : list.assetDescriptions().spriteSheets.value()) {
+                loadSpriteSheet(assets / spriteSheetDescription.filename, spriteSheetDescription.guid,
+                                texture(spriteSheetDescription.texture));
+            }
         }
-        for (const auto& scriptDescription : list.assetDescriptions().scripts) {
-            loadScript(assets / scriptDescription.filename, scriptDescription.guid);
+        if (list.assetDescriptions().scripts) {
+            for (const auto& scriptDescription : list.assetDescriptions().scripts.value()) {
+                loadScript(assets / scriptDescription.filename, scriptDescription.guid);
+            }
         }
-        for (const auto& particleSystemDescription : list.assetDescriptions().particleSystems) {
-            loadParticleSystem(assets / particleSystemDescription.filename, particleSystemDescription.guid,
-                               texture(particleSystemDescription.texture),
-                               shaderProgramMutable(particleSystemDescription.shaderProgram));
+        if (list.assetDescriptions().particleSystems) {
+            for (const auto& particleSystemDescription : list.assetDescriptions().particleSystems.value()) {
+                loadParticleSystem(assets / particleSystemDescription.filename, particleSystemDescription.guid,
+                                   texture(particleSystemDescription.texture),
+                                   shaderProgramMutable(particleSystemDescription.shaderProgram));
+            }
+        }
+        if (list.assetDescriptions().animations) {
+            for (const auto& animationDescription : list.assetDescriptions().animations.value()) {
+                loadAnimation(assets / animationDescription.filename, animationDescription.guid);
+            }
         }
     }
 

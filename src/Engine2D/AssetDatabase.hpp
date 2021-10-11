@@ -11,6 +11,7 @@
 #include "AssetList.hpp"
 #include "Script.hpp"
 #include "ParticleSystem.hpp"
+#include "Animation.hpp"
 
 namespace c2k {
 
@@ -68,6 +69,11 @@ namespace c2k {
                     mDebugFallbackParticleSystem);
         }
 
+        Animation& loadAnimation(const std::filesystem::path& filename, GUID guid) noexcept {
+            return load<Animation>(
+                    guid, [&]() { return Animation::loadFromFile(filename); }, mDebugFallbackAnimation);
+        }
+
         [[nodiscard]] Texture& textureMutable(GUID guid) noexcept {
             return getMutable<Texture>(guid, mDebugFallbackTexture);
         }
@@ -112,6 +118,10 @@ namespace c2k {
             return get<ParticleSystem>(guid, mDebugFallbackParticleSystem);
         }
 
+        [[nodiscard]] const Animation& animation(GUID guid) noexcept {
+            return get<Animation>(guid, mDebugFallbackAnimation);
+        }
+
         [[nodiscard]] static auto assetPath() noexcept {
             return std::filesystem::current_path() / "assets";
         }
@@ -125,7 +135,7 @@ namespace c2k {
         }
 
     private:
-        using Asset = std::variant<Texture, ShaderProgram, SpriteSheet, Script, ParticleSystem>;
+        using Asset = std::variant<Texture, ShaderProgram, SpriteSheet, Script, ParticleSystem, Animation>;
 
     private:
         template<typename T, typename LoadFunc>
@@ -138,7 +148,7 @@ namespace c2k {
 #endif
                 return std::get<T>(mAssets[guid]);
             } else {
-                spdlog::error("Could not load asset for GUID {}", guid, expected.error());
+                spdlog::error("Could not load asset for GUID {}: {}", guid, expected.error());
                 return debugFallback;
             }
         }
@@ -170,6 +180,7 @@ namespace c2k {
         SpriteSheet mDebugFallbackSpriteSheet;      // TODO: set
         Script mDebugFallbackScript;                // TODO: set
         ParticleSystem mDebugFallbackParticleSystem;// TODO: set
+        Animation mDebugFallbackAnimation;
     };
 
 }// namespace c2k

@@ -4,6 +4,8 @@
 
 #include "Application.hpp"
 #include "MathUtils/MathUtils.hpp"
+#include "Animation.hpp"
+#include <variant>
 
 namespace {
     // anonymous namespace for functions and data that deal with measuring the frame time
@@ -90,10 +92,31 @@ namespace c2k {
     void Application::animateSprites() noexcept {
         for (auto&& [entity, animation, dynamicSprite] :
              mRegistry.componentsMutable<SpriteSheetAnimationComponent, DynamicSpriteComponent>()) {
-            const double nextFrameChange = animation.lastFrameChange + animation.frameTime;
-            if (mTime.elapsed >= nextFrameChange) {
-                animation.currentFrame =
-                        (animation.currentFrame + 1) % gsl::narrow_cast<int>(animation.spriteSheet->frames.size());
+            const auto& animationAsset = *animation.animation;
+            bool advanceFrame = false;
+            double nextFrameChange = 0.0;
+            if (holds_alternative<double>(animationAsset)) {
+                // the animation only holds information of the framerate
+                nextFrameChange = animation.lastFrameChange + 1.0 / get<double>(animationAsset);
+                advanceFrame = mTime.elapsed >= nextFrameChange;
+                if (advanceFrame) {
+                    animation.currentFrame =
+                            (animation.currentFrame + 1) % gsl::narrow_cast<int>(animation.spriteSheet->frames.size());
+                }
+            } else if (holds_alternative<std::vector<double>>(animationAsset)) {
+                // the animation holds the frametimes for all needed frames seperately
+                const auto& frameTimes = get<std::vector<double>>(animationAsset);
+                nextFrameChange = animation.lastFrameChange + frameTimes[animation.currentFrame];
+                advanceFrame = mTime.elapsed >= nextFrameChange;
+                if (advanceFrame) {
+                    animation.currentFrame =
+                            (animation.currentFrame + 1) %
+                            gsl::narrow_cast<int>(std::min(animation.spriteSheet->frames.size(), frameTimes.size()));
+                }
+            } else {
+                assert(!"invalid animation type");
+            }
+            if (advanceFrame) {
                 dynamicSprite.sprite.textureRect = animation.spriteSheet->frames[animation.currentFrame].rect;
                 animation.lastFrameChange = nextFrameChange;
             }

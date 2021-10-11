@@ -33,6 +33,7 @@ namespace c2k {
         const auto fireTextureGUID{ GUID::fromString("c22764c9-9750-4749-810e-10f4c6f50123") };
         const auto textureGUID{ GUID::fromString("29b0ca4a-b46d-43c6-af6d-a365c5fba48f") };
         const auto shaderGUID{ GUID::fromString("b520f0eb-1756-41e0-ac07-66c3338bc594") };
+        const auto fireAnimationGUID{ GUID::fromString("11d93892-4542-4177-9c83-00647858fbe3") };
 
         mAssetDatabase.textureMutable(fireTextureGUID).setFiltering(Texture::Filtering::Nearest);
 
@@ -65,9 +66,8 @@ namespace c2k {
                         .color{ Color::white() },
                 },
                 SpriteSheetAnimationComponent{ .spriteSheet{ &mAssetDatabase.spriteSheet(spriteSheetGUID) },
-                                               .lastFrameChange{ mTime.elapsed },
-                                               .frameTime{ 1.0 / 50.0 },
-                                               .currentFrame{ 0 } },
+                                               .animation{ &mAssetDatabase.animation(fireAnimationGUID) },
+                                               .lastFrameChange{ mTime.elapsed } },
                 RelationshipComponent{ .parent{ anchor } });
         const auto secondFlame = mRegistry.createEntity(
                 TransformComponent{ .position{ 200.0f, 0.0f, 0.0f }, .scale{ fireTextureSize } },
@@ -77,8 +77,8 @@ namespace c2k {
                         .color{ Color::white() },
                 },
                 SpriteSheetAnimationComponent{ .spriteSheet{ &mAssetDatabase.spriteSheet(spriteSheetGUID) },
+                                               .animation{ &mAssetDatabase.animation(fireAnimationGUID) },
                                                .lastFrameChange{ mTime.elapsed },
-                                               .frameTime{ 1.0 / 50.0 },
                                                .currentFrame{ 0 } },
                 RelationshipComponent{ .parent{ anchor } });
         mRegistry.createEntity(
@@ -89,8 +89,8 @@ namespace c2k {
                         .color{ Color::white() },
                 },
                 SpriteSheetAnimationComponent{ .spriteSheet{ &mAssetDatabase.spriteSheet(spriteSheetGUID) },
+                                               .animation{ &mAssetDatabase.animation(fireAnimationGUID) },
                                                .lastFrameChange{ mTime.elapsed },
-                                               .frameTime{ 1.0 / 50.0 },
                                                .currentFrame{ 0 } },
                 RelationshipComponent{ .parent{ secondFlame } });
 
