@@ -187,7 +187,11 @@ target_link_libraries(Engine2D PRIVATE sol2::sol2)
 find_package(magic_enum CONFIG REQUIRED)
 target_link_libraries(Engine2D PRIVATE magic_enum::magic_enum)
 
+find_package(imgui CONFIG REQUIRED)
+target_link_libraries(Engine2D PUBLIC imgui::imgui)
+
 target_link_libraries(Sandbox PRIVATE spdlog::spdlog spdlog::spdlog_header_only)
+
 
 target_link_libraries(Sandbox PRIVATE Engine2D)
 target_link_libraries(Demo PRIVATE Engine2D)

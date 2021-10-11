@@ -29,6 +29,8 @@ namespace c2k {
         [[nodiscard]] WindowSize framebufferSize() const;
 
     private:
+        void initImGui() noexcept;
+        void shutdownImGui() noexcept;
         static void handleOpenGLDebugOutput(GLenum source,
                                             GLenum type,
                                             unsigned int id,

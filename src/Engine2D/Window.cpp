@@ -5,6 +5,9 @@
 #include "Window.hpp"
 #include "Input.hpp"
 #include "OpenGLVersion.hpp"
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
 #include <spdlog/spdlog.h>
 #include <gsl/gsl>
 #include <exception>
@@ -79,16 +82,35 @@ namespace c2k {
         }
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_MULTISAMPLE);
+        initImGui();
     }
 
     Window::~Window() {
         spdlog::info("exiting application");
+        shutdownImGui();
         glfwDestroyWindow(mWindowPtr);
         glfwTerminate();
     }
 
     WindowSize Window::framebufferSize() const {
         return mFrameBufferSize;
+    }
+
+    void Window::initImGui() noexcept {
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        const ImGuiIO& io = ImGui::GetIO();
+        (void) io;
+        ImGui::StyleColorsDark();
+        ImGui_ImplGlfw_InitForOpenGL(mWindowPtr, true);
+        constexpr const char* glsl_version = "#version 430";
+        ImGui_ImplOpenGL3_Init(glsl_version);
+    }
+
+    void Window::shutdownImGui() noexcept {
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+        ImGui::DestroyContext();
     }
 
     void Window::handleOpenGLDebugOutput(GLenum source,

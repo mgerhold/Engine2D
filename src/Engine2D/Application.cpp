@@ -5,6 +5,9 @@
 #include "Application.hpp"
 #include "MathUtils/MathUtils.hpp"
 #include "Animation.hpp"
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
 #include <variant>
 
 namespace {
@@ -69,6 +72,16 @@ namespace c2k {
         while (!glfwWindowShouldClose(mWindow.getGLFWWindowPointer())) {
             update();
             runSystems();
+
+            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
+            ImGui::Begin("Window title");
+            ImGui::Text("Hello dear ImGui!");
+            ImGui::End();
+            ImGui::Render();
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
             glfwSwapBuffers(mWindow.getGLFWWindowPointer());
             mInput.nextFrame();
             glfwPollEvents();
