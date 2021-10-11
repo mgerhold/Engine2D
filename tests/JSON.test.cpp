@@ -6,6 +6,7 @@
 #include <ScopedTimer.hpp>
 #include <FileUtils/FileUtils.hpp>
 #include <gtest/gtest.h>
+#include <nlohmann/json.hpp>
 #include <optional>
 #include <variant>
 #include <vector>

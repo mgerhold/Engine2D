@@ -49,7 +49,8 @@ namespace c2k {
         };
 
     public:
-        ScopedTimer(const char* name = "", SOURCE_LOCATION sourceLocation = SOURCE_LOCATION::current()) noexcept;
+        explicit ScopedTimer(const char* name = "",
+                             SOURCE_LOCATION sourceLocation = SOURCE_LOCATION::current()) noexcept;
         ~ScopedTimer();
         static void logResults() noexcept;
 
