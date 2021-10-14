@@ -111,11 +111,11 @@ add_definitions(-DBOOST_UUID_FORCE_AUTO_LINK)
 foreach (target ${TARGET_LIST})
     # set warning levels
     if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        message("MSVC build")
         target_compile_options(${target} PUBLIC /W4 /permissive- /bigobj)
     elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        message("GCC build")
         target_compile_options(${target} PUBLIC -Wall -Wextra -pedantic -Wconversion -pthread -ltbb)
-    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-        target_compile_options(${target} PUBLIC -Wall -Wextra -pedantic -Wconversion -pthread)
     endif ()
 
     # define DEBUG_BUILD

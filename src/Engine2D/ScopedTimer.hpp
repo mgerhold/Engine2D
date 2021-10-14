@@ -4,12 +4,6 @@
 
 #pragma once
 
-#ifdef __clang__
-#define SOURCE_LOCATION std::experimental::source_location
-#else
-#define SOURCE_LOCATION std::source_location
-#endif
-
 #ifndef ENABLE_PROFILING
 #define ENABLE_PROFILING 0
 #endif
@@ -50,17 +44,17 @@ namespace c2k {
 
     public:
         explicit ScopedTimer(const char* name = "",
-                             SOURCE_LOCATION sourceLocation = SOURCE_LOCATION::current()) noexcept;
+                             std::source_location sourceLocation = std::source_location::current()) noexcept;
         ~ScopedTimer();
         static void logResults() noexcept;
 
     private:
         static std::string sourceLocationToString(const std::string& name,
-                                                  const SOURCE_LOCATION& sourceLocation) noexcept;
+                                                  const std::source_location& sourceLocation) noexcept;
 
     private:
         std::string mName;
-        SOURCE_LOCATION mSourceLocation;
+        std::source_location mSourceLocation;
         std::chrono::time_point<std::chrono::high_resolution_clock> startTime;
         static inline uint64_t sCurrentDepth{ 0ULL };
         static inline std::unordered_map<std::string, Measurement> sMeasurements{};
