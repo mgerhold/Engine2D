@@ -154,9 +154,11 @@ namespace c2k::JSON {
             using Variant = std::variant<T...>;
             DeserializationResult result;
             bool success = ([&]() -> bool {
-                holds_alternative<T>(out);// <- GCC doesn't compile without this because it complains
-                                          // that there would be no unexpanded parameter pack inside
-                                          // the fold expression operand
+                [[maybe_unused]] auto _ = holds_alternative<T>(out);// <- GCC doesn't compile without
+                                                                    // this because it complains
+                                                                    // that there would be no unexpanded
+                                                                    // parameter pack inside the fold
+                                                                    // expression operand
                 T buffer{};
                 result = fromJSON(json, buffer);
                 if (!result) {
