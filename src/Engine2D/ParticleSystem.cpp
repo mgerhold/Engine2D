@@ -6,61 +6,10 @@
 #include "FileUtils/FileUtils.hpp"
 #include "JSONUtils.hpp"
 #include "ShaderProgram.hpp"
-#include "JSON/JSON.hpp"
+#include <gsl/gsl>
+#include <tl/expected.hpp>
 
 namespace c2k {
-
-    namespace {
-
-        struct Vec2JSON {
-            float x;
-            float y;
-
-            operator glm::vec2() const {
-                return glm::vec2{ x, y };
-            }
-        };
-
-        C2K_JSON_DEFINE_TYPE(Vec2JSON, x, y);
-
-        struct Vec3JSON {
-            float x;
-            float y;
-            float z;
-
-            operator glm::vec3() const {
-                return glm::vec3{ x, y, z };
-            }
-        };
-
-        C2K_JSON_DEFINE_TYPE(Vec3JSON, x, y, z);
-
-        struct ParticleSystemJSON {
-            float startLifeTime;
-            float lifeTimeVariation;
-            float particlesPerSecond;
-            Vec3JSON gravity;
-            Vec2JSON startScale;
-            Vec2JSON endScale;
-            float startRotationSpeed;
-            float endRotationSpeed;
-            float startRotationSpeedVariation;
-            float endRotationSpeedVariation;
-        };
-
-        C2K_JSON_DEFINE_TYPE(ParticleSystemJSON,
-                             startLifeTime,
-                             lifeTimeVariation,
-                             particlesPerSecond,
-                             gravity,
-                             startScale,
-                             endScale,
-                             startRotationSpeed,
-                             endRotationSpeed,
-                             startRotationSpeedVariation,
-                             endRotationSpeedVariation);
-
-    }// namespace
 
     tl::expected<ParticleSystem, std::string> ParticleSystem::loadFromFile(const std::filesystem::path& filename,
                                                                            const Texture& texture,
@@ -75,17 +24,11 @@ namespace c2k {
             return tl::unexpected(fmt::format("Unable to deserialize particle system"));
         }
         const auto particleSystemJSON = deserializationResult.value();
-        return ParticleSystem{ .texture{ &texture },
-                               .shaderProgram{ &shaderProgram },
-                               .startLifeTime{ particleSystemJSON.startLifeTime },
-                               .lifeTimeVariation{ particleSystemJSON.lifeTimeVariation },
-                               .particlesPerSecond{ particleSystemJSON.particlesPerSecond },
-                               .gravity{ particleSystemJSON.gravity },
-                               .startScale{ particleSystemJSON.startScale },
-                               .endScale{ particleSystemJSON.endScale },
-                               .startRotationSpeed{ particleSystemJSON.startRotationSpeed },
-                               .endRotationSpeed{ particleSystemJSON.endRotationSpeed },
-                               .startRotationSpeedVariation{ particleSystemJSON.startRotationSpeedVariation },
-                               .endRotationSpeedVariation{ particleSystemJSON.endRotationSpeedVariation } };
+        ParticleSystem result;
+        result << particleSystemJSON;// only assigns members that are inherited from ParticleSystemJSON
+        // assign remaining members
+        result.sprite = Sprite::fromTexture(texture);
+        result.shaderProgram = &shaderProgram;
+        return result;
     }
 }// namespace c2k

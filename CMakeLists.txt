@@ -18,7 +18,7 @@ endif ()
 set(TARGET_LIST
         Engine2D
         Sandbox
-        Demo
+        PartED
         )
 
 add_library(Engine2D STATIC
@@ -95,11 +95,11 @@ add_library(Engine2D STATIC
         src/Engine2D/JSON/MacroDefinitions.hpp
         src/Engine2D/JSON/Parsers.cpp
         src/Engine2D/JSON/Parsers.hpp
-        src/Engine2D/Animation.hpp)
+        src/Engine2D/Animation.hpp src/Engine2D/Platform.cpp src/Engine2D/Platform.hpp)
 target_include_directories(Engine2D PUBLIC ${PROJECT_SOURCE_DIR}/src/Engine2D)
 
 add_executable(Sandbox src/Sandbox/main.cpp src/Sandbox/Sandbox.hpp src/Sandbox/Sandbox.cpp)
-add_executable(Demo src/Demo/Main.cpp src/Demo/Demo.hpp src/Demo/Demo.cpp)
+add_executable(PartED src/PartED/Main.cpp src/PartED/PartED.hpp src/PartED/PartED.cpp)
 
 # enable profiling if desired
 if (ENABLE_PROFILING)
@@ -192,9 +192,11 @@ target_link_libraries(Engine2D PUBLIC imgui::imgui)
 
 target_link_libraries(Sandbox PRIVATE spdlog::spdlog spdlog::spdlog_header_only)
 
-
 target_link_libraries(Sandbox PRIVATE Engine2D)
-target_link_libraries(Demo PRIVATE Engine2D)
+target_link_libraries(PartED PRIVATE Engine2D)
+
+find_package(tinyfiledialogs CONFIG REQUIRED)
+target_link_libraries(PartED PRIVATE tinyfiledialogs::tinyfiledialogs)
 
 enable_testing()
 add_subdirectory(tests)

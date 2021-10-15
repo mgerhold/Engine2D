@@ -31,7 +31,7 @@ namespace c2k {
 
         const auto spriteSheetGUID{ GUID::fromString("c15111ea-7ba8-4e65-8f24-40c868498d5b") };
         const auto fireTextureGUID{ GUID::fromString("c22764c9-9750-4749-810e-10f4c6f50123") };
-        const auto textureGUID{ GUID::fromString("29b0ca4a-b46d-43c6-af6d-a365c5fba48f") };
+        const auto textureGUID{ GUID::fromString("9043b452-363c-4917-bfde-592a72077e37") };
         const auto shaderGUID{ GUID::fromString("b520f0eb-1756-41e0-ac07-66c3338bc594") };
         const auto fireAnimationGUID{ GUID::fromString("11d93892-4542-4177-9c83-00647858fbe3") };
 

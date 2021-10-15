@@ -2,9 +2,9 @@
 // Created by coder2k on 09.10.2021.
 //
 
-#include "Demo.hpp"
+#include "PartED.hpp"
 
 int main() {
-    Demo demo;
+    PartED demo;
     demo.run();
 }

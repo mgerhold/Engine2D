@@ -21,6 +21,10 @@ namespace c2k {
         void loadFromList(const AssetList& list) noexcept;
         void loadFromList(const std::filesystem::path& path) noexcept;
 
+        [[nodiscard]] bool hasBeenLoaded(GUID guid) const noexcept {
+            return mAssets.contains(guid);
+        }
+
         Texture& loadTexture(const std::filesystem::path& filename, GUID guid) noexcept {
             return load<Texture>(
                     guid,
@@ -123,7 +127,7 @@ namespace c2k {
         }
 
         [[nodiscard]] static auto assetPath() noexcept {
-            return std::filesystem::current_path() / "assets";
+            return std::filesystem::current_path() / "assets/";
         }
 
         [[nodiscard]] static auto directoryIterator(const std::filesystem::path& path) noexcept {
@@ -176,7 +180,7 @@ namespace c2k {
     private:
         std::unordered_map<GUID, Asset> mAssets;
         Texture mDebugFallbackTexture;
-        ShaderProgram mDebugFallbackShaderProgram;  // TODO: set
+        ShaderProgram mDebugFallbackShaderProgram;
         SpriteSheet mDebugFallbackSpriteSheet;      // TODO: set
         Script mDebugFallbackScript;                // TODO: set
         ParticleSystem mDebugFallbackParticleSystem;// TODO: set

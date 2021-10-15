@@ -35,6 +35,7 @@ namespace c2k {
     private:
         virtual void setup() noexcept = 0;
         virtual void update() noexcept = 0;
+        virtual void renderImGui() noexcept { }
         void runSystems() noexcept;
         void animateSprites() noexcept;
         void runScripts() noexcept;

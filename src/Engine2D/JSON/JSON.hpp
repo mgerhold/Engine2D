@@ -5,9 +5,12 @@
 #pragma once
 
 #include "Parsers.hpp"
+#include "Color.hpp"
+#include <glm/glm.hpp>
 #include <gsl/gsl>
 #include <filesystem>
 #include <variant>
+#include <array>
 
 namespace c2k::JSON {
 
@@ -28,9 +31,11 @@ namespace c2k::JSON {
         DoubleExpected,
         FloatExpected,
         IntExpected,
+        UnsignedIntExpected,
         BoolExpected,
         PathExpected,
         VectorExpected,
+        ObjectExpected,
     };
 
     using DeserializationResult = tl::expected<std::monostate, DeserializationError>;
@@ -106,6 +111,79 @@ namespace c2k::JSON {
                 return tl::unexpected{ DeserializationError::IntExpected };
             }
             out = gsl::narrow_cast<int>(result.value());
+            return std::monostate{};
+        }
+
+        [[nodiscard]] inline DeserializationResult fromJSON(const JSONValue& json, std::uint32_t& out) noexcept {
+            const auto result = json.asNumber();
+            if (!result || result.value() < 0.0) {
+                return tl::unexpected{ DeserializationError::UnsignedIntExpected };
+            }
+            out = gsl::narrow_cast<std::uint32_t>(result.value());
+            return std::monostate{};
+        }
+
+        [[nodiscard]] inline DeserializationResult fromJSON(const JSONValue& json, glm::vec2& out) noexcept {
+            if (!json.isObject()) {
+                return tl::unexpected{ DeserializationError::ObjectExpected };
+            }
+            if (!json.containsKey("x") || !json.containsKey("y")) {
+                return tl::unexpected{ DeserializationError::KeyNotFound };
+            }
+            const auto xResult = json.at("x")->asNumber();
+            const auto yResult = json.at("y")->asNumber();
+            if (!xResult || !yResult) {
+                return tl::unexpected{ DeserializationError::FloatExpected };
+            }
+            out.x = gsl::narrow_cast<float>(xResult.value());
+            out.y = gsl::narrow_cast<float>(yResult.value());
+            return std::monostate{};
+        }
+
+        [[nodiscard]] inline DeserializationResult fromJSON(const JSONValue& json, glm::vec3& out) noexcept {
+            if (!json.isObject()) {
+                return tl::unexpected{ DeserializationError::ObjectExpected };
+            }
+            const bool hasXYZ = (json.containsKey("x") && json.containsKey("y") && json.containsKey("z"));
+            const bool hasRGB = (json.containsKey("r") && json.containsKey("g") && json.containsKey("b"));
+            if (!hasXYZ && !hasRGB) {
+                return tl::unexpected{ DeserializationError::KeyNotFound };
+            }
+            constexpr std::array<const char*, 3> XYZKeys{ "x", "y", "z" };
+            constexpr std::array<const char*, 3> RGBKeys{ "r", "g", "b" };
+            std::array<const char*, 3> keys = hasXYZ ? XYZKeys : RGBKeys;
+            const std::array<tl::expected<double, std::string>, 3> results{ json.at(keys[0])->asNumber(),
+                                                                            json.at(keys[1])->asNumber(),
+                                                                            json.at(keys[2])->asNumber() };
+            for (const auto& result : results) {
+                if (!result) {
+                    return tl::unexpected{ DeserializationError::FloatExpected };
+                }
+            }
+            out = glm::vec3{ gsl::narrow_cast<float>(results[0].value()), gsl::narrow_cast<float>(results[1].value()),
+                             gsl::narrow_cast<float>(results[2].value()) };
+            return std::monostate{};
+        }
+
+        [[nodiscard]] inline DeserializationResult fromJSON(const JSONValue& json, Color& out) noexcept {
+            if (!json.isObject()) {
+                return tl::unexpected{ DeserializationError::ObjectExpected };
+            }
+            const bool hasKeys =
+                    (json.containsKey("r") && json.containsKey("g") && json.containsKey("b") && json.containsKey("a"));
+            if (!hasKeys) {
+                return tl::unexpected{ DeserializationError::KeyNotFound };
+            }
+            const std::array<tl::expected<double, std::string>, 4> results{
+                json.at("r")->asNumber(), json.at("g")->asNumber(), json.at("b")->asNumber(), json.at("a")->asNumber()
+            };
+            for (const auto& result : results) {
+                if (!result) {
+                    return tl::unexpected{ DeserializationError::FloatExpected };
+                }
+            }
+            out = { gsl::narrow_cast<float>(results[0].value()), gsl::narrow_cast<float>(results[1].value()),
+                    gsl::narrow_cast<float>(results[2].value()), gsl::narrow_cast<float>(results[3].value()) };
             return std::monostate{};
         }
 

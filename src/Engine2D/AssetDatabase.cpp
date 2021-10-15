@@ -17,6 +17,7 @@ namespace c2k {
             spdlog::error("Unable to create debug texture");
         }
         mDebugFallbackAnimation = Animation::fromFramerate(50.0);
+        mDebugFallbackShaderProgram = ShaderProgram::defaultProgram();
     }
 
     void AssetDatabase::loadFromList(const AssetList& list) noexcept {

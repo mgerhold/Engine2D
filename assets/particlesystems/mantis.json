@@ -1,22 +1,36 @@
 {
-  "startLifeTime": 5,
-  "lifeTimeVariation": 0.05,
-  "particlesPerSecond": 200,
-  "gravity": {
-    "x": 0,
-    "y": -120,
-    "z": -0.001
-  },
-  "startScale": {
-    "x": 0.05,
-    "y": 0.05
-  },
-  "endScale": {
+  "duration": 5,
+  "looping": true,
+  "prewarm": false,
+  "startDelay": 1,
+  "startLifetime": 3,
+  "startSpeed": 2,
+  "startSize": {
     "x": 4,
     "y": 4
   },
-  "startRotationSpeed": 0,
-  "endRotationSpeed": 0,
-  "startRotationSpeedVariation": 400,
-  "endRotationSpeedVariation": 10
+  "startRotation": 0,
+  "flipRotation": 0,
+  "color": {
+    "r": 1,
+    "g": 1,
+    "b": 1,
+    "a": 1
+  },
+  "gravityModifier": 0,
+  "simulateInWorldSpace": true,
+  "maxParticles": 1000,
+  "rateOverTime": 200,
+  "rateOverDistance": 0,
+  "emitterRadius": 3,
+  "emitterArc": 360,
+  "linearVelocityOverLifetime": {
+    "x": 1,
+    "y": 1
+  },
+  "radialVelocityOverLifetime": 0,
+  "forceOverLifetime": {
+    "x": 0,
+    "y": 0
+  }
 }

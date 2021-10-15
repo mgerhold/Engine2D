@@ -169,4 +169,51 @@ namespace c2k {
         }
     }
 
+    ShaderProgram ShaderProgram::defaultProgram() noexcept {
+        const std::string vertexShader = R"(#version 430 core
+
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec4 aColor;
+layout (location = 2) in vec2 aTexCoords;
+layout (location = 3) in uint aTexIndex;
+
+out vec4 fragmentColor;
+out vec3 fragmentPosition;
+out vec2 texCoords;
+flat out uint texIndex;
+
+uniform mat4 projectionMatrix;
+
+void main() {
+   vec4 position = projectionMatrix * vec4(aPos.xyz, 1.0);
+   fragmentPosition = position.xyz;
+   fragmentColor = aColor;
+   texCoords = aTexCoords;
+   texIndex = aTexIndex;
+   gl_Position = position;
+})";
+        const std::string fragmentShader = R"(#version 430 core
+
+in vec3 fragmentPosition;
+in vec4 fragmentColor;
+in vec2 texCoords;
+flat in uint texIndex;
+
+out vec4 FragColor;
+
+layout (binding = 0) uniform sampler2D uTextures[32];
+
+void main() {
+    vec4 color = texture(uTextures[texIndex], texCoords) * fragmentColor;
+    if (color.a == 0.0) {
+        discard;
+    }
+    FragColor = color;
+})";
+        ShaderProgram result;
+        const bool success = result.compile(vertexShader, fragmentShader);
+        assert(success);
+        return result;
+    }
+
 }// namespace c2k

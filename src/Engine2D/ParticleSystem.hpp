@@ -4,26 +4,26 @@
 
 #pragma once
 
-#include "Texture.hpp"
+#include "Sprite.hpp"
+#include "JSON/JSON.hpp"
+#include "Color.hpp"
+#include <glm/glm.hpp>
 #include <filesystem>
 
 namespace c2k {
 
+#include "ParticleSystemJSONTypes.inc"
+
     class ShaderProgram;
 
-    struct ParticleSystem {
-        const Texture* texture{ nullptr };
+    struct ParticleSystem : public ParticleSystemImpl::ParticleSystemJSON {
+        Sprite sprite;
         ShaderProgram* shaderProgram{ nullptr };
-        float startLifeTime{ 0.0f };
-        float lifeTimeVariation{ 0.0f };
-        float particlesPerSecond{ 0.0f };
-        glm::vec3 gravity{ 0.0f };
-        glm::vec2 startScale{ 1.0f };
-        glm::vec2 endScale{ 1.0f };
-        float startRotationSpeed{ 0.0f };
-        float endRotationSpeed{ 0.0f };
-        float startRotationSpeedVariation{ 0.0f };
-        float endRotationSpeedVariation{ 0.0f };
+
+        ParticleSystem& operator<<(const ParticleSystemImpl::ParticleSystemJSON& base) noexcept {
+            ParticleSystemImpl::ParticleSystemJSON::operator=(base);
+            return *this;
+        }
 
         static tl::expected<ParticleSystem, std::string> loadFromFile(const std::filesystem::path& filename,
                                                                       const Texture& texture,

@@ -76,7 +76,7 @@ namespace c2k {
             ImGui_ImplOpenGL3_NewFrame();
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();
-            ImGui::ShowDemoWindow();
+            renderImGui();
             ImGui::Render();
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -194,7 +194,7 @@ namespace c2k {
     void Application::handleParticleEmitters() noexcept {
         for (auto&& [entity, particleEmitter, transform, root] :
              mRegistry.componentsMutable<ParticleEmitterComponent, TransformComponent, RootComponent>()) {
-            const double spawnInterval = 1.0 / particleEmitter.particleSystem->particlesPerSecond;
+            const double spawnInterval = 1.0 / get<float>(particleEmitter.particleSystem->rateOverTime);
             while (mTime.elapsed >= particleEmitter.lastSpawnTime + spawnInterval) {
                 mSpawningEmitters.emplace_back(entity);
                 particleEmitter.lastSpawnTime += spawnInterval;
@@ -203,30 +203,25 @@ namespace c2k {
         for (auto emitterEntity : mSpawningEmitters) {
             const ParticleSystem& particleSystem =
                     *(mRegistry.component<ParticleEmitterComponent>(emitterEntity).value().particleSystem);
-            const glm::vec2 baseScale{ particleSystem.texture->widthToHeightRatio(), 1.0f };
-            const auto startScale = baseScale * particleSystem.startScale;
-            const auto endScale = baseScale * particleSystem.endScale;
-            const double totalLifeTime = particleSystem.startLifeTime + mRandom.range(-particleSystem.lifeTimeVariation,
-                                                                                      particleSystem.lifeTimeVariation);
-            const float startRotationSpeed = glm::radians(particleSystem.startRotationSpeed +
-                                                          mRandom.range(-particleSystem.startRotationSpeedVariation,
-                                                                        particleSystem.startRotationSpeedVariation));
-            const float endRotationSpeed = glm::radians(
-                    particleSystem.endRotationSpeed +
-                    mRandom.range(-particleSystem.endRotationSpeedVariation, particleSystem.endRotationSpeedVariation));
+            const glm::vec2 baseScale{ particleSystem.sprite.texture->widthToHeightRatio(), 1.0f };
+            const auto startScale = baseScale * get<glm::vec2>(particleSystem.startSize);
+            const auto endScale = baseScale * get<glm::vec2>(particleSystem.startSize);
+            const double totalLifeTime = get<double>(particleSystem.startLifetime);
+            const float startRotationSpeed = 0.0f;
+            const float endRotationSpeed = 0.0f;
             mRegistry.createEntity(
                     TransformComponent{
                             .position{ mRegistry.component<TransformComponent>(emitterEntity).value().position },
                             .rotation{ 0.0f },
-                            .scale{ baseScale * particleSystem.startScale } },
+                            .scale{ startScale } },
                     DynamicSpriteComponent{ .shaderProgram{ particleSystem.shaderProgram },
-                                            .sprite{ Sprite::fromTexture(*particleSystem.texture) },
+                                            .sprite{ particleSystem.sprite },
                                             .color{ Color::white() } },
                     RootComponent{},
                     ParticleComponent{ .remainingLifeTime{ totalLifeTime },
                                        .totalLifeTime{ totalLifeTime },
                                        .velocity{ mRandom.unitDirection() * mRandom.range(100.0f, 300.0f) },
-                                       .gravity{ particleSystem.gravity },
+                                       .gravity{ glm::vec3{ 0.0f } },
                                        .startScale{ startScale },
                                        .endScale{ endScale },
                                        .startRotationSpeed{ startRotationSpeed },

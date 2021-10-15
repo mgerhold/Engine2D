@@ -34,6 +34,7 @@ namespace c2k {
                 const std::filesystem::path& fragmentShaderPath);
         static void setUniform(GLuint shaderName, std::size_t uniformNameHash, const glm::mat4& matrix) noexcept;
         void setUniform(std::size_t uniformNameHash, const glm::mat4& matrix) const noexcept;
+        [[nodiscard]] static ShaderProgram defaultProgram() noexcept;
 
     public:
         GUID guid;
