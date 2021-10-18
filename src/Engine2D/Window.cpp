@@ -99,6 +99,7 @@ namespace c2k {
     void Window::initImGui() noexcept {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
+        ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
         ImGui::StyleColorsDark();
         ImGui_ImplGlfw_InitForOpenGL(mWindowPtr, true);
         constexpr const char* glsl_version = "#version 430";

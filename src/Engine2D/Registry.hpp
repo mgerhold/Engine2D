@@ -9,10 +9,15 @@
 #include "TypeIdentifier.hpp"
 #include "Component.hpp"
 #include <tl/optional.hpp>
+#include <range/v3/all.hpp>
 
 namespace c2k {
 
     class Registry final {
+    public:
+        using Generation = Entity;
+        using Identifier = Entity;
+
     public:
         explicit Registry(std::size_t initialEntityCapacity = 0) : mComponentHolder{ initialEntityCapacity } {
             mEntities.reserve(initialEntityCapacity);
@@ -126,9 +131,24 @@ namespace c2k {
             swapIdentifiers(mNextRecyclableEntity, mEntities[index]);
             ++mNumRecyclableEntities;
         }
+
+        template<typename... Components>
+        std::size_t destroyEntitiesWithComponents() noexcept {
+            std::vector<Entity> entitiesToDelete;
+            for (const auto& tuple : components<Components...>()) {
+                entitiesToDelete.emplace_back(get<0>(tuple));
+            }
+            for (const auto entity : entitiesToDelete) {
+                destroyEntity(entity);
+            }
+            return entitiesToDelete.size();
+        }
+
         [[nodiscard]] bool isEntityAlive(Entity entity) const noexcept {
             const auto index = getIndexFromEntity(entity);
-            assert(mEntities.size() > index);
+            if (index >= mEntities.size()) {
+                return false;
+            }
             return mEntities[index] == entity;
         }
         [[nodiscard]] std::size_t numEntities() const noexcept {
@@ -140,6 +160,22 @@ namespace c2k {
         [[nodiscard]] std::size_t numEntitiesDead() const noexcept {
             return mNumRecyclableEntities;
         }
+
+        [[nodiscard]] const auto& entities() const noexcept {
+            using ranges::views::all;
+            return mEntities;
+        }
+
+        [[nodiscard]] auto entitiesAlive() const noexcept {
+            using ranges::views::filter;
+            return mEntities | filter([this](const auto entity) { return isEntityAlive(entity); });
+        }
+
+        [[nodiscard]] auto entitiesDead() const noexcept {
+            using ranges::views::filter;
+            return mEntities | filter([this](const auto entity) { return !isEntityAlive(entity); });
+        }
+
         template<typename Type>
         [[nodiscard]] std::size_t typeIdentifier() const noexcept {
             return mComponentHolder.template typeIdentifier<Type>();
@@ -150,17 +186,14 @@ namespace c2k {
             mComponentHolder.template registerType<T>();
         }
 
-    private:
-        using Generation = Entity;
-        using Identifier = Entity;
-
-    private:
         [[nodiscard]] static Identifier getIdentifierBitsFromEntity(Entity entity) noexcept {
             return Identifier{ (entity & identifierMask) >> generationBits };
         }
         [[nodiscard]] static Generation getGenerationBitsFromEntity(Entity entity) noexcept {
             return Generation{ entity & generationMask };
         }
+
+    private:
         [[nodiscard]] static Entity entityFromIdentifierAndGeneration(Identifier identifier,
                                                                       Generation generation) noexcept {
             return Entity{ (identifier << generationBits) | generation };

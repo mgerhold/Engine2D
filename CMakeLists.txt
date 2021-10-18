@@ -99,7 +99,7 @@ add_library(Engine2D STATIC
 target_include_directories(Engine2D PUBLIC ${PROJECT_SOURCE_DIR}/src/Engine2D)
 
 add_executable(Sandbox src/Sandbox/main.cpp src/Sandbox/Sandbox.hpp src/Sandbox/Sandbox.cpp)
-add_executable(PartED src/PartED/Main.cpp src/PartED/PartED.hpp src/PartED/PartED.cpp)
+add_executable(PartED src/PartED/Main.cpp src/PartED/PartED.hpp src/PartED/PartED.cpp src/PartED/PartEDProject.hpp)
 
 # enable profiling if desired
 if (ENABLE_PROFILING)

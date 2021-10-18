@@ -3,52 +3,34 @@
 //
 
 #include "PartED.hpp"
-#include "AssetDatabase.hpp"
-#include "Component.hpp"
-#include "Platform.hpp"
-#include <imgui.h>
+#include <AssetDatabase.hpp>
+#include <Component.hpp>
+#include <Platform.hpp>
 #include <tinyfiledialogs/tinyfiledialogs.h>
 #include <spdlog/spdlog.h>
+#include <range/v3/all.hpp>
 #include <gsl/gsl>
+#include <algorithm>
 #include <array>
 #include <filesystem>
 #include <iostream>
+#include <cinttypes>
+
+using namespace c2k;
 
 void PartED::setup() noexcept {
-    mTextureGUID = c2k::GUID::create();      // initialize to a yet unknown GUID
-    mShaderProgramGUID = c2k::GUID::create();// same
+    mTextureGUID = GUID::create();      // initialize to a yet unknown GUID
+    mShaderProgramGUID = GUID::create();// same
 }
 
 void PartED::update() noexcept { }
 
 void PartED::renderImGui() noexcept {
-    using namespace c2k;
-    bool openErrorPopup = false;
+    tl::expected<std::monostate, std::string> result{ std::monostate{} };
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("File")) {
-            if (ImGui::MenuItem("Open...")) {
-                const auto result =
-                        openFileDialog("Open File", c2k::AssetDatabase::assetPath(),
-                                       std::vector<std::string>{ "*.json" }, "Particle system JSON files", false);
-                if (result) {
-                    const auto filename = result.value();
-                    const auto guid = GUID::create();
-                    const auto& particleSystem =
-                            mAssetDatabase.loadParticleSystem(filename, guid, mAssetDatabase.texture(mTextureGUID),
-                                                              mAssetDatabase.shaderProgramMutable(mShaderProgramGUID));
-                    const auto hasBeenLoaded = mAssetDatabase.hasBeenLoaded(guid);
-                    if (!hasBeenLoaded) {
-                        openErrorPopup = true;
-                    } else {
-                        if (mParticleEmitterEntity != invalidEntity) {
-                            mRegistry.destroyEntity(mParticleEmitterEntity);
-                        }
-                        mParticleEmitterEntity =
-                                mRegistry.createEntity(TransformComponent{}, RootComponent{},
-                                                       ParticleEmitterComponent{ .particleSystem{ &particleSystem },
-                                                                                 .lastSpawnTime{ mTime.elapsed } });
-                    }
-                }
+            if (ImGui::MenuItem("New Project...")) {
+                result = onNewProjectClicked();
             }
             if (ImGui::MenuItem("Exit")) {
                 mAppContext.application.quit();
@@ -57,17 +39,174 @@ void PartED::renderImGui() noexcept {
         }
         ImGui::EndMainMenuBar();
     }
-    if (openErrorPopup) {
+    static std::string errorMessage = "";
+    if (!result) {
         ImGui::OpenPopup("Error");
+        errorMessage = result.error();
     }
     const ImVec2 center = ImGui::GetMainViewport()->GetCenter();
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
     if (ImGui::BeginPopupModal("Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-        ImGui::Text("Failed to load particle system!");
-        if (ImGui::Button("OK", ImVec2(120, 0))) {
+        ImGui::Text("%s", errorMessage.c_str());
+        constexpr auto buttonWidth = 120;
+        const auto windowWidth = ImGui::GetWindowSize().x;
+        ImGui::SetCursorPosX((windowWidth - buttonWidth) * 0.5f);
+        if (ImGui::Button("OK", ImVec2(buttonWidth, 0))) {
             ImGui::CloseCurrentPopup();
         }
         ImGui::SetItemDefaultFocus();
         ImGui::EndPopup();
     }
+    renderTextureList();
+    renderParticleSystemList();
+    renderStatsWindow();
+    ImGui::ShowDemoWindow();
+}
+
+tl::expected<std::monostate, std::string> PartED::onNewProjectClicked() noexcept {
+    const auto result = openFileDialog("Select Asset List", c2k::AssetDatabase::assetPath(),
+                                       std::vector<std::string>{ "*.json" }, "Asset list JSON files", false);
+    if (result) {
+        auto assetList = AssetList::fromFile(result.value());
+        if (!assetList) {
+            return tl::unexpected(fmt::format("Failed to read asset list: {}", assetList.error()));
+        }
+        mAssetList = std::move(assetList.value());
+    }
+    return std::monostate{};
+}
+
+void PartED::renderTextureList() noexcept {
+    ImGui::Begin("Available Textures", nullptr);
+    if (ImGui::BeginTable("textureTable", 2, tableFlags)) {
+        ImGui::TableSetupColumn("Textures");
+        ImGui::TableSetupColumn("Selection", ImGuiTableColumnFlags_WidthFixed, 105.0f);
+        ImGui::TableHeadersRow();
+        if (mAssetList.assetDescriptions().textures) {
+            for (const auto& textureDescription : mAssetList.assetDescriptions().textures.value()) {
+                ImGui::TableNextRow();
+                ImGui::TableNextColumn();
+                ImGui::Text("%s", textureDescription.filename.string().c_str());
+                ImGui::TableNextColumn();
+                ImGui::PushID(textureDescription.guid.string().c_str());
+                if (ImGui::Button("Select", ImVec2(100, 0))) {
+                    spdlog::info("Button clicked!");
+                    if (mHasParticleSystemDescriptionBeenLoaded) {
+                        mParticleSystemDescription.texture = textureDescription.guid;
+                        refreshParticleSystem(mParticleSystemDescription);
+                    }
+                }
+                ImGui::PopID();
+            }
+        }
+        ImGui::EndTable();
+    }
+    ImGui::End();
+}
+
+void PartED::renderParticleSystemList() noexcept {
+    ImGui::Begin("Particle Systems", nullptr);
+    if (ImGui::BeginTable("particleSystemsTable", 2, tableFlags)) {
+        ImGui::TableSetupColumn("Particle System");
+        ImGui::TableSetupColumn("Open", ImGuiTableColumnFlags_WidthFixed, 105.0f);
+        ImGui::TableHeadersRow();
+        if (mAssetList.assetDescriptions().particleSystems) {
+            for (const auto& particleSystemDescription : mAssetList.assetDescriptions().particleSystems.value()) {
+                ImGui::TableNextRow();
+                ImGui::TableNextColumn();
+                ImGui::Text("%s", particleSystemDescription.filename.string().c_str());
+                ImGui::TableNextColumn();
+                if (ImGui::Button("Open", ImVec2(100, 0))) {
+                    spdlog::info("Refreshing particle system");
+                    refreshParticleSystem(particleSystemDescription);
+                }
+            }
+        }
+        ImGui::EndTable();
+    }
+    ImGui::End();
+}
+
+void PartED::refreshParticleSystem(
+        const c2k::AssetDescriptions::ParticleSystemDescription& particleSystemDescription) noexcept {
+    if (!mAssetList.assetDescriptions().textures) {
+        spdlog::warn("Warning: No textures in asset list");
+    } else {
+        const auto& textureDescriptions = mAssetList.assetDescriptions().textures.value();
+        const auto it =
+                ranges::find_if(textureDescriptions, [&particleSystemDescription](const auto& textureDescription) {
+                    return particleSystemDescription.texture == textureDescription.guid;
+                });
+        if (it != textureDescriptions.end()) {
+            if (mAssetDatabase.hasBeenLoaded(mTextureGUID)) {
+                spdlog::info("Unloading previously loaded texture");
+                mAssetDatabase.unload(mTextureGUID);
+            }
+            mTextureGUID = it->guid;
+            mAssetDatabase.loadTexture(AssetDatabase::assetPath() / it->filename, it->guid);
+        } else {
+            spdlog::warn("Warning: Texture with given GUID {} could not be found in asset list",
+                         particleSystemDescription.texture.string());
+        }
+    }
+
+    // TODO: load shader program
+
+    if (mHasParticleSystemDescriptionBeenLoaded) {
+        mAssetDatabase.unload(mParticleSystemDescription.guid);
+    }
+    mHasParticleSystemDescriptionBeenLoaded = true;
+    mParticleSystemDescription = particleSystemDescription;
+
+    const auto& particleSystem = mAssetDatabase.loadParticleSystem(
+            AssetDatabase::assetPath() / particleSystemDescription.filename, particleSystemDescription.guid,
+            mAssetDatabase.texture(mTextureGUID), mAssetDatabase.shaderProgramMutable(mShaderProgramGUID));
+    if (mParticleEmitterEntity != invalidEntity) {
+        mRegistry.destroyEntity(mParticleEmitterEntity);
+    }
+    mRegistry.template destroyEntitiesWithComponents<ParticleComponent>();
+    mParticleEmitterEntity = mRegistry.createEntity(
+            TransformComponent{}, RootComponent{},
+            ParticleEmitterComponent{ .particleSystem{ &particleSystem }, .lastSpawnTime{ mTime.elapsed } });
+}
+
+void PartED::renderStatsWindow() const noexcept {
+    ImGui::Begin("Stats");
+    ImGui::Text("Render Batches: %zu", mRenderer.stats().numBatches);
+    ImGui::Text("Number of Quads: %zu", mRenderer.stats().numTriangles / 2);
+    ImGui::Separator();
+    ImGui::Text("Number of Entities: %zu", mRegistry.numEntities());
+    ImGui::Indent();
+    ImGui::Text("Alive: %zu", mRegistry.numEntitiesAlive());
+    ImGui::Text("Dead: %zu", mRegistry.numEntitiesDead());
+    ImGui::Unindent();
+    ImGui::Separator();
+    ImGui::Text("Alive Entities:");
+    ImGui::Indent();
+    for (const auto entity : mRegistry.entitiesAlive()) {
+        std::string components;
+        if (mRegistry.hasComponent<ParticleEmitterComponent>(entity)) {
+            components += "emitter, ";
+        }
+        if (mRegistry.hasComponent<DynamicSpriteComponent>(entity)) {
+            components += "sprite, ";
+        }
+        if (mRegistry.hasComponent<CameraComponent>(entity)) {
+            components += "camera, ";
+        }
+        if (mRegistry.hasComponent<ParticleComponent>(entity)) {
+            components += "particle";
+        }
+        ImGui::Text("%u|%u (%s)", Registry::getIdentifierBitsFromEntity(entity),
+                    Registry::getGenerationBitsFromEntity(entity), components.c_str());
+    }
+    ImGui::Unindent();
+    ImGui::Text("Dead Entities:");
+    ImGui::Indent();
+    for (const auto entity : mRegistry.entitiesDead()) {
+        ImGui::Text("%u|%u", Registry::getIdentifierBitsFromEntity(entity),
+                    Registry::getGenerationBitsFromEntity(entity));
+    }
+    ImGui::Unindent();
+    ImGui::End();
 }

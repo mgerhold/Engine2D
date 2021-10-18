@@ -211,7 +211,7 @@ void main() {
     FragColor = color;
 })";
         ShaderProgram result;
-        const bool success = result.compile(vertexShader, fragmentShader);
+        [[maybe_unused]] const bool success = result.compile(vertexShader, fragmentShader);
         assert(success);
         return result;
     }

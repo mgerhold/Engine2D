@@ -47,7 +47,7 @@ namespace c2k::JSON::Implementation_ {
 
     [[nodiscard]] consteval inline auto parsePositiveDigit() noexcept {
         return [](const InputString input) -> Result {
-            if (input.empty() || input.front() == '0' || !std::isdigit(input.front())) {
+            if (input.empty() || input.front() == '0' || !(input.front() >= '0' && input.front() <= '9')) {
                 return tl::unexpected{ ErrorDescription{ .remainingInputLength{ input.length() },
                                                          .type{ ErrorType::DigitExpected } } };
             }

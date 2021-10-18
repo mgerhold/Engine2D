@@ -7,6 +7,7 @@
 #include "GUID.hpp"
 #include "JSONUtils.hpp"
 #include "JSON/JSON.hpp"
+#include <tl/expected.hpp>
 
 namespace c2k {
 
@@ -79,10 +80,10 @@ namespace c2k {
     public:
         AssetList() = default;
         explicit AssetList(const std::filesystem::path& path) noexcept;
-        void fromFile(const std::filesystem::path& path) noexcept;
         [[nodiscard]] const AssetDescriptions::List& assetDescriptions() const noexcept {
             return mAssetDescriptions;
         }
+        [[nodiscard]] static tl::expected<AssetList, std::string> fromFile(const std::filesystem::path& path) noexcept;
 
     private:
         AssetDescriptions::List mAssetDescriptions;

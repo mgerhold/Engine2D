@@ -9,12 +9,12 @@ namespace c2k {
         using std::swap;
         assert(has(index) && "The given index doesn't have an instance of this element.");
         const auto denseIndex = mSparseVector[index];
-        mSparseVector[index] = invalidEntity;
         mSparseVector[mDenseVector.back()] = denseIndex;
+        mSparseVector[index] = invalidEntity;
         mDenseVector[denseIndex] = mDenseVector.back();
-        mDenseVector.resize(mDenseVector.size() - 1);
+        mDenseVector.pop_back();
         mElementVector.swapElements(denseIndex, mElementVector.size() - 1);
-        mElementVector.resize(mElementVector.size() - 1);
+        mElementVector.pop_back();
         assert(mDenseVector.size() == mElementVector.size());
     }
 

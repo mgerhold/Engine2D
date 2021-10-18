@@ -5,6 +5,6 @@
 #include "PartED.hpp"
 
 int main() {
-    PartED demo;
+    PartED demo{ "PartED", c2k::WindowSize{ .width{ 1600 }, .height{ 900 } } };
     demo.run();
 }

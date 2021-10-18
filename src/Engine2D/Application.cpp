@@ -70,14 +70,15 @@ namespace c2k {
         setup();
         auto timeMeasurements = setupTimeMeasurements();
         while (!glfwWindowShouldClose(mWindow.getGLFWWindowPointer())) {
-            update();
-            runSystems();
-
             ImGui_ImplOpenGL3_NewFrame();
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();
             renderImGui();
             ImGui::Render();
+
+            update();
+            runSystems();
+
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
             glfwSwapBuffers(mWindow.getGLFWWindowPointer());

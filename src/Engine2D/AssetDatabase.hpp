@@ -12,6 +12,7 @@
 #include "Script.hpp"
 #include "ParticleSystem.hpp"
 #include "Animation.hpp"
+#include <algorithm>
 
 namespace c2k {
 
@@ -23,6 +24,16 @@ namespace c2k {
 
         [[nodiscard]] bool hasBeenLoaded(GUID guid) const noexcept {
             return mAssets.contains(guid);
+        }
+
+        bool unload(GUID guid) noexcept {
+            const auto it = std::find_if(mAssets.begin(), mAssets.end(),
+                                         [guid](const auto& pair) { return pair.first == guid; });
+            if (it == mAssets.end()) {
+                return false;
+            }
+            mAssets.erase(it);
+            return true;
         }
 
         Texture& loadTexture(const std::filesystem::path& filename, GUID guid) noexcept {

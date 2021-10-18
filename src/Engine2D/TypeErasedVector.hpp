@@ -132,6 +132,11 @@ namespace c2k {
             ++mSize;
         }
 
+        void pop_back() noexcept {
+            assert(size() != 0ULL);
+            resize(size() - 1);
+        }
+
         template<std::default_initializable T>
         [[nodiscard]] static TypeErasedVector forType() noexcept {
             constexpr auto elementSize{ sizeof(T) };
