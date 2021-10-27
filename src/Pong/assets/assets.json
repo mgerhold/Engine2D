@@ -1,0 +1,16 @@
+{
+  "textures": [
+    {
+      "guid": "3fa5a7a0-992f-4a5a-a1f1-af5db950f94e",
+      "filename": "textures/white.png",
+      "group": ""
+    }
+  ],
+  "scripts": [
+    {
+      "guid": "903fd1c2-a25d-4e29-a740-5427c046ee4e",
+      "filename": "scripts/pong.lua",
+      "group": ""
+    }
+  ]
+}

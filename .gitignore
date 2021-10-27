@@ -19,3 +19,5 @@ cmake-build-clang-release/
 /cmake-build-gcc-remote-release-with-profiling/
 /cmake-build-gcc-remote-debug-with-profiling/
 /cmake-build-clang-remote-debug/
+/src/Pong/imgui.ini
+/src/FlappyBird/imgui.ini

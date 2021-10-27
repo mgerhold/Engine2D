@@ -1,0 +1,31 @@
+{
+  "textures": [
+    {
+      "guid": "15a01f9b-c970-43e1-bbe8-79a5b04a58e6",
+      "filename": "textures/Bird_Small.png",
+      "group": ""
+    },
+    {
+      "guid": "1129191c-9108-4293-823a-e3e8f13f32c4",
+      "filename": "textures/BottomPipe_Small.png",
+      "group": ""
+    },
+    {
+      "guid": "6e105d9e-5b8b-44ae-8b21-03f8fee5357c",
+      "filename": "textures/GroundTiled_Small.png",
+      "group": ""
+    },
+    {
+      "guid": "aedbb58b-f2d8-44d4-b046-4e27ed36141c",
+      "filename": "textures/TopPipe_Small.png",
+      "group": ""
+    }
+  ],
+  "scripts": [
+    {
+      "guid": "1b0b54bf-d36a-4067-bd60-cc69900bb9bc",
+      "filename": "scripts/flappy_bird.lua",
+      "group": ""
+    }
+  ]
+}
