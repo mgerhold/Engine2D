@@ -334,8 +334,6 @@ function updateBird()
             local targetTransform2 = pipeEntities[targetIndex + 1]:getTransform()
             targetY = (targetTransform1.position.y + targetTransform2.position.y) / 2
         else
-            local leftDistance = birdTransform.position.x - leftX
-            local rightDistance = rightX - birdTransform.position.x
             local targetTransformLeft1 = pipeEntities[leftIndex]:getTransform()
             local targetTransformLeft2 = pipeEntities[leftIndex + 1]:getTransform()
             local targetTransformRight1 = pipeEntities[rightIndex]:getTransform()
