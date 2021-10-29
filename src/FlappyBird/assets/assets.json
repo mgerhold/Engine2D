@@ -19,6 +19,26 @@
       "guid": "aedbb58b-f2d8-44d4-b046-4e27ed36141c",
       "filename": "textures/TopPipe_Small.png",
       "group": ""
+    },
+    {
+      "guid": "fe8b71f6-1fcd-48fb-86af-d6815a3eb0fd",
+      "filename": "textures/TreesTileable_Small.png",
+      "group": ""
+    },
+    {
+      "guid": "f7cf0445-f962-4d78-90ab-eede24e46960",
+      "filename": "textures/Skyline_Small.png",
+      "group": ""
+    },
+    {
+      "guid": "9780697b-37d4-4223-9100-5ecfe6d2f490",
+      "filename": "textures/Clouds_Small.png",
+      "group": ""
+    },
+    {
+      "guid": "aa9af365-c53f-4719-aff3-be3292a65636",
+      "filename": "textures/digits.png",
+      "group": ""
     }
   ],
   "scripts": [
@@ -26,6 +46,14 @@
       "guid": "1b0b54bf-d36a-4067-bd60-cc69900bb9bc",
       "filename": "scripts/flappy_bird.lua",
       "group": ""
+    }
+  ],
+  "spriteSheets": [
+    {
+      "guid": "092cb082-c71e-4b1e-9067-a555848d2211",
+      "filename": "spritesheets/digits.json",
+      "group": "",
+      "texture": "aa9af365-c53f-4719-aff3-be3292a65636"
     }
   ]
 }
