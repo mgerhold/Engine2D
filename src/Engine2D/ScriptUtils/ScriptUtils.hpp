@@ -25,6 +25,10 @@ namespace c2k::ScriptUtils {
         Entity owningEntity;
     };
 
+    struct LuaParticleEmitter {
+        Entity owningEntity;
+    };
+
     struct LuaTexture {
         std::string guid;
         int width;
@@ -37,6 +41,10 @@ namespace c2k::ScriptUtils {
     };
 
     struct LuaScript {
+        std::string guid;
+    };
+
+    struct LuaParticleSystem {
         std::string guid;
     };
 

@@ -7,6 +7,7 @@ skylineTextureGUID = "f7cf0445-f962-4d78-90ab-eede24e46960"
 cloudTextureGUID = "9780697b-37d4-4223-9100-5ecfe6d2f490"
 digitsSpriteSheetGUID = "092cb082-c71e-4b1e-9067-a555848d2211"
 digitsTextureGUID = "aa9af365-c53f-4719-aff3-be3292a65636"
+fireworksParticleSystemGUID = "4d77a770-2c5c-4c7d-973d-da19d0b9a856"
 
 GameState = {
     STARTING = 1,
@@ -45,6 +46,8 @@ treesMovementSpeedFactor = 0.2
 skylineMovementSpeedFactor = 0.1
 cloudsMovementSpeedFactor = 0.06
 
+fireworksEntities = {}
+fireworksVerticalOffset = 15
 score = 0
 
 function checkPipeCollision(pipePosition)
@@ -251,18 +254,29 @@ end
 
 function updatePipes()
     local birdPassedPipePair = false
+    local passedPipe = 0
     for i = 1, #pipeEntities do
         local pipeTransform = pipeEntities[i]:getTransform()
-        local passedBeforeMove = birdTransform.position.x - birdWidth / 2 > pipeTransform.position.x + pipeWidth / 2
+        local passedBeforeMove = birdTransform.position.x > pipeTransform.position.x + pipeWidth / 2
         pipeTransform.position.x = pipeTransform.position.x - horizontalMovementSpeed * time.delta
-        local passedAfterMove = birdTransform.position.x - birdWidth / 2 > pipeTransform.position.x + pipeWidth / 2
-        if not passedBeforeMove and passedAfterMove then
-            birdPassedPipePair = true
+        if not birdPassedPipePair then
+            local passedAfterMove = birdTransform.position.x > pipeTransform.position.x + pipeWidth / 2
+            if not passedBeforeMove and passedAfterMove then
+                birdPassedPipePair = true
+                passedPipe = i
+            end
         end
     end
     if birdPassedPipePair and gameState == GameState.PLAYING then
         score = score + 1
         showNumber(score)
+        local topPipeIndex = passedPipe + 1
+        local transform = pipeEntities[topPipeIndex]:getTransform()
+        local position = Vec3.new()
+        position.x = transform.position.x
+        position.y = transform.position.y - pipeHeight / 2 + fireworksVerticalOffset
+        position.z = -0.2
+        spawnFireworks(position)
     end
 
     if #pipeEntities > 1 then
@@ -344,6 +358,7 @@ function updateBird()
             targetY = smoothStep(targetLeftY, targetRightY, interpolationParameter)
         end
         birdTransform.position.y = targetY
+        birdTransform.rotation = 0
         return
     end
     local wasJumpPressed = jumpPressed()
@@ -390,6 +405,35 @@ function checkCollisions()
     end
 end
 
+function spawnFireworks(position)
+    local particleSystem = c2k.assets.particleSystem(fireworksParticleSystemGUID)
+    local particleEmitterEntity = Entity.new()
+    particleEmitterEntity:attachRoot()
+    local transform = particleEmitterEntity:attachTransform()
+    transform.position.x = position.x
+    transform.position.y = position.y
+    transform.position.z = position.z
+    particleEmitterEntity:attachParticleEmitter(particleSystem)
+    table.insert(fireworksEntities, particleEmitterEntity)
+end
+
+function handleFireworks()
+    local entitiesToDelete = 0
+    for i = 1, #fireworksEntities do
+        local transform = fireworksEntities[i]:getTransform()
+        transform.position.x = transform.position.x - horizontalMovementSpeed * time.delta
+        if transform.position.x + pipeWidth * 2 < -screenSize.x / 2 then
+            fireworksEntities[i]:destroy()
+            entitiesToDelete = entitiesToDelete + 1
+        end
+    end
+    -- this implementation only works as long the oldest entities occupy the
+    -- lowest indices
+    for i = 1, entitiesToDelete do
+        table.remove(fireworksEntities, 1)
+    end
+end
+
 function update(entity)
     if input:keyPressed(Key.Escape) then
         c2k.application.quit()
@@ -410,4 +454,5 @@ function update(entity)
     if gameState == GameState.PLAYING then
         checkCollisions()
     end
+    handleFireworks()
 end

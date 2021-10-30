@@ -1,6 +1,11 @@
 {
   "textures": [
     {
+      "guid": "b1b4a213-d304-473a-a15c-1c69b6ece299",
+      "filename": "textures/star.png",
+      "group": ""
+    },
+    {
       "guid": "15a01f9b-c970-43e1-bbe8-79a5b04a58e6",
       "filename": "textures/Bird_Small.png",
       "group": ""
@@ -54,6 +59,15 @@
       "filename": "spritesheets/digits.json",
       "group": "",
       "texture": "aa9af365-c53f-4719-aff3-be3292a65636"
+    }
+  ],
+  "particleSystems": [
+    {
+      "guid": "4d77a770-2c5c-4c7d-973d-da19d0b9a856",
+      "filename": "particlesystems/fireworks.json",
+      "group": "",
+      "texture": "b1b4a213-d304-473a-a15c-1c69b6ece299",
+      "shaderProgram": "7855edb5-27e9-4dae-9d3f-5f48fa55692f"
     }
   ]
 }

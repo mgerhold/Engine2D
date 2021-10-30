@@ -25,7 +25,7 @@ end)");
     Script::Script(std::string source, GUID guid) noexcept : guid{ guid } {
         assert(sApplicationContext != nullptr &&
                "Scripts can only be instantiated after setting the application context.");
-        mLuaState->open_libraries(sol::lib::base, sol::lib::math);
+        mLuaState->open_libraries(sol::lib::base, sol::lib::math, sol::lib::table);
         ScriptUtils::provideAPI(*sApplicationContext, *mLuaState);
         mLuaState->safe_script(source, [](lua_State*, sol::protected_function_result result) {
             sol::error err = result;

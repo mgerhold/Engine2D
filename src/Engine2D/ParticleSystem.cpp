@@ -13,7 +13,8 @@ namespace c2k {
 
     tl::expected<ParticleSystem, std::string> ParticleSystem::loadFromFile(const std::filesystem::path& filename,
                                                                            const Texture& texture,
-                                                                           ShaderProgram& shaderProgram) noexcept {
+                                                                           ShaderProgram& shaderProgram,
+                                                                           GUID guid) noexcept {
         using namespace JSONUtils;
         const auto parseResult = JSON::fromFile(filename);
         if (!parseResult) {
@@ -29,6 +30,7 @@ namespace c2k {
         // assign remaining members
         result.sprite = Sprite::fromTexture(texture);
         result.shaderProgram = &shaderProgram;
+        result.guid = guid;
         return result;
     }
 }// namespace c2k

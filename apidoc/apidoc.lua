@@ -4,7 +4,19 @@
 
 c2k = {}
 
+c2k.application = {}
+
+--- Exits the application
+function c2k.application.quit()
+end
+
 c2k.assets = {}
+
+--- Retrieves a particle system handle.
+-- @param guid The global unique id of the particle system.
+-- @see ParticleSystem
+function c2k.assets.particleSystem(guid)
+end
 
 --- Retrieves a shader program handle.
 -- @param guid The global unique id of the shader program.
@@ -193,6 +205,14 @@ end
 -- @treturn bool true if the mouse button has been released, false otherwise
 function Input:mouseReleased(mouseButton)
 end
+
+--- This class represents a particle system.
+-- This is a handle to a particle system. Handles can be retrieved by calling
+-- @{c2k.assets.particleSystem} and passing a global unique id (GUID) as a string.
+-- @type ParticleSystem
+
+--- The global unique id (GUID) of this shader program.
+ParticleSystem.guid = ""
 
 --- This class represents a rectangle.
 -- @type Rect

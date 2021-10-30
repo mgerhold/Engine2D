@@ -7,6 +7,7 @@
 #include "Sprite.hpp"
 #include "JSON/JSON.hpp"
 #include "Color.hpp"
+#include "GUID.hpp"
 #include <glm/glm.hpp>
 #include <filesystem>
 
@@ -19,6 +20,7 @@ namespace c2k {
     struct ParticleSystem : public ParticleSystemImpl::ParticleSystemJSON {
         Sprite sprite;
         ShaderProgram* shaderProgram{ nullptr };
+        GUID guid;
 
         ParticleSystem& operator<<(const ParticleSystemImpl::ParticleSystemJSON& base) noexcept {
             ParticleSystemImpl::ParticleSystemJSON::operator=(base);
@@ -27,7 +29,8 @@ namespace c2k {
 
         static tl::expected<ParticleSystem, std::string> loadFromFile(const std::filesystem::path& filename,
                                                                       const Texture& texture,
-                                                                      ShaderProgram& shaderProgram) noexcept;
+                                                                      ShaderProgram& shaderProgram,
+                                                                      GUID guid = GUID{}) noexcept;
     };
 
 }// namespace c2k

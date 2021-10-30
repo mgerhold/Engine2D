@@ -46,6 +46,7 @@ namespace c2k::ScriptUtils {
                                               "height", &LuaTexture::height, "numChannels", &LuaTexture::numChannels);
             luaState.new_usertype<LuaShaderProgram>("ShaderProgram", "guid", &LuaShaderProgram::guid);
             luaState.new_usertype<LuaScript>("Script", "guid", &LuaScript::guid);
+            luaState.new_usertype<LuaParticleSystem>("ParticleSystem", "guid", &LuaParticleSystem::guid);
             luaState.new_usertype<SpriteSheet::Frame>("SpriteSheetFrame", "rect", &SpriteSheet::Frame::rect,
                                                       "sourceWidth", &SpriteSheet::Frame::sourceWidth, "sourceHeight",
                                                       &SpriteSheet::Frame::sourceHeight);
@@ -292,6 +293,32 @@ namespace c2k::ScriptUtils {
                 };
             }
 
+            inline void provideParticleEmitterAPI(ApplicationContext& applicationContext,
+                                                  sol::usertype<LuaEntity>& entityType) noexcept {
+                /*entityType["getParticleEmitter"] = [&](LuaEntity luaEntity) {
+                    const Entity entity{ luaEntity };
+                    const auto result = applicationContext.registry.component<ParticleEmitterComponent>(entity);
+                    if (result) {
+                        return LuaParticleEmitter{ .owningEntity{ entity }};
+                    }
+                    spdlog::error("Entity {} does not have a particle emitter component.", entity);
+                    return LuaParticleEmitter{ .owningEntity{ invalidEntity }};
+                };*/
+                entityType["attachParticleEmitter"] = [&](LuaEntity luaEntity, LuaParticleSystem particleSystem) {
+                    const Entity entity{ luaEntity };
+                    if (applicationContext.registry.hasComponent<ParticleEmitterComponent>(entity)) {
+                        spdlog::error("Entity {} already has a particle emitter component.", entity);
+                    } else {
+                        applicationContext.registry.attachComponent<ParticleEmitterComponent>(
+                                entity, ParticleEmitterComponent{
+                                                .particleSystem{ &applicationContext.assetDatabase.particleSystem(
+                                                        GUID::fromString(particleSystem.guid)) },
+                                                .lastSpawnTime{ applicationContext.time.elapsed } });
+                    }
+                    return LuaParticleEmitter{ .owningEntity{ entity } };
+                };
+            }
+
             inline void provideHierarchyAPI(ApplicationContext& applicationContext,
                                             sol::usertype<LuaEntity>& entityType) noexcept {
                 entityType["hasRoot"] = [&](LuaEntity luaEntity) {
@@ -310,6 +337,7 @@ namespace c2k::ScriptUtils {
             EntityAPI::provideTransformAPI(applicationContext, entityType);
             EntityAPI::provideScriptAPI(applicationContext, entityType);
             EntityAPI::provideDynamicSpriteAPI(applicationContext, entityType);
+            EntityAPI::provideParticleEmitterAPI(applicationContext, entityType);
             EntityAPI::provideHierarchyAPI(applicationContext, entityType);
         }
 
@@ -392,6 +420,15 @@ namespace c2k::ScriptUtils {
                     return LuaScript{ .guid{ script.guid.string() } };
                 };
             }
+
+            inline void provideParticleSystemAPI(ApplicationContext& applicationContext,
+                                                 sol::state& luaState) noexcept {
+                luaState["c2k"]["assets"]["particleSystem"] = [&](const std::string& guidString) {
+                    const auto& particleSystem =
+                            applicationContext.assetDatabase.particleSystem(GUID::fromString(guidString));
+                    return LuaParticleSystem{ .guid{ particleSystem.guid.string() } };
+                };
+            }
         }// namespace AssetsAPI
 
         inline void provideAssetsAPI(ApplicationContext& applicationContext, sol::state& luaState) noexcept {
@@ -400,6 +437,7 @@ namespace c2k::ScriptUtils {
             AssetsAPI::provideShaderProgramAPI(applicationContext, luaState);
             AssetsAPI::provideSpriteSheetAPI(applicationContext, luaState);
             AssetsAPI::provideScriptAPI(applicationContext, luaState);
+            AssetsAPI::provideParticleSystemAPI(applicationContext, luaState);
         }
 
         inline void provideApplicationAPI(ApplicationContext& applicationContext, sol::state& luaState) noexcept {

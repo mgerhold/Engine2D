@@ -80,7 +80,7 @@ namespace c2k {
                                            const Texture& texture,
                                            ShaderProgram& shaderProgram) noexcept {
             return load<ParticleSystem>(
-                    guid, [&]() { return ParticleSystem::loadFromFile(filename, texture, shaderProgram); },
+                    guid, [&]() { return ParticleSystem::loadFromFile(filename, texture, shaderProgram, guid); },
                     mDebugFallbackParticleSystem);
         }
 

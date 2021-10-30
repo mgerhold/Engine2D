@@ -210,6 +210,8 @@ namespace c2k {
             const double totalLifeTime = get<double>(particleSystem.startLifetime);
             const float startRotationSpeed = 0.0f;
             const float endRotationSpeed = 0.0f;
+            const auto linearVelocity = glm::vec3{ get<glm::vec2>(particleSystem.linearVelocityOverLifetime).x,
+                                                   get<glm::vec2>(particleSystem.linearVelocityOverLifetime).y, 0.0f };
             mRegistry.createEntity(
                     TransformComponent{
                             .position{ mRegistry.component<TransformComponent>(emitterEntity).value().position },
@@ -219,14 +221,16 @@ namespace c2k {
                                             .sprite{ particleSystem.sprite },
                                             .color{ Color::white() } },
                     RootComponent{},
-                    ParticleComponent{ .remainingLifeTime{ totalLifeTime },
-                                       .totalLifeTime{ totalLifeTime },
-                                       .velocity{ mRandom.unitDirection() * mRandom.range(100.0f, 300.0f) },
-                                       .gravity{ glm::vec3{ 0.0f } },
-                                       .startScale{ startScale },
-                                       .endScale{ endScale },
-                                       .startRotationSpeed{ startRotationSpeed },
-                                       .endRotationSpeed{ endRotationSpeed } });
+                    ParticleComponent{
+                            .remainingLifeTime{ totalLifeTime },
+                            .totalLifeTime{ totalLifeTime },
+                            .velocity{ mRandom.unitDirection() * mRandom.range(30.0f, 300.0f) + linearVelocity },
+                            // TODO: handle gravity correctly
+                            .gravity{ glm::vec3{ 0.0f, -9.81f, 0.0f } * get<float>(particleSystem.gravityModifier) },
+                            .startScale{ startScale },
+                            .endScale{ endScale },
+                            .startRotationSpeed{ startRotationSpeed },
+                            .endRotationSpeed{ endRotationSpeed } });
         }
         mSpawningEmitters.clear();
     }
