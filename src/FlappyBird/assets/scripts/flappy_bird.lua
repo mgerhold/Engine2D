@@ -1,47 +1,5 @@
-groundTextureGUID = "6e105d9e-5b8b-44ae-8b21-03f8fee5357c"
-topPipeTextureGUID = "aedbb58b-f2d8-44d4-b046-4e27ed36141c"
-bottomPipeTextureGUID = "1129191c-9108-4293-823a-e3e8f13f32c4"
-birdTextureGUID = "15a01f9b-c970-43e1-bbe8-79a5b04a58e6"
-treeTextureGUID = "fe8b71f6-1fcd-48fb-86af-d6815a3eb0fd"
-skylineTextureGUID = "f7cf0445-f962-4d78-90ab-eede24e46960"
-cloudTextureGUID = "9780697b-37d4-4223-9100-5ecfe6d2f490"
-digitsSpriteSheetGUID = "092cb082-c71e-4b1e-9067-a555848d2211"
-digitsTextureGUID = "aa9af365-c53f-4719-aff3-be3292a65636"
-fireworksParticleSystemGUID = "4d77a770-2c5c-4c7d-973d-da19d0b9a856"
-
-GameState = {
-    STARTING = 1,
-    PLAYING = 2,
-    COLLIDED = 3,
-    BIRD_DOWN = 4
-}
-
-BackgroundLayer = {}
-
-function BackgroundLayer.new(depth, textureGUID, height, heightOffset, movementSpeedFactor)
-    local result = {
-        transforms = {},
-        depth = depth,
-        textureGUID = textureGUID,
-        height = height,
-        width = 0,
-        heightOffset = heightOffset,
-        movementSpeedFactor = movementSpeedFactor
-    }
-    return result
-end
-
-Bird = {}
-
-function Bird.new(width, collisionRadius)
-    local result = {
-        width = width,
-        collisionRadius = collisionRadius,
-        verticalVelocity = 0,
-        transform = 0
-    }
-    return result
-end
+require("flappy_bird_guids")
+require("flappy_bird_types")
 
 gameState = GameState.STARTING
 

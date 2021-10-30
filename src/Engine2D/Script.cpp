@@ -4,6 +4,8 @@
 
 #include "Script.hpp"
 #include "ScriptUtils/ScriptUtils.hpp"
+#include "AssetDatabase.hpp"
+#include <filesystem>
 
 namespace c2k {
 
@@ -25,7 +27,12 @@ end)");
     Script::Script(std::string source, GUID guid) noexcept : guid{ guid } {
         assert(sApplicationContext != nullptr &&
                "Scripts can only be instantiated after setting the application context.");
-        mLuaState->open_libraries(sol::lib::base, sol::lib::math, sol::lib::table);
+        mLuaState->open_libraries(sol::lib::base, sol::lib::math, sol::lib::table, sol::lib::package);
+        // TODO: add function parameter for the directory of the current source file
+        //       to make require look in the same folder as the current file resides in
+        const std::string packagePath = (*mLuaState)["package"]["path"];
+        const auto path = (AssetDatabase::assetPath() / "scripts").string() + "/?.lua";
+        (*mLuaState)["package"]["path"] = packagePath + (!packagePath.empty() ? ";" : "") + path;
         ScriptUtils::provideAPI(*sApplicationContext, *mLuaState);
         mLuaState->safe_script(source, [](lua_State*, sol::protected_function_result result) {
             sol::error err = result;
