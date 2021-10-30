@@ -16,7 +16,29 @@ GameState = {
     BIRD_DOWN = 4
 }
 
+BackgroundLayer = {}
+
+function BackgroundLayer.new(depth, textureGUID, height, heightOffset, movementSpeedFactor)
+    local result = {
+        transforms = {},
+        depth = depth,
+        textureGUID = textureGUID,
+        height = height,
+        width = 0,
+        heightOffset = heightOffset,
+        movementSpeedFactor = movementSpeedFactor
+    }
+    return result
+end
+
 gameState = GameState.STARTING
+
+backgroundLayers = {
+    BackgroundLayer.new(0.1, groundTextureGUID, 100, 0, 1.0),
+    BackgroundLayer.new(-0.2, treeTextureGUID, 40, 100, 0.2),
+    BackgroundLayer.new(-0.3, skylineTextureGUID, 60, 100 + 40 / 3, 0.1),
+    BackgroundLayer.new(-0.4, cloudTextureGUID, 90, 100 + 40 / 2, 0.06)
+}
 
 cheatMode = false
 
@@ -25,15 +47,11 @@ screenSize.x = 800
 screenSize.y = 600
 
 digitSize = 64
-groundHeight = 100
-treesHeight = 40
-skylineHeight = 60
-cloudsHeight = 90
 
 pipeWidth = 100
 verticalPipeGap = 150
 horizontalPipeGap = 400
-availablePipeHeight = screenSize.y - groundHeight - verticalPipeGap
+availablePipeHeight = screenSize.y - backgroundLayers[1].height - verticalPipeGap
 
 birdWidth = 80
 birdCollisionRadius = 30 / 80 * birdWidth
@@ -42,9 +60,6 @@ birdRotation = 0
 
 initialHorizontalMovementSpeed = 200
 horizontalMovementSpeed = initialHorizontalMovementSpeed
-treesMovementSpeedFactor = 0.2
-skylineMovementSpeedFactor = 0.1
-cloudsMovementSpeedFactor = 0.06
 
 fireworksEntities = {}
 fireworksVerticalOffset = 15
@@ -156,7 +171,7 @@ function setStartingBirdTransform()
     birdTransform.scale.x = birdWidth / 2
     birdTransform.scale.y = birdHeight / 2
     birdTransform.position.x = -screenSize.x / 4
-    birdTransform.position.y = groundHeight / 2
+    birdTransform.position.y = backgroundLayers[1].height / 2
     birdTransform.rotation = 0
     verticalBirdVelocity = 0
 end
@@ -175,6 +190,18 @@ function setupBird()
     verticalBirdVelocityOnClick = 18 * birdTransform.scale.y
 end
 
+function setupBackground()
+    for i = 1, #backgroundLayers do
+        backgroundLayers[i].width = setupBackgroundLayer(
+                backgroundLayers[i].transforms,
+                backgroundLayers[i].depth,
+                backgroundLayers[i].textureGUID,
+                backgroundLayers[i].height,
+                backgroundLayers[i].heightOffset
+        )
+    end
+end
+
 function onAttach(entity)
     input = c2k.getInput()
     time = c2k.getTime()
@@ -182,14 +209,7 @@ function onAttach(entity)
     setupDigits()
     showNumber(0)
     setupPipeData()
-    groundTransforms = {}
-    groundWidth = setupBackgroundLayer(groundTransforms, 0.1, groundTextureGUID, groundHeight, 0)
-    treeTransforms = {}
-    treesWidth = setupBackgroundLayer(treeTransforms, -0.2, treeTextureGUID, treesHeight, groundHeight)
-    skylineTransforms = {}
-    skylineWidth = setupBackgroundLayer(skylineTransforms, -0.3, skylineTextureGUID, skylineHeight, groundHeight + treesHeight / 3)
-    cloudTransforms = {}
-    cloudsWidth = setupBackgroundLayer(cloudTransforms, -0.4, cloudTextureGUID, cloudsHeight, groundHeight + treesHeight / 2)
+    setupBackground()
     setupBird()
 end
 
@@ -224,8 +244,19 @@ function updateBackgroundLayer(layerTransforms, tileWidth, movementSpeedFactor)
     end
 end
 
+function updateBackground()
+    for i = 1, #backgroundLayers do
+        updateBackgroundLayer(
+                backgroundLayers[i].transforms,
+                backgroundLayers[i].width,
+                backgroundLayers[i].movementSpeedFactor
+        )
+    end
+end
+
 function spawnPipes()
-    local verticalPipeGapPosition = availablePipeHeight * math.random() + groundHeight + (verticalPipeGap - screenSize.y) / 2
+    local verticalPipeGapPosition = availablePipeHeight * math.random()
+            + backgroundLayers[1].height + (verticalPipeGap - screenSize.y) / 2
     local index = #pipeEntities + 1
     for pipeNumber = 1, 2 do
         pipeEntities[index] = Entity.new()
@@ -387,8 +418,8 @@ function updateBird()
         birdTransform.position.y = (screenSize.y - birdHeight) / 2
         verticalBirdVelocity = 0
     end
-    if birdTransform.position.y <= -screenSize.y / 2 + groundHeight then
-        birdTransform.position.y = -screenSize.y / 2 + groundHeight
+    if birdTransform.position.y <= -screenSize.y / 2 + backgroundLayers[1].height then
+        birdTransform.position.y = -screenSize.y / 2 + backgroundLayers[1].height
         gameState = GameState.BIRD_DOWN
         horizontalMovementSpeed = 0
     end
@@ -441,11 +472,7 @@ function update(entity)
     if input:keyPressed(Key.C) then
         cheatMode = not cheatMode
     end
-
-    updateBackgroundLayer(groundTransforms, groundWidth, 1.0)
-    updateBackgroundLayer(treeTransforms, treesWidth, treesMovementSpeedFactor)
-    updateBackgroundLayer(skylineTransforms, skylineWidth, skylineMovementSpeedFactor)
-    updateBackgroundLayer(cloudTransforms, cloudsWidth, cloudsMovementSpeedFactor)
+    updateBackground()
     if gameState == GameState.PLAYING and time.elapsed >= nextPipeSpawnTime then
         spawnPipes()
     end
