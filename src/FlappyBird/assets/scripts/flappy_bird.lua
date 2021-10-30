@@ -31,6 +31,18 @@ function BackgroundLayer.new(depth, textureGUID, height, heightOffset, movementS
     return result
 end
 
+Bird = {}
+
+function Bird.new(width, collisionRadius)
+    local result = {
+        width = width,
+        collisionRadius = collisionRadius,
+        verticalVelocity = 0,
+        transform = 0
+    }
+    return result
+end
+
 gameState = GameState.STARTING
 
 backgroundLayers = {
@@ -39,6 +51,8 @@ backgroundLayers = {
     skyline = BackgroundLayer.new(-0.3, skylineTextureGUID, 60, 100 + 40 / 3, 0.1),
     clouds = BackgroundLayer.new(-0.4, cloudTextureGUID, 90, 100 + 40 / 2, 0.06)
 }
+
+bird = Bird.new(80, 30)
 
 cheatMode = false
 
@@ -53,11 +67,6 @@ verticalPipeGap = 150
 horizontalPipeGap = 400
 availablePipeHeight = screenSize.y - backgroundLayers.ground.height - verticalPipeGap
 
-birdWidth = 80
-birdCollisionRadius = 30 / 80 * birdWidth
-verticalBirdVelocity = 0
-birdRotation = 0
-
 initialHorizontalMovementSpeed = 200
 horizontalMovementSpeed = initialHorizontalMovementSpeed
 
@@ -66,36 +75,36 @@ fireworksVerticalOffset = 15
 score = 0
 
 function checkPipeCollision(pipePosition)
-    local left = pipePosition.x - pipeWidth / 2 - birdCollisionRadius
-    local right = pipePosition.x + pipeWidth / 2 + birdCollisionRadius
-    local top = pipePosition.y + pipeHeight / 2 + birdCollisionRadius
-    local bottom = pipePosition.y - pipeHeight / 2 - birdCollisionRadius
-    if birdTransform.position.x < left or birdTransform.position.x > right or
-            birdTransform.position.y > top or birdTransform.position.y < bottom then
+    local left = pipePosition.x - pipeWidth / 2 - bird.collisionRadius
+    local right = pipePosition.x + pipeWidth / 2 + bird.collisionRadius
+    local top = pipePosition.y + pipeHeight / 2 + bird.collisionRadius
+    local bottom = pipePosition.y - pipeHeight / 2 - bird.collisionRadius
+    if bird.transform.position.x < left or bird.transform.position.x > right or
+            bird.transform.position.y > top or bird.transform.position.y < bottom then
         return false
     end
     local v = Vec2.new()
-    if birdTransform.position.y >= top - birdCollisionRadius and birdTransform.position.y <= top then
-        v.y = top - birdCollisionRadius - birdTransform.position.y
-        if birdTransform.position.x >= left and birdTransform.position.x <= left + birdCollisionRadius then
+    if bird.transform.position.y >= top - bird.collisionRadius and bird.transform.position.y <= top then
+        v.y = top - bird.collisionRadius - bird.transform.position.y
+        if bird.transform.position.x >= left and bird.transform.position.x <= left + bird.collisionRadius then
             -- left top sub-square
-            v.x = left + birdCollisionRadius - birdTransform.position.x
-            return v.x * v.x + v.y * v.y <= birdCollisionRadius * birdCollisionRadius
-        elseif birdTransform.position.x >= right - birdCollisionRadius and birdTransform.position.x <= right then
+            v.x = left + bird.collisionRadius - bird.transform.position.x
+            return v.x * v.x + v.y * v.y <= bird.collisionRadius * bird.collisionRadius
+        elseif bird.transform.position.x >= right - bird.collisionRadius and bird.transform.position.x <= right then
             -- right top sub-square
-            v.x = right - birdCollisionRadius - birdTransform.position.x
-            return v.x * v.x + v.y * v.y <= birdCollisionRadius * birdCollisionRadius
+            v.x = right - bird.collisionRadius - bird.transform.position.x
+            return v.x * v.x + v.y * v.y <= bird.collisionRadius * bird.collisionRadius
         end
-    elseif birdTransform.position.y <= bottom + birdCollisionRadius and birdTransform.position.y >= bottom then
-        v.y = bottom + birdCollisionRadius - birdTransform.position.y
-        if birdTransform.position.x >= left and birdTransform.position.x <= left + birdCollisionRadius then
+    elseif bird.transform.position.y <= bottom + bird.collisionRadius and bird.transform.position.y >= bottom then
+        v.y = bottom + bird.collisionRadius - bird.transform.position.y
+        if bird.transform.position.x >= left and bird.transform.position.x <= left + bird.collisionRadius then
             -- left bottom sub-square
-            v.x = left + birdCollisionRadius - birdTransform.position.x
-            return v.x * v.x + v.y * v.y <= birdCollisionRadius * birdCollisionRadius
-        elseif birdTransform.position.x >= right - birdCollisionRadius and birdTransform.position.x <= right then
+            v.x = left + bird.collisionRadius - bird.transform.position.x
+            return v.x * v.x + v.y * v.y <= bird.collisionRadius * bird.collisionRadius
+        elseif bird.transform.position.x >= right - bird.collisionRadius and bird.transform.position.x <= right then
             -- right bottom sub-square
-            v.x = right - birdCollisionRadius - birdTransform.position.x
-            return v.x * v.x + v.y * v.y <= birdCollisionRadius * birdCollisionRadius
+            v.x = right - bird.collisionRadius - bird.transform.position.x
+            return v.x * v.x + v.y * v.y <= bird.collisionRadius * bird.collisionRadius
         end
     end
     return true
@@ -168,35 +177,35 @@ function setupPipeData()
 end
 
 function setStartingBirdTransform()
-    birdTransform.scale.x = birdWidth / 2
-    birdTransform.scale.y = birdHeight / 2
-    birdTransform.position.x = -screenSize.x / 4
-    birdTransform.position.y = backgroundLayers.ground.height / 2
-    birdTransform.rotation = 0
-    verticalBirdVelocity = 0
+    bird.transform.scale.x = bird.width / 2
+    bird.transform.scale.y = birdHeight / 2
+    bird.transform.position.x = -screenSize.x / 4
+    bird.transform.position.y = backgroundLayers.ground.height / 2
+    bird.transform.rotation = 0
+    bird.verticalVelocity = 0
 end
 
 function setupBird()
     local birdTexture = c2k.assets.texture(birdTextureGUID)
     local birdTextureAspect = birdTexture.width / birdTexture.height
-    birdHeight = birdWidth / birdTextureAspect
+    birdHeight = bird.width / birdTextureAspect
     local birdEntity = Entity.new()
     birdEntity:attachRoot()
-    birdTransform = birdEntity:attachTransform()
+    bird.transform = birdEntity:attachTransform()
     setStartingBirdTransform()
     local birdSprite = birdEntity:attachDynamicSprite()
     birdSprite.texture = birdTexture
-    gravity = -9.81 * birdTransform.scale.y * 7.52
-    verticalBirdVelocityOnClick = 18 * birdTransform.scale.y
+    gravity = -9.81 * bird.transform.scale.y * 7.52
+    bird.verticalVelocityOnClick = 18 * bird.transform.scale.y
 end
 
 function setupBackground()
-    for layerName, layer in pairs(backgroundLayers) do
+    for _, layer in pairs(backgroundLayers) do
         layer.width = setupBackgroundLayer(layer.transforms, layer.depth, layer.textureGUID, layer.height, layer.heightOffset)
     end
 end
 
-function onAttach(entity)
+function onAttach(_)
     input = c2k.getInput()
     time = c2k.getTime()
 
@@ -239,7 +248,7 @@ function updateBackgroundLayer(layerTransforms, tileWidth, movementSpeedFactor)
 end
 
 function updateBackground()
-    for layerName, layer in pairs(backgroundLayers) do
+    for _, layer in pairs(backgroundLayers) do
         updateBackgroundLayer(layer.transforms, layer.width, layer.movementSpeedFactor)
     end
 end
@@ -278,10 +287,10 @@ function updatePipes()
     local passedPipe = 0
     for i = 1, #pipeEntities do
         local pipeTransform = pipeEntities[i]:getTransform()
-        local passedBeforeMove = birdTransform.position.x > pipeTransform.position.x + pipeWidth / 2
+        local passedBeforeMove = bird.transform.position.x > pipeTransform.position.x + pipeWidth / 2
         pipeTransform.position.x = pipeTransform.position.x - horizontalMovementSpeed * time.delta
         if not birdPassedPipePair then
-            local passedAfterMove = birdTransform.position.x > pipeTransform.position.x + pipeWidth / 2
+            local passedAfterMove = bird.transform.position.x > pipeTransform.position.x + pipeWidth / 2
             if not passedBeforeMove and passedAfterMove then
                 birdPassedPipePair = true
                 passedPipe = i
@@ -339,7 +348,7 @@ function jumpPressed()
 end
 
 function doBirdJump()
-    verticalBirdVelocity = verticalBirdVelocityOnClick
+    bird.verticalVelocity = bird.verticalVelocityOnClick
 end
 
 function updateBird()
@@ -350,10 +359,10 @@ function updateBird()
         local rightX = 0
         for i = 1, #pipeEntities, 2 do
             local transform = pipeEntities[i]:getTransform()
-            if transform.position.x < birdTransform.position.x and (leftIndex == 0 or leftX < transform.position.x) then
+            if transform.position.x < bird.transform.position.x and (leftIndex == 0 or leftX < transform.position.x) then
                 leftIndex = i
                 leftX = transform.position.x
-            elseif transform.position.x > birdTransform.position.x and (rightIndex == 0 or rightX > transform.position.x) then
+            elseif transform.position.x > bird.transform.position.x and (rightIndex == 0 or rightX > transform.position.x) then
                 rightIndex = i
                 rightX = transform.position.x
             end
@@ -375,11 +384,11 @@ function updateBird()
             local targetTransformRight2 = pipeEntities[rightIndex + 1]:getTransform()
             local targetLeftY = (targetTransformLeft1.position.y + targetTransformLeft2.position.y) / 2
             local targetRightY = (targetTransformRight1.position.y + targetTransformRight2.position.y) / 2
-            local interpolationParameter = (birdTransform.position.x - leftX) / (rightX - leftX)
+            local interpolationParameter = (bird.transform.position.x - leftX) / (rightX - leftX)
             targetY = smoothStep(targetLeftY, targetRightY, interpolationParameter)
         end
-        birdTransform.position.y = targetY
-        birdTransform.rotation = 0
+        bird.transform.position.y = targetY
+        bird.transform.rotation = 0
         return
     end
     local wasJumpPressed = jumpPressed()
@@ -390,7 +399,7 @@ function updateBird()
         return
     end
     if gameState == GameState.STARTING then
-        birdTransform.position.y = math.sin(time.elapsed * 4) * 14
+        bird.transform.position.y = math.sin(time.elapsed * 4) * 14
         if wasJumpPressed then
             gameState = GameState.PLAYING
             doBirdJump()
@@ -400,16 +409,16 @@ function updateBird()
     if wasJumpPressed and gameState ~= GameState.COLLIDED and gameState ~= GameState.BIRD_DOWN then
         doBirdJump()
     end
-    verticalBirdVelocity = verticalBirdVelocity + gravity * time.delta
-    birdTransform.position.y = birdTransform.position.y + verticalBirdVelocity * time.delta
-    targetRotation = math.atan(verticalBirdVelocity / horizontalMovementSpeed)
-    birdTransform.rotation = lerp(birdTransform.rotation, targetRotation, time.delta * 3.5)
-    if birdTransform.position.y + birdHeight / 2 > screenSize.y / 2 then
-        birdTransform.position.y = (screenSize.y - birdHeight) / 2
-        verticalBirdVelocity = 0
+    bird.verticalVelocity = bird.verticalVelocity + gravity * time.delta
+    bird.transform.position.y = bird.transform.position.y + bird.verticalVelocity * time.delta
+    targetRotation = math.atan(bird.verticalVelocity / horizontalMovementSpeed)
+    bird.transform.rotation = lerp(bird.transform.rotation, targetRotation, time.delta * 3.5)
+    if bird.transform.position.y + birdHeight / 2 > screenSize.y / 2 then
+        bird.transform.position.y = (screenSize.y - birdHeight) / 2
+        bird.verticalVelocity = 0
     end
-    if birdTransform.position.y <= -screenSize.y / 2 + backgroundLayers.ground.height then
-        birdTransform.position.y = -screenSize.y / 2 + backgroundLayers.ground.height
+    if bird.transform.position.y <= -screenSize.y / 2 + backgroundLayers.ground.height then
+        bird.transform.position.y = -screenSize.y / 2 + backgroundLayers.ground.height
         gameState = GameState.BIRD_DOWN
         horizontalMovementSpeed = 0
     end
@@ -450,12 +459,12 @@ function handleFireworks()
     end
     -- this implementation only works as long the oldest entities occupy the
     -- lowest indices
-    for i = 1, entitiesToDelete do
+    for _ = 1, entitiesToDelete do
         table.remove(fireworksEntities, 1)
     end
 end
 
-function update(entity)
+function update(_)
     if input:keyPressed(Key.Escape) then
         c2k.application.quit()
     end
