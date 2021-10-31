@@ -31,8 +31,12 @@ namespace c2k::ScriptUtils {
         }
 
         inline void defineMathDataTypes(sol::state& luaState) noexcept {
-            luaState.new_usertype<glm::vec3>("Vec3", "x", &glm::vec3::x, "y", &glm::vec3::y, "z", &glm::vec3::z);
-            luaState.new_usertype<glm::vec2>("Vec2", "x", &glm::vec2::x, "y", &glm::vec2::y);
+            luaState.new_usertype<glm::vec3>(
+                    "Vec3", sol::constructors<glm::vec3(), glm::vec3(glm::vec3), glm::vec3(float, float, float)>(), "x",
+                    &glm::vec3::x, "y", &glm::vec3::y, "z", &glm::vec3::z);
+            luaState.new_usertype<glm::vec2>(
+                    "Vec2", sol::constructors<glm::vec2(), glm::vec2(glm::vec2), glm::vec2(float, float)>(), "x",
+                    &glm::vec2::x, "y", &glm::vec2::y);
             luaState.new_usertype<Rect>("Rect", "left", &Rect::left, "right", &Rect::right, "top", &Rect::top, "bottom",
                                         &Rect::bottom);
         }
@@ -74,15 +78,26 @@ namespace c2k::ScriptUtils {
         namespace ComponentTypes {
             inline void defineTransformType(ApplicationContext& applicationContext, sol::state& luaState) {
                 luaState.new_usertype<LuaTransform>(
-                        "Transform", "position", sol::property([&](const LuaTransform& luaTransform) -> glm::vec3* {
-                            auto&& transform = applicationContext.registry.componentMutable<TransformComponent>(
-                                    luaTransform.owningEntity);
-                            if (!transform) {
-                                spdlog::error("Invalid transform handle.");
-                                return nullptr;
-                            }
-                            return &(transform->position);
-                        }),
+                        "Transform", "position",
+                        sol::property(
+                                [&](const LuaTransform& luaTransform) -> glm::vec3* {
+                                    auto&& transform = applicationContext.registry.componentMutable<TransformComponent>(
+                                            luaTransform.owningEntity);
+                                    if (!transform) {
+                                        spdlog::error("Invalid transform handle.");
+                                        return nullptr;
+                                    }
+                                    return &(transform->position);
+                                },
+                                [&](const LuaTransform& luaTransform, glm::vec3 position) {
+                                    auto&& transform = applicationContext.registry.componentMutable<TransformComponent>(
+                                            luaTransform.owningEntity);
+                                    if (!transform) {
+                                        spdlog::error("Invalid transform handle.");
+                                        return;
+                                    }
+                                    transform->position = position;
+                                }),
                         "rotation",
                         sol::property(
                                 [&](const LuaTransform& luaTransform) {
@@ -103,15 +118,26 @@ namespace c2k::ScriptUtils {
                                     }
                                     transform->rotation = rotation;
                                 }),
-                        "scale", sol::property([&](const LuaTransform& luaTransform) -> glm::vec2* {
-                            auto&& transform = applicationContext.registry.componentMutable<TransformComponent>(
-                                    luaTransform.owningEntity);
-                            if (!transform) {
-                                spdlog::error("Invalid transform handle.");
-                                return nullptr;
-                            }
-                            return &(transform->scale);
-                        }));
+                        "scale",
+                        sol::property(
+                                [&](const LuaTransform& luaTransform) -> glm::vec2* {
+                                    auto&& transform = applicationContext.registry.componentMutable<TransformComponent>(
+                                            luaTransform.owningEntity);
+                                    if (!transform) {
+                                        spdlog::error("Invalid transform handle.");
+                                        return nullptr;
+                                    }
+                                    return &(transform->scale);
+                                },
+                                [&](const LuaTransform& luaTransform, glm::vec2 scale) {
+                                    auto&& transform = applicationContext.registry.componentMutable<TransformComponent>(
+                                            luaTransform.owningEntity);
+                                    if (!transform) {
+                                        spdlog::error("Invalid transform handle.");
+                                        return;
+                                    }
+                                    transform->scale = scale;
+                                }));
             }
 
             inline void defineDynamicSpriteType(ApplicationContext& applicationContext, sol::state& luaState) {

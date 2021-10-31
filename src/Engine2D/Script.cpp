@@ -27,7 +27,7 @@ end)");
     Script::Script(std::string source, GUID guid) noexcept : guid{ guid } {
         assert(sApplicationContext != nullptr &&
                "Scripts can only be instantiated after setting the application context.");
-        mLuaState->open_libraries(sol::lib::base, sol::lib::math, sol::lib::table, sol::lib::package);
+        mLuaState->open_libraries(sol::lib::base, sol::lib::math, sol::lib::table, sol::lib::package, sol::lib::string);
         // TODO: add function parameter for the directory of the current source file
         //       to make require look in the same folder as the current file resides in
         const std::string packagePath = (*mLuaState)["package"]["path"];
