@@ -30,8 +30,7 @@ function Bird.new(width, collisionRadius, spriteSheetGUID, screenSize, groundHei
 end
 
 function Bird:resetTransform()
-    self.transform.scale.x = self.width / 2
-    self.transform.scale.y = self.height / 2
+    self.transform.scale = Vec2.new(self.width / 2, self.height / 2)
     self.transform.position.x = -self.screenSize.x / 4
     self.transform.position.y = self.groundHeight / 2
     self.transform.rotation = 0
