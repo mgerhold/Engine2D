@@ -51,6 +51,19 @@ function PipeContainer:spawn(horizontalMovementSpeed)
 end
 
 function PipeContainer:update(horizontalMovementSpeed, bird)
+    if #self.entities > 1 then
+        local leftMostPipeTransform = self.entities[1]:getTransform()
+        if leftMostPipeTransform.position.x + self.pipeWidth / 2 < -self.screenSize.x then
+            self.entities[1]:destroy()
+            self.entities[2]:destroy()
+            for i = 1, #self.entities - 2 do
+                self.entities[i] = self.entities[i + 2]
+            end
+            self.entities[#self.entities] = nil
+            self.entities[#self.entities] = nil
+        end
+    end
+
     local birdPassedPipePair = false
     local passedPipe = 0
     for i, entity in ipairs(self.entities) do
@@ -63,19 +76,6 @@ function PipeContainer:update(horizontalMovementSpeed, bird)
                 birdPassedPipePair = true
                 passedPipe = i
             end
-        end
-    end
-
-    if #self.entities > 1 then
-        local leftMostPipeTransform = self.entities[1]:getTransform()
-        if leftMostPipeTransform.position.x + self.pipeWidth / 2 < -self.screenSize.x then
-            self.entities[1]:destroy()
-            self.entities[2]:destroy()
-            for i = 1, #self.entities - 2 do
-                self.entities[i] = self.entities[i + 2]
-            end
-            self.entities[#self.entities] = nil
-            self.entities[#self.entities] = nil
         end
     end
 

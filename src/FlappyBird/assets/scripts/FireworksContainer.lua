@@ -32,7 +32,7 @@ function FireworksContainer:update(horizontalMovementSpeed)
             numEntitiesToDelete = numEntitiesToDelete + 1
         end
     end
-    -- this implementation only works as long the oldest entities occupy the
+    -- this implementation only works as long as the oldest entities occupy the
     -- lowest indices
     for _ = 1, numEntitiesToDelete do
         table.remove(self.entities, 1)
