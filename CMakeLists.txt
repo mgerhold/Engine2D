@@ -18,7 +18,7 @@ endif ()
 set(TARGET_LIST
         Engine2D
         Sandbox
-        PartED
+        Viped
         Pong
         FlappyBird
         )
@@ -101,7 +101,7 @@ add_library(Engine2D STATIC
 target_include_directories(Engine2D PUBLIC ${PROJECT_SOURCE_DIR}/src/Engine2D)
 
 add_executable(Sandbox src/Sandbox/main.cpp src/Sandbox/Sandbox.hpp src/Sandbox/Sandbox.cpp)
-add_executable(PartED src/PartED/Main.cpp src/PartED/PartED.hpp src/PartED/PartED.cpp src/PartED/PartEDProject.hpp)
+add_executable(Viped src/Viped/Main.cpp src/Viped/Viped.hpp src/Viped/Viped.cpp src/Viped/VipedProject.hpp src/Viped/FourWayVariantSelector.hpp src/Viped/Utility.cpp src/Viped/Utility.hpp)
 add_executable(Pong src/Pong/Main.cpp src/Pong/Pong.cpp src/Pong/Pong.hpp)
 add_executable(FlappyBird src/FlappyBird/Main.cpp)
 
@@ -197,12 +197,12 @@ target_link_libraries(Engine2D PUBLIC imgui::imgui)
 target_link_libraries(Sandbox PRIVATE spdlog::spdlog spdlog::spdlog_header_only)
 
 target_link_libraries(Sandbox PRIVATE Engine2D)
-target_link_libraries(PartED PRIVATE Engine2D)
+target_link_libraries(Viped PRIVATE Engine2D)
 target_link_libraries(Pong PRIVATE Engine2D)
 target_link_libraries(FlappyBird PRIVATE Engine2D)
 
 find_package(tinyfiledialogs CONFIG REQUIRED)
-target_link_libraries(PartED PRIVATE tinyfiledialogs::tinyfiledialogs)
+target_link_libraries(Viped PRIVATE tinyfiledialogs::tinyfiledialogs)
 
 enable_testing()
 add_subdirectory(tests)

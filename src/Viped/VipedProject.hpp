@@ -8,13 +8,13 @@
 #include <GUID.hpp>
 #include <filesystem>
 
-namespace c2k::PartED {
+namespace c2k::Viped {
 
-    struct PartEDProject {
+    struct VipedProject {
         std::filesystem::path assetListFilename;
         GUID particleSystemGUID;
     };
 
-    C2K_JSON_DEFINE_TYPE(PartEDProject, assetListFilename, particleSystemGUID);
+    C2K_JSON_DEFINE_TYPE(VipedProject, assetListFilename, particleSystemGUID);
 
-}// namespace c2k::PartED
+}// namespace c2k::Viped

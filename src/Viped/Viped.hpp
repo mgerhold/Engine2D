@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "FourWayVariantSelector.hpp"
 #include <Application.hpp>
 #include <GUID.hpp>
 #include <AssetList.hpp>
@@ -11,7 +12,7 @@
 #include <tl/expected.hpp>
 #include <variant>
 
-class PartED : public c2k::Application {
+class Viped : public c2k::Application {
 private:
     using c2k::Application::Application;
 
@@ -20,12 +21,17 @@ private:
     void renderImGui() noexcept override;
 
     tl::expected<std::monostate, std::string> onNewProjectClicked() noexcept;
+    void renderMainMenu() noexcept;
     void renderTextureList() noexcept;
     void renderParticleSystemList() noexcept;
     void renderStatsWindow() const noexcept;
+    void renderParticleSettingsWindow() noexcept;
 
     void refreshParticleSystem(
             const c2k::AssetDescriptions::ParticleSystemDescription& particleSystemDescription) noexcept;
+
+private:
+    void changeTexture(const c2k::AssetDescriptions::TextureDescription& textureDescription) noexcept;
 
 private:
     static constexpr ImGuiTableFlags tableFlags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg;
@@ -36,4 +42,7 @@ private:
     c2k::AssetList mAssetList;
     bool mHasParticleSystemDescriptionBeenLoaded{ false };
     c2k::AssetDescriptions::ParticleSystemDescription mParticleSystemDescription;
+    c2k::ParticleSystem* mParticleSystem{ nullptr };
+
+    FourWayVariantSelector<double> mStartLifeTimeSelector{ "Start Lifetime", 0.05, 0.0, 60.0 };
 };

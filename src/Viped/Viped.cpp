@@ -2,7 +2,7 @@
 // Created by coder2k on 09.10.2021.
 //
 
-#include "PartED.hpp"
+#include "Viped.hpp"
 #include <AssetDatabase.hpp>
 #include <Component.hpp>
 #include <Platform.hpp>
@@ -14,18 +14,42 @@
 #include <array>
 #include <filesystem>
 #include <iostream>
+#include <string>
 #include <cinttypes>
 
 using namespace c2k;
 
-void PartED::setup() noexcept {
+
+void Viped::setup() noexcept {
     mTextureGUID = GUID::create();      // initialize to a yet unknown GUID
     mShaderProgramGUID = GUID::create();// same
 }
 
-void PartED::update() noexcept { }
+void Viped::update() noexcept { }
 
-void PartED::renderImGui() noexcept {
+void Viped::renderImGui() noexcept {
+    renderMainMenu();
+    renderTextureList();
+    renderParticleSystemList();
+    renderStatsWindow();
+    renderParticleSettingsWindow();
+    ImGui::ShowDemoWindow();
+}
+
+tl::expected<std::monostate, std::string> Viped::onNewProjectClicked() noexcept {
+    const auto result = openFileDialog("Select Asset List", c2k::AssetDatabase::assetPath(),
+                                       std::vector<std::string>{ "*.json" }, "Asset list JSON files", false);
+    if (result) {
+        auto assetList = AssetList::fromFile(result.value());
+        if (!assetList) {
+            return tl::unexpected(fmt::format("Failed to read asset list: {}", assetList.error()));
+        }
+        mAssetList = std::move(assetList.value());
+    }
+    return std::monostate{};
+}
+
+void Viped::renderMainMenu() noexcept {
     tl::expected<std::monostate, std::string> result{ std::monostate{} };
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("File")) {
@@ -57,26 +81,9 @@ void PartED::renderImGui() noexcept {
         ImGui::SetItemDefaultFocus();
         ImGui::EndPopup();
     }
-    renderTextureList();
-    renderParticleSystemList();
-    renderStatsWindow();
-    ImGui::ShowDemoWindow();
 }
 
-tl::expected<std::monostate, std::string> PartED::onNewProjectClicked() noexcept {
-    const auto result = openFileDialog("Select Asset List", c2k::AssetDatabase::assetPath(),
-                                       std::vector<std::string>{ "*.json" }, "Asset list JSON files", false);
-    if (result) {
-        auto assetList = AssetList::fromFile(result.value());
-        if (!assetList) {
-            return tl::unexpected(fmt::format("Failed to read asset list: {}", assetList.error()));
-        }
-        mAssetList = std::move(assetList.value());
-    }
-    return std::monostate{};
-}
-
-void PartED::renderTextureList() noexcept {
+void Viped::renderTextureList() noexcept {
     ImGui::Begin("Available Textures", nullptr);
     if (ImGui::BeginTable("textureTable", 2, tableFlags)) {
         ImGui::TableSetupColumn("Textures");
@@ -93,7 +100,8 @@ void PartED::renderTextureList() noexcept {
                     spdlog::info("Button clicked!");
                     if (mHasParticleSystemDescriptionBeenLoaded) {
                         mParticleSystemDescription.texture = textureDescription.guid;
-                        refreshParticleSystem(mParticleSystemDescription);
+                        // refreshParticleSystem(mParticleSystemDescription);
+                        changeTexture(textureDescription);
                     }
                 }
                 ImGui::PopID();
@@ -104,7 +112,7 @@ void PartED::renderTextureList() noexcept {
     ImGui::End();
 }
 
-void PartED::renderParticleSystemList() noexcept {
+void Viped::renderParticleSystemList() noexcept {
     ImGui::Begin("Particle Systems", nullptr);
     if (ImGui::BeginTable("particleSystemsTable", 2, tableFlags)) {
         ImGui::TableSetupColumn("Particle System");
@@ -127,7 +135,7 @@ void PartED::renderParticleSystemList() noexcept {
     ImGui::End();
 }
 
-void PartED::refreshParticleSystem(
+void Viped::refreshParticleSystem(
         const c2k::AssetDescriptions::ParticleSystemDescription& particleSystemDescription) noexcept {
     if (!mAssetList.assetDescriptions().textures) {
         spdlog::warn("Warning: No textures in asset list");
@@ -158,7 +166,7 @@ void PartED::refreshParticleSystem(
     mHasParticleSystemDescriptionBeenLoaded = true;
     mParticleSystemDescription = particleSystemDescription;
 
-    const auto& particleSystem = mAssetDatabase.loadParticleSystem(
+    auto& particleSystem = mAssetDatabase.loadParticleSystem(
             AssetDatabase::assetPath() / particleSystemDescription.filename, particleSystemDescription.guid,
             mAssetDatabase.texture(mTextureGUID), mAssetDatabase.shaderProgramMutable(mShaderProgramGUID));
     if (mParticleEmitterEntity != invalidEntity) {
@@ -168,9 +176,10 @@ void PartED::refreshParticleSystem(
     mParticleEmitterEntity = mRegistry.createEntity(
             TransformComponent{}, RootComponent{},
             ParticleEmitterComponent{ .particleSystem{ &particleSystem }, .lastSpawnTime{ mTime.elapsed } });
+    mParticleSystem = &particleSystem;
 }
 
-void PartED::renderStatsWindow() const noexcept {
+void Viped::renderStatsWindow() const noexcept {
     ImGui::Begin("Stats");
     ImGui::Text("Render Batches: %zu", mRenderer.stats().numBatches);
     ImGui::Text("Number of Quads: %zu", mRenderer.stats().numTriangles / 2);
@@ -209,4 +218,24 @@ void PartED::renderStatsWindow() const noexcept {
     }
     ImGui::Unindent();
     ImGui::End();
+}
+
+void Viped::renderParticleSettingsWindow() noexcept {
+    ImGui::Begin("Inspector");
+    if (mParticleSystem) {
+        mStartLifeTimeSelector(mParticleSystem->startLifetime);
+    }
+    ImGui::End();
+}
+
+void Viped::changeTexture(const c2k::AssetDescriptions::TextureDescription& textureDescription) noexcept {
+    if (mParticleSystem == nullptr) {
+        return;
+    }
+    const Texture* const texture =
+            (mAssetDatabase.hasBeenLoaded(textureDescription.guid)
+                     ? &mAssetDatabase.texture(textureDescription.guid)
+                     : &mAssetDatabase.loadTexture(AssetDatabase::assetPath() / textureDescription.filename,
+                                                   textureDescription.guid));
+    mParticleSystem->sprite.texture = texture;
 }

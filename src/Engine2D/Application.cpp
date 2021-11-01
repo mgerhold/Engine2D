@@ -207,7 +207,16 @@ namespace c2k {
             const glm::vec2 baseScale{ particleSystem.sprite.texture->widthToHeightRatio(), 1.0f };
             const auto startScale = baseScale * get<glm::vec2>(particleSystem.startSize);
             const auto endScale = baseScale * get<glm::vec2>(particleSystem.startSize);
-            const double totalLifeTime = get<double>(particleSystem.startLifetime);
+            const double totalLifeTime = [&]() {
+                if (holds_alternative<double>(particleSystem.startLifetime)) {
+                    return get<double>(particleSystem.startLifetime);
+                } else if (holds_alternative<ParticleSystemImpl::Range<double>>(particleSystem.startLifetime)) {
+                    return mRandom.range(get<ParticleSystemImpl::Range<double>>(particleSystem.startLifetime).min,
+                                         get<ParticleSystemImpl::Range<double>>(particleSystem.startLifetime).max);
+                } else {
+                    assert(false);
+                }
+            }();
             const float startRotationSpeed = 0.0f;
             const float endRotationSpeed = 0.0f;
             const auto linearVelocity = glm::vec3{ get<glm::vec2>(particleSystem.linearVelocityOverLifetime).x,
