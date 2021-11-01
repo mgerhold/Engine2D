@@ -17,7 +17,7 @@ namespace c2k {
     class Script {
     public:
         Script() noexcept;
-        explicit Script(std::string source, GUID guid) noexcept;
+        explicit Script(std::string source, GUID guid, const std::filesystem::path& scriptBaseDirectory) noexcept;
 
         [[nodiscard]] static tl::expected<Script, std::string> loadFromFile(const std::filesystem::path& filename,
                                                                             GUID guid = GUID{}) noexcept;

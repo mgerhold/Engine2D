@@ -24,14 +24,13 @@ print("Warning: Default script on entity " .. entity.id)
 end)");
     }
 
-    Script::Script(std::string source, GUID guid) noexcept : guid{ guid } {
+    Script::Script(std::string source, GUID guid, const std::filesystem::path& scriptBaseDirectory) noexcept
+        : guid{ guid } {
         assert(sApplicationContext != nullptr &&
                "Scripts can only be instantiated after setting the application context.");
         mLuaState->open_libraries(sol::lib::base, sol::lib::math, sol::lib::table, sol::lib::package, sol::lib::string);
-        // TODO: add function parameter for the directory of the current source file
-        //       to make require look in the same folder as the current file resides in
         const std::string packagePath = (*mLuaState)["package"]["path"];
-        const auto path = (AssetDatabase::assetPath() / "scripts").string() + "/?.lua";
+        const auto path = (scriptBaseDirectory.empty() ? std::string{ "" } : (scriptBaseDirectory / "?.lua").string());
         (*mLuaState)["package"]["path"] = packagePath + (!packagePath.empty() ? ";" : "") + path;
         ScriptUtils::provideAPI(*sApplicationContext, *mLuaState);
         mLuaState->safe_script(source, [](lua_State*, sol::protected_function_result result) {
@@ -45,7 +44,7 @@ end)");
 
     tl::expected<Script, std::string> Script::loadFromFile(const std::filesystem::path& filename, GUID guid) noexcept {
         return FileUtils::readTextFile(filename).transform([&](std::string&& fileContents) {
-            return Script{ fileContents, guid };
+            return Script{ fileContents, guid, filename.parent_path() };
         });
     }
 
