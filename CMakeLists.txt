@@ -103,7 +103,7 @@ target_include_directories(Engine2D PUBLIC ${PROJECT_SOURCE_DIR}/src/Engine2D)
 add_executable(Sandbox src/Sandbox/main.cpp src/Sandbox/Sandbox.hpp src/Sandbox/Sandbox.cpp)
 add_executable(PartED src/PartED/Main.cpp src/PartED/PartED.hpp src/PartED/PartED.cpp src/PartED/PartEDProject.hpp)
 add_executable(Pong src/Pong/Main.cpp src/Pong/Pong.cpp src/Pong/Pong.hpp)
-add_executable(FlappyBird src/FlappyBird/Main.cpp src/FlappyBird/FlappyBird.cpp src/FlappyBird/FlappyBird.hpp)
+add_executable(FlappyBird src/FlappyBird/Main.cpp)
 
 # enable profiling if desired
 if (ENABLE_PROFILING)
