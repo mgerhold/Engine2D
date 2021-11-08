@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "ParticleSystem.hpp"
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 #pragma warning(push)
@@ -15,11 +16,9 @@ namespace ImGui {
     float BezierValue(float dt01, glm::vec2 p0, glm::vec2 p1, float minVal = 0.0f, float maxVal = 1.0f);
 
     int Bezier(const char* label,
-               glm::vec2* p0,
-               glm::vec2* p1,
-               float* minVal,
-               float* maxVal,
+               c2k::ParticleSystemImpl::BezierCurve* curve,
                int* selectedPreset,
+               int* activeHandle,
                float speed);
 
 }// namespace ImGui

@@ -9,9 +9,10 @@ namespace ParticleSystemImpl {
     struct BezierCurve {
         glm::vec2 p0, p1;
         float minVal, maxVal;
+        float leftY, rightY;
     };
 
-    C2K_JSON_DEFINE_TYPE(BezierCurve, p0, p1, minVal, maxVal);
+    C2K_JSON_DEFINE_TYPE(BezierCurve, p0, p1, minVal, maxVal, leftY, rightY);
 
     struct BezierSplines2D {
         BezierCurve x;
