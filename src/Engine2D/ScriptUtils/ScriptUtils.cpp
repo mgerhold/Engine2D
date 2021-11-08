@@ -321,15 +321,6 @@ namespace c2k::ScriptUtils {
 
             inline void provideParticleEmitterAPI(ApplicationContext& applicationContext,
                                                   sol::usertype<LuaEntity>& entityType) noexcept {
-                /*entityType["getParticleEmitter"] = [&](LuaEntity luaEntity) {
-                    const Entity entity{ luaEntity };
-                    const auto result = applicationContext.registry.component<ParticleEmitterComponent>(entity);
-                    if (result) {
-                        return LuaParticleEmitter{ .owningEntity{ entity }};
-                    }
-                    spdlog::error("Entity {} does not have a particle emitter component.", entity);
-                    return LuaParticleEmitter{ .owningEntity{ invalidEntity }};
-                };*/
                 entityType["attachParticleEmitter"] = [&](LuaEntity luaEntity, LuaParticleSystem particleSystem) {
                     const Entity entity{ luaEntity };
                     if (applicationContext.registry.hasComponent<ParticleEmitterComponent>(entity)) {
@@ -337,7 +328,7 @@ namespace c2k::ScriptUtils {
                     } else {
                         applicationContext.registry.attachComponent<ParticleEmitterComponent>(
                                 entity, ParticleEmitterComponent{
-                                                .particleSystem{ &applicationContext.assetDatabase.particleSystem(
+                                                .particleSystem{ applicationContext.assetDatabase.particleSystem(
                                                         GUID::fromString(particleSystem.guid)) },
                                                 .lastSpawnTime{ applicationContext.time.elapsed } });
                     }

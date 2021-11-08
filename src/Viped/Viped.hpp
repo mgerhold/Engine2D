@@ -25,7 +25,7 @@ private:
     void renderTextureList() noexcept;
     void renderParticleSystemList() noexcept;
     void renderStatsWindow() const noexcept;
-    void renderParticleSettingsWindow() noexcept;
+    void renderInspectorWindow() noexcept;
 
     void refreshParticleSystem(
             const c2k::AssetDescriptions::ParticleSystemDescription& particleSystemDescription) noexcept;

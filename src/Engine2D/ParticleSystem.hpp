@@ -18,9 +18,18 @@ namespace c2k {
     class ShaderProgram;
 
     struct ParticleSystem : public ParticleSystemImpl::ParticleSystemJSON {
+    public:
         Sprite sprite;
         ShaderProgram* shaderProgram{ nullptr };
         GUID guid;
+
+        double currentDuration{ 0.0 };
+
+    public:
+        double spawnInterval() const {
+            // TODO: handle different variants
+            return 1.0 / get<float>(rateOverTime);
+        }
 
         ParticleSystem& operator<<(const ParticleSystemImpl::ParticleSystemJSON& base) noexcept {
             ParticleSystemImpl::ParticleSystemJSON::operator=(base);

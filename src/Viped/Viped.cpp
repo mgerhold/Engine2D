@@ -3,6 +3,7 @@
 //
 
 #include "Viped.hpp"
+#include <ImGuiUtils/Bezier.hpp>
 #include <AssetDatabase.hpp>
 #include <Component.hpp>
 #include <Platform.hpp>
@@ -32,7 +33,7 @@ void Viped::renderImGui() noexcept {
     renderTextureList();
     renderParticleSystemList();
     renderStatsWindow();
-    renderParticleSettingsWindow();
+    renderInspectorWindow();
     ImGui::ShowDemoWindow();
 }
 
@@ -175,8 +176,8 @@ void Viped::refreshParticleSystem(
     mRegistry.template destroyEntitiesWithComponents<ParticleComponent>();
     mParticleEmitterEntity = mRegistry.createEntity(
             TransformComponent{}, RootComponent{},
-            ParticleEmitterComponent{ .particleSystem{ &particleSystem }, .lastSpawnTime{ mTime.elapsed } });
-    mParticleSystem = &particleSystem;
+            ParticleEmitterComponent{ .particleSystem{ particleSystem }, .lastSpawnTime{ mTime.elapsed } });
+    mParticleSystem = &mRegistry.componentMutable<ParticleEmitterComponent>(mParticleEmitterEntity)->particleSystem;
 }
 
 void Viped::renderStatsWindow() const noexcept {
@@ -220,9 +221,11 @@ void Viped::renderStatsWindow() const noexcept {
     ImGui::End();
 }
 
-void Viped::renderParticleSettingsWindow() noexcept {
+void Viped::renderInspectorWindow() noexcept {
     ImGui::Begin("Inspector");
     if (mParticleSystem) {
+        ImGui::Text("Duration: %0.2f s / %0.2f s", mParticleSystem->currentDuration, mParticleSystem->duration);
+        ImGui::Checkbox("Looping", &mParticleSystem->looping);
         mStartLifeTimeSelector(mParticleSystem->startLifetime);
     }
     ImGui::End();

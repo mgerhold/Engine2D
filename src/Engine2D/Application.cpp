@@ -5,9 +5,11 @@
 #include "Application.hpp"
 #include "MathUtils/MathUtils.hpp"
 #include "Animation.hpp"
+#include "ImGuiUtils/Bezier.hpp"
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+#include <cmath>
 #include <variant>
 
 namespace {
@@ -193,28 +195,46 @@ namespace c2k {
     }
 
     void Application::handleParticleEmitters() noexcept {
+        using namespace c2k::ParticleSystemImpl;
         for (auto&& [entity, particleEmitter, transform, root] :
              mRegistry.componentsMutable<ParticleEmitterComponent, TransformComponent, RootComponent>()) {
-            const double spawnInterval = 1.0 / get<float>(particleEmitter.particleSystem->rateOverTime);
-            while (mTime.elapsed >= particleEmitter.lastSpawnTime + spawnInterval) {
+            auto& particleSystem = particleEmitter.particleSystem;
+            bool shouldSpawnParticle = true;
+            if ((particleSystem.currentDuration += mTime.delta) >= particleSystem.duration) {
+                if (particleSystem.looping) {
+                    particleSystem.currentDuration = std::fmod(particleSystem.currentDuration, particleSystem.duration);
+                    particleEmitter.lastSpawnTime = mTime.elapsed - particleSystem.spawnInterval();
+                } else {
+                    shouldSpawnParticle = false;
+                }
+            }
+            while (shouldSpawnParticle &&
+                   mTime.elapsed >= particleEmitter.lastSpawnTime + particleSystem.spawnInterval()) {
                 mSpawningEmitters.emplace_back(entity);
-                particleEmitter.lastSpawnTime += spawnInterval;
+                particleEmitter.lastSpawnTime += particleSystem.spawnInterval();
             }
         }
         for (auto emitterEntity : mSpawningEmitters) {
             const ParticleSystem& particleSystem =
-                    *(mRegistry.component<ParticleEmitterComponent>(emitterEntity).value().particleSystem);
+                    mRegistry.component<ParticleEmitterComponent>(emitterEntity).value().particleSystem;
             const glm::vec2 baseScale{ particleSystem.sprite.texture->widthToHeightRatio(), 1.0f };
             const auto startScale = baseScale * get<glm::vec2>(particleSystem.startSize);
             const auto endScale = baseScale * get<glm::vec2>(particleSystem.startSize);
             const double totalLifeTime = [&]() {
                 if (holds_alternative<double>(particleSystem.startLifetime)) {
                     return get<double>(particleSystem.startLifetime);
-                } else if (holds_alternative<ParticleSystemImpl::Range<double>>(particleSystem.startLifetime)) {
-                    return mRandom.range(get<ParticleSystemImpl::Range<double>>(particleSystem.startLifetime).min,
-                                         get<ParticleSystemImpl::Range<double>>(particleSystem.startLifetime).max);
+                } else if (holds_alternative<Range<double>>(particleSystem.startLifetime)) {
+                    return mRandom.range(get<Range<double>>(particleSystem.startLifetime).min,
+                                         get<Range<double>>(particleSystem.startLifetime).max);
+                } else if (holds_alternative<BezierCurve>(particleSystem.startLifetime)) {
+                    const auto interpolationParameter =
+                            gsl::narrow_cast<float>(particleSystem.currentDuration / particleSystem.duration);
+                    const auto& curve = get<BezierCurve>(particleSystem.startLifetime);
+                    return static_cast<double>(
+                            ImGui::BezierValue(interpolationParameter, curve.p0, curve.p1, curve.minVal, curve.maxVal));
                 } else {
                     assert(false);
+                    return 0.0;
                 }
             }();
             const float startRotationSpeed = 0.0f;

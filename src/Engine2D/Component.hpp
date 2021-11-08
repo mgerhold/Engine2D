@@ -86,7 +86,7 @@ namespace c2k {
     };
 
     struct ParticleEmitterComponent {
-        const ParticleSystem* particleSystem{ nullptr };
+        ParticleSystem particleSystem;
         double lastSpawnTime{ 0.0 };
     };
 

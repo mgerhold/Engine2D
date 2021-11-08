@@ -97,7 +97,7 @@ add_library(Engine2D STATIC
         src/Engine2D/JSON/MacroDefinitions.hpp
         src/Engine2D/JSON/Parsers.cpp
         src/Engine2D/JSON/Parsers.hpp
-        src/Engine2D/Animation.hpp src/Engine2D/Platform.cpp src/Engine2D/Platform.hpp)
+        src/Engine2D/Animation.hpp src/Engine2D/Platform.cpp src/Engine2D/Platform.hpp src/Engine2D/ImGuiUtils/Bezier.cpp src/Engine2D/ImGuiUtils/Bezier.hpp)
 target_include_directories(Engine2D PUBLIC ${PROJECT_SOURCE_DIR}/src/Engine2D)
 
 add_executable(Sandbox src/Sandbox/main.cpp src/Sandbox/Sandbox.hpp src/Sandbox/Sandbox.cpp)

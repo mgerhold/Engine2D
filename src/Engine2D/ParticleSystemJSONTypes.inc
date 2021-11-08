@@ -6,22 +6,16 @@ namespace ParticleSystemImpl {
         T max;
     };
 
-    struct BezierPoint {
-        glm::vec2 position; // x normalized, y absolute
-        glm::vec2 direction;// unit vector
+    struct BezierCurve {
+        glm::vec2 p0, p1;
+        float minVal, maxVal;
     };
 
-    C2K_JSON_DEFINE_TYPE(BezierPoint, position, direction);
-
-    struct BezierSpline {
-        std::vector<BezierPoint> pivotPoints;
-    };
-
-    C2K_JSON_DEFINE_TYPE(BezierSpline, pivotPoints);
+    C2K_JSON_DEFINE_TYPE(BezierCurve, p0, p1, minVal, maxVal);
 
     struct BezierSplines2D {
-        BezierSpline x;
-        BezierSpline y;
+        BezierCurve x;
+        BezierCurve y;
     };
 
     C2K_JSON_DEFINE_TYPE(BezierSplines2D, x, y);
@@ -50,14 +44,14 @@ namespace ParticleSystemImpl {
 
     struct ParticleBurst {
         double time;
-        std::variant<float, Range<float>, BezierSpline, Range<BezierSpline>> count;
+        std::variant<float, Range<float>, BezierCurve, Range<BezierCurve>> count;
         std::optional<int> cycles;// otherwise infinity
         double interval;
         float probability;
     };
 
     C2K_JSON_DEFINE_TYPE(Range<float>, min, max);
-    C2K_JSON_DEFINE_TYPE(Range<BezierSpline>, min, max);
+    C2K_JSON_DEFINE_TYPE(Range<BezierCurve>, min, max);
     C2K_JSON_DEFINE_TYPE(ParticleBurst, time, count, cycles, interval, probability);
 
     struct ParticleSystemJSON {
@@ -65,27 +59,27 @@ namespace ParticleSystemImpl {
         bool looping;
         bool prewarm;
         std::variant<double, Range<double>> startDelay;
-        std::variant<double, Range<double>, BezierSpline, Range<BezierSpline>> startLifetime;
-        std::variant<float, Range<float>, BezierSpline, Range<BezierSpline>> startSpeed;
+        std::variant<double, Range<double>, BezierCurve, Range<BezierCurve>> startLifetime;
+        std::variant<float, Range<float>, BezierCurve, Range<BezierCurve>> startSpeed;
         std::variant<glm::vec2, Range<glm::vec2>, BezierSplines2D, Range<BezierSplines2D>> startSize;
-        std::variant<float, Range<float>, BezierSpline, Range<BezierSpline>> startRotation;
+        std::variant<float, Range<float>, BezierCurve, Range<BezierCurve>> startRotation;
         float flipRotation;// 0.0f - 1.0f
         std::variant<Color, ColorGradient> color;
-        std::variant<float, Range<float>, BezierSpline, Range<BezierSpline>> gravityModifier;
+        std::variant<float, Range<float>, BezierCurve, Range<BezierCurve>> gravityModifier;
         bool simulateInWorldSpace;
         // maybe add: scaling mode? (local/hierarchy)
         std::uint32_t maxParticles;
-        std::variant<float, Range<float>, BezierSpline, Range<BezierSpline>> rateOverTime;
-        std::variant<float, Range<float>, BezierSpline, Range<BezierSpline>> rateOverDistance;
+        std::variant<float, Range<float>, BezierCurve, Range<BezierCurve>> rateOverTime;
+        std::variant<float, Range<float>, BezierCurve, Range<BezierCurve>> rateOverDistance;
         std::optional<std::vector<ParticleBurst>> particleBursts;
         float emitterRadius;
         float emitterArc;// degrees
         std::variant<glm::vec2, Range<glm::vec2>, BezierSplines2D, Range<BezierSplines2D>> linearVelocityOverLifetime;
-        std::variant<float, Range<float>, BezierSpline, Range<BezierSpline>> radialVelocityOverLifetime;
+        std::variant<float, Range<float>, BezierCurve, Range<BezierCurve>> radialVelocityOverLifetime;
         std::variant<glm::vec2, Range<glm::vec2>, BezierSplines2D, Range<BezierSplines2D>> forceOverLifetime;
         std::optional<ColorGradient> colorOverLifetime;
-        std::optional<BezierSpline> sizeOverLifetime;
-        std::optional<BezierSpline> rotationOverLifetime;
+        std::optional<BezierCurve> sizeOverLifetime;
+        std::optional<BezierCurve> rotationOverLifetime;
         // TODO: sprite sheet animation settings?
     };
 
