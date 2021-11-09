@@ -84,14 +84,19 @@ namespace ImGui {
         }
     }
 
-    float BezierValue(float dt01, glm::vec2 p0, glm::vec2 p1, float minVal, float maxVal) {
-        // TODO: take curve as parameter
+    float BezierValue(float dt01, const BezierCurve& curve) {
         constexpr auto STEPS = 256;
-        std::array pivotPoints = { ImVec2{ 0.0f, 0.0f }, ImVec2{ p0.x, p0.y }, ImVec2{ p1.x, p1.y },
-                                   ImVec2{ 1.0f, 1.0f } };
+        std::array pivotPoints = { ImVec2{ 0.0f, curve.leftY }, ImVec2{ curve.p0.x, curve.p0.y },
+                                   ImVec2{ curve.p1.x, curve.p1.y }, ImVec2{ 1.0f, curve.rightY } };
         std::array<ImVec2, STEPS + 1> results;
         bezier_table<STEPS>(pivotPoints, results);
-        return results[(int) ((dt01 < 0 ? 0 : dt01 > 1 ? 1 : dt01) * STEPS)].y * (maxVal - minVal) + minVal;
+        return results[(int) ((dt01 < 0   ? 0
+                               : dt01 > 1 ? 1
+                                          : dt01) *
+                              STEPS)]
+                               .y *
+                       (curve.maxVal - curve.minVal) +
+               curve.minVal;
     }
 
     int Bezier(const char* label, BezierCurve* curve, int* selectedPreset, int* activeHandle, float speed) {
@@ -190,24 +195,26 @@ namespace ImGui {
                               GetColorU32(ImGuiCol_TextDisabled));
         }
 
+        const auto mouseInsideWidget = (IsItemActive() || IsItemHovered());
         const auto io = GetIO();
         const ImVec2 mouse = io.MousePos;
         assert(std::size(points) == std::size(handles));
         using ranges::views::zip, ranges::views::enumerate;
-        for (auto&& [i, pair] : enumerate(zip(points, handles))) {
-            auto&& [point, handle] = pair;
-            const auto distanceVector = mouse - handle;
-            const auto squaredDistance = distanceVector.x * distanceVector.x + distanceVector.y * distanceVector.y;
-            const auto mouseOverHandle = (squaredDistance < GRAB_RADIUS * GRAB_RADIUS);
-            if (mouseOverHandle) {
-                SetTooltip("(%4.3f, %4.3f)", point.x, point.y);
-                if (IsMouseClicked(0)) {
-                    *activeHandle = gsl::narrow_cast<int>(i);
+        if (mouseInsideWidget) {
+            for (auto&& [i, pair] : enumerate(zip(points, handles))) {
+                auto&& [point, handle] = pair;
+                const auto distanceVector = mouse - handle;
+                const auto squaredDistance = distanceVector.x * distanceVector.x + distanceVector.y * distanceVector.y;
+                const auto mouseOverHandle = (squaredDistance < GRAB_RADIUS * GRAB_RADIUS);
+                if (mouseOverHandle) {
+                    SetTooltip("(%4.3f, %4.3f)", point.x, point.y);
+                    if (IsMouseClicked(0)) {
+                        *activeHandle = gsl::narrow_cast<int>(i);
+                    }
+                    break;
                 }
-                break;
             }
         }
-        spdlog::info("Mouse button held down? {}", IsMouseDown(0));
         if (!IsMouseDown(0)) {
             *activeHandle = -1;
         }
@@ -253,7 +260,7 @@ namespace ImGui {
         // draw lines and grabbers
         const ImVec4 white(GetStyle().Colors[ImGuiCol_Text]);
         const auto newHandles = getHandles(points);
-        const auto luma = IsItemActive() || IsItemHovered() ? 0.5f : 1.0f;
+        const auto luma = mouseInsideWidget ? 0.5f : 1.0f;
         const ImVec4 pink(1.00f, 0.00f, 0.75f, luma);
         const ImVec4 cyan(0.00f, 0.75f, 1.00f, luma);
         DrawList->AddLine(newHandles[0], newHandles[1], ImColor(white), LINE_WIDTH);

@@ -230,8 +230,7 @@ namespace c2k {
                     const auto interpolationParameter =
                             gsl::narrow_cast<float>(particleSystem.currentDuration / particleSystem.duration);
                     const auto& curve = get<BezierCurve>(particleSystem.startLifetime);
-                    return static_cast<double>(
-                            ImGui::BezierValue(interpolationParameter, curve.p0, curve.p1, curve.minVal, curve.maxVal));
+                    return static_cast<double>(ImGui::BezierValue(interpolationParameter, curve));
                 } else {
                     assert(false);
                     return 0.0;

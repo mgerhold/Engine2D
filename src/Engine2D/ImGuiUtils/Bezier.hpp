@@ -13,7 +13,8 @@
 
 namespace ImGui {
 
-    float BezierValue(float dt01, glm::vec2 p0, glm::vec2 p1, float minVal = 0.0f, float maxVal = 1.0f);
+    float BezierValue(float dt01,
+                      const c2k::ParticleSystemImpl::BezierCurve& curve);
 
     int Bezier(const char* label,
                c2k::ParticleSystemImpl::BezierCurve* curve,
