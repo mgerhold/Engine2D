@@ -75,8 +75,7 @@ public:
                 case 2:
                     // curve
                     auto& curve = get<BezierCurve>(variant);
-                    ImGui::Bezier("curve", &curve, &mCurvePreset0, &mActiveCurveHandle0,
-                                  gsl::narrow_cast<float>(mSpeed));
+                    ImGui::Bezier("curve", &curve, &mActiveCurveHandle0, gsl::narrow_cast<float>(mSpeed));
                     break;
             }
         }
@@ -88,6 +87,5 @@ private:
     const double mSpeed;
     const double mMin;
     const double mMax;
-    int mCurvePreset0{ 0 };
     int mActiveCurveHandle0{ -1 };
 };

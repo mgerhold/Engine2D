@@ -18,7 +18,6 @@ namespace ImGui {
 
     int Bezier(const char* label,
                c2k::ParticleSystemImpl::BezierCurve* curve,
-               int* selectedPreset,
                int* activeHandle,
                float speed);
 
