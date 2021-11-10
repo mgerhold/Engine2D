@@ -32,6 +32,8 @@ private:
 
 private:
     void changeTexture(const c2k::AssetDescriptions::TextureDescription& textureDescription) noexcept;
+    void closeParticleSystem() noexcept;
+    void saveParticleSystem() noexcept;
 
 private:
     static constexpr ImGuiTableFlags tableFlags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg;
@@ -40,7 +42,6 @@ private:
     c2k::GUID mShaderProgramGUID;
     c2k::Entity mParticleEmitterEntity{ c2k::invalidEntity };
     c2k::AssetList mAssetList;
-    bool mHasParticleSystemDescriptionBeenLoaded{ false };
     c2k::AssetDescriptions::ParticleSystemDescription mParticleSystemDescription;
     c2k::ParticleSystem* mParticleSystem{ nullptr };
 

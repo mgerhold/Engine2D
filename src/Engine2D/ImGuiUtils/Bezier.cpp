@@ -186,13 +186,13 @@ namespace ImGui {
         RenderFrame(bb.Min, bb.Max, GetColorU32(ImGuiCol_FrameBg, 1), true, Style.FrameRounding);
 
         // background grid
-        for (int i = 0; i <= Canvas.x; i += gsl::narrow_cast<int>(Canvas.x / 4.0f)) {
-            DrawList->AddLine(ImVec2(bb.Min.x + i, bb.Min.y), ImVec2(bb.Min.x + i, bb.Max.y),
-                              GetColorU32(ImGuiCol_TextDisabled));
+        for (int i = 0; i <= gsl::narrow_cast<int>(Canvas.x); i += gsl::narrow_cast<int>(Canvas.x / 4.0f)) {
+            DrawList->AddLine(ImVec2(bb.Min.x + static_cast<float>(i), bb.Min.y),
+                              ImVec2(bb.Min.x + static_cast<float>(i), bb.Max.y), GetColorU32(ImGuiCol_TextDisabled));
         }
-        for (int i = 0; i <= Canvas.y; i += gsl::narrow_cast<int>(Canvas.y / 4.0f)) {
-            DrawList->AddLine(ImVec2(bb.Min.x, bb.Min.y + i), ImVec2(bb.Max.x, bb.Min.y + i),
-                              GetColorU32(ImGuiCol_TextDisabled));
+        for (int i = 0; i <= gsl::narrow_cast<int>(Canvas.y); i += gsl::narrow_cast<int>(Canvas.y / 4.0f)) {
+            DrawList->AddLine(ImVec2(bb.Min.x, bb.Min.y + static_cast<float>(i)),
+                              ImVec2(bb.Max.x, bb.Min.y + static_cast<float>(i)), GetColorU32(ImGuiCol_TextDisabled));
         }
 
         const auto mouseInsideWidget = (IsItemActive() || IsItemHovered());
@@ -220,7 +220,6 @@ namespace ImGui {
         }
         if (*activeHandle >= 0) {
             auto& point = points[*activeHandle];
-            spdlog::error("Moving handle");
             point.x += io.MouseDelta.x / Canvas.x;
             point.y -= io.MouseDelta.y / Canvas.y;
             if constexpr (AREA_CONSTRAINED) {

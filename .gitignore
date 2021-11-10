@@ -22,3 +22,7 @@ cmake-build-clang-release/
 /src/Pong/imgui.ini
 /src/FlappyBird/imgui.ini
 /build/
+/.vscode/
+/.vs/
+/CMakeSettings.json
+/out/

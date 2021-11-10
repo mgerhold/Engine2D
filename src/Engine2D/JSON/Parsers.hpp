@@ -4,7 +4,9 @@
 
 #pragma once
 
+#include "Color.hpp"
 #include <variant>
+#include <glm/glm.hpp>
 #include <tl/expected.hpp>
 #include <spdlog/spdlog.h>
 #include <gsl/gsl>
@@ -78,6 +80,20 @@ namespace c2k::JSON::Implementation_ {
         JSONValue(double number) noexcept : mData{ JSONVariant{ JSONNumber{ number } } } { }
         JSONValue(float number) noexcept : mData{ JSONVariant{ JSONNumber{ number } } } { }
         JSONValue(int number) noexcept : mData{ JSONVariant{ JSONNumber{ gsl::narrow_cast<double>(number) } } } { }
+        JSONValue(unsigned int number) noexcept
+            : mData{ JSONVariant{ JSONNumber{ gsl::narrow_cast<double>(number) } } } { }
+        JSONValue(glm::vec2 vec) noexcept
+            : mData{ JSONVariant{ JSONObject{ { JSONString{ "x" }, JSONValue{ vec.x } },
+                                              { JSONString{ "y" }, JSONValue{ vec.y } } } } } { }
+        JSONValue(glm::vec3 vec) noexcept
+            : mData{ JSONVariant{ JSONObject{ { JSONString{ "x" }, JSONValue{ vec.x } },
+                                              { JSONString{ "y" }, JSONValue{ vec.y } },
+                                              { JSONString{ "z" }, JSONValue{ vec.z } } } } } { }
+        JSONValue(Color color) noexcept
+            : mData{ JSONVariant{ JSONObject{ { JSONString{ "r" }, JSONValue{ color.r } },
+                                              { JSONString{ "g" }, JSONValue{ color.g } },
+                                              { JSONString{ "b" }, JSONValue{ color.b } },
+                                              { JSONString{ "a" }, JSONValue{ color.a } } } } } { }
 
         JSONValue(const char* string) noexcept : mData{ JSONVariant{ JSONString{ string } } } { }
 

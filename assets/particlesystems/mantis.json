@@ -3,7 +3,20 @@
   "looping": true,
   "prewarm": false,
   "startDelay": 1,
-  "startLifetime": 3,
+  "startLifetime": {
+    "p0": {
+      "x": 0.125,
+      "y": 0.6953125
+    },
+    "p1": {
+      "x": 0.8671875,
+      "y": 0.0859375
+    },
+    "minVal": 0,
+    "maxVal": 2,
+    "leftY": 0,
+    "rightY": 1
+  },
   "startSpeed": 2,
   "startSize": {
     "x": 4,

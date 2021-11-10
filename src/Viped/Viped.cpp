@@ -99,9 +99,8 @@ void Viped::renderTextureList() noexcept {
                 ImGui::PushID(textureDescription.guid.string().c_str());
                 if (ImGui::Button("Select", ImVec2(100, 0))) {
                     spdlog::info("Button clicked!");
-                    if (mHasParticleSystemDescriptionBeenLoaded) {
+                    if (mParticleSystem) {
                         mParticleSystemDescription.texture = textureDescription.guid;
-                        // refreshParticleSystem(mParticleSystemDescription);
                         changeTexture(textureDescription);
                     }
                 }
@@ -115,7 +114,17 @@ void Viped::renderTextureList() noexcept {
 
 void Viped::renderParticleSystemList() noexcept {
     ImGui::Begin("Particle Systems", nullptr);
-    if (ImGui::BeginTable("particleSystemsTable", 2, tableFlags)) {
+    if (mParticleSystem) {
+        ImGui::Text("Currently open:");
+        ImGui::Text("%s", mParticleSystemDescription.filename.string().c_str());
+        if (ImGui::Button("Save (Overwrite)")) {
+            saveParticleSystem();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Close")) {
+            closeParticleSystem();
+        }
+    } else if (ImGui::BeginTable("particleSystemsTable", 2, tableFlags)) {
         ImGui::TableSetupColumn("Particle System");
         ImGui::TableSetupColumn("Open", ImGuiTableColumnFlags_WidthFixed, 105.0f);
         ImGui::TableHeadersRow();
@@ -161,10 +170,9 @@ void Viped::refreshParticleSystem(
 
     // TODO: load shader program
 
-    if (mHasParticleSystemDescriptionBeenLoaded) {
+    if (mParticleSystem) {
         mAssetDatabase.unload(mParticleSystemDescription.guid);
     }
-    mHasParticleSystemDescriptionBeenLoaded = true;
     mParticleSystemDescription = particleSystemDescription;
 
     auto& particleSystem = mAssetDatabase.loadParticleSystem(
@@ -241,4 +249,37 @@ void Viped::changeTexture(const c2k::AssetDescriptions::TextureDescription& text
                      : &mAssetDatabase.loadTexture(AssetDatabase::assetPath() / textureDescription.filename,
                                                    textureDescription.guid));
     mParticleSystem->sprite.texture = texture;
+}
+
+void Viped::closeParticleSystem() noexcept {
+    if (!mParticleSystem) {
+        spdlog::error("Cannot close particle system since none is currently opened");
+        return;
+    }
+    mRegistry.destroyEntity(mParticleEmitterEntity);
+    mRegistry.destroyEntitiesWithComponents<ParticleComponent>();
+    mAssetDatabase.unload(mTextureGUID);
+    mAssetDatabase.unload(mShaderProgramGUID);
+    mAssetDatabase.unload(mParticleSystem->guid);
+    mParticleSystem = nullptr;
+    mTextureGUID = GUID{};
+    mShaderProgramGUID = GUID{};
+    mParticleEmitterEntity = invalidEntity;
+    mParticleSystemDescription = AssetDescriptions::ParticleSystemDescription{};
+}
+
+void Viped::saveParticleSystem() noexcept {
+    if (!mParticleSystem) {
+        spdlog::error("Cannot save particle system since none is currently opened");
+        return;
+    }
+    using namespace c2k::ParticleSystemImpl;
+    const auto serializableRepresentation = ParticleSystemJSON{ *mParticleSystem };
+    const auto json = JSON::Value{ serializableRepresentation };
+    const auto success = json.dumpToFile(AssetDatabase::assetPath() / mParticleSystemDescription.filename);
+    if (!success) {
+        spdlog::error("Unable to write particle system: {}", success.error());
+        return;
+    }
+    // TODO: write texture/shader into asset list
 }

@@ -50,7 +50,12 @@ public:
             }
             if (ImGui::RadioButton("Curve", &mCurrentlySelected, 2)) {
                 if (!holds_alternative<BezierCurve>(variant)) {
-                    variant = BezierCurve{ .p0{ 0.25f, 0.25f }, .p1{ 0.75f, 0.75f }, .minVal{ 0.0 }, .maxVal{ 2.0 } };
+                    variant = BezierCurve{ .p0{ 0.25f, 0.25f },
+                                           .p1{ 0.75f, 0.75f },
+                                           .minVal{ 0.0 },
+                                           .maxVal{ 2.0 },
+                                           .leftY{ 0.0f },
+                                           .rightY{ 1.0f } };
                 }
             }
             ImGui::SameLine();
