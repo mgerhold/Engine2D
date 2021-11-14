@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Utility.hpp"
+#include "GUID.hpp"
 #include "ImGuiUtils/Bezier.hpp"
 #include <ParticleSystem.hpp>
 #include <imgui.h>
@@ -22,6 +23,7 @@ public:
 public:
     FourWayVariantSelector(std::string header, T speed, T min, T max) noexcept
         : mHeader{ std::move(header) },
+          mID { c2k::GUID::create().string() },
           mCurrentlySelected{ 0 },
           mSpeed{ speed },
           mMin{ min },
@@ -29,6 +31,7 @@ public:
 
     void operator()(FourWayVariant& variant) noexcept {
         using namespace c2k::ParticleSystemImpl;
+        ImGui::PushID(mID.c_str());
         if (ImGui::CollapsingHeader(mHeader.c_str())) {
             if (mCurrentlySelected != gsl::narrow_cast<int>(variant.index())) {
                 mCurrentlySelected = gsl::narrow_cast<int>(variant.index());
@@ -79,10 +82,12 @@ public:
                     break;
             }
         }
+        ImGui::PopID();
     }
 
 private:
     const std::string mHeader;
+    const std::string mID;
     int mCurrentlySelected;
     const double mSpeed;
     const double mMin;
