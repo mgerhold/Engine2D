@@ -1,8 +1,8 @@
 {
-  "duration": 5,
+  "duration": 1,
   "looping": true,
   "prewarm": false,
-  "startDelay": 1,
+  "startDelay": 0.5,
   "startLifetime": {
     "p0": {
       "x": 0.328125,

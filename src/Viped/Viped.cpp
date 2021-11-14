@@ -233,8 +233,12 @@ void Viped::renderInspectorWindow() noexcept {
     ImGui::Begin("Inspector");
     if (mParticleSystem) {
         ImGui::Text("Duration: %0.2f s / %0.2f s", mParticleSystem->currentDuration, mParticleSystem->duration);
-        ImGui::Checkbox("Looping", &mParticleSystem->looping);
+        if (ImGui::CollapsingHeader("Duration & Looping")) {
+            dragDouble("Duration", &mParticleSystem->duration, 0.05, 0.0, std::numeric_limits<double>::max());
+            ImGui::Checkbox("Looping", &mParticleSystem->looping);
+        }
         mStartLifeTimeSelector(mParticleSystem->startLifetime);
+        mStartDelaySelector(mParticleSystem->startDelay);
     }
     ImGui::End();
 }

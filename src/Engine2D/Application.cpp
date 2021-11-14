@@ -196,10 +196,34 @@ namespace c2k {
 
     void Application::handleParticleEmitters() noexcept {
         using namespace c2k::ParticleSystemImpl;
+        const auto getTwoWaySelectorValue = [&](const auto& variant) {
+            if (holds_alternative<double>(variant)) {
+                return get<double>(variant);
+            }
+            const auto& range = get<Range<double>>(variant);
+            return mRandom.range(range.min, range.max);
+        };
+        const auto getFourWaySelectorValue = [&](const auto& variant, const double particleSystemDuration,
+                                                 const double particleSystemCurrentDuration) {
+            if (holds_alternative<double>(variant)) {
+                return get<double>(variant);
+            } else if (holds_alternative<Range<double>>(variant)) {
+                return mRandom.range(get<Range<double>>(variant).min, get<Range<double>>(variant).max);
+            } else if (holds_alternative<BezierCurve>(variant)) {
+                const auto interpolationParameter =
+                        gsl::narrow_cast<float>(particleSystemCurrentDuration / particleSystemDuration);
+                const auto& curve = get<BezierCurve>(variant);
+                return static_cast<double>(ImGui::BezierValue(interpolationParameter, curve));
+            } else {
+                assert(false);
+                return 0.0;
+            }
+        };
         for (auto&& [entity, particleEmitter, transform, root] :
              mRegistry.componentsMutable<ParticleEmitterComponent, TransformComponent, RootComponent>()) {
             auto& particleSystem = particleEmitter.particleSystem;
-            bool shouldSpawnParticle = true;
+            const double startDelay = getTwoWaySelectorValue(particleSystem.startDelay);
+            bool shouldSpawnParticle = particleSystem.currentDuration >= startDelay;
             if ((particleSystem.currentDuration += mTime.delta) >= particleSystem.duration) {
                 if (particleSystem.looping) {
                     particleSystem.currentDuration = std::fmod(particleSystem.currentDuration, particleSystem.duration);
@@ -220,22 +244,8 @@ namespace c2k {
             const glm::vec2 baseScale{ particleSystem.sprite.texture->widthToHeightRatio(), 1.0f };
             const auto startScale = baseScale * get<glm::vec2>(particleSystem.startSize);
             const auto endScale = baseScale * get<glm::vec2>(particleSystem.startSize);
-            const double totalLifeTime = [&]() {
-                if (holds_alternative<double>(particleSystem.startLifetime)) {
-                    return get<double>(particleSystem.startLifetime);
-                } else if (holds_alternative<Range<double>>(particleSystem.startLifetime)) {
-                    return mRandom.range(get<Range<double>>(particleSystem.startLifetime).min,
-                                         get<Range<double>>(particleSystem.startLifetime).max);
-                } else if (holds_alternative<BezierCurve>(particleSystem.startLifetime)) {
-                    const auto interpolationParameter =
-                            gsl::narrow_cast<float>(particleSystem.currentDuration / particleSystem.duration);
-                    const auto& curve = get<BezierCurve>(particleSystem.startLifetime);
-                    return static_cast<double>(ImGui::BezierValue(interpolationParameter, curve));
-                } else {
-                    assert(false);
-                    return 0.0;
-                }
-            }();
+            const double totalLifeTime = getFourWaySelectorValue(particleSystem.startLifetime, particleSystem.duration,
+                                                                 particleSystem.currentDuration);
             const float startRotationSpeed = 0.0f;
             const float endRotationSpeed = 0.0f;
             const auto linearVelocity = glm::vec3{ get<glm::vec2>(particleSystem.linearVelocityOverLifetime).x,

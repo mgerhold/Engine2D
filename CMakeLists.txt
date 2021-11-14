@@ -101,7 +101,7 @@ add_library(Engine2D STATIC
 target_include_directories(Engine2D PUBLIC ${PROJECT_SOURCE_DIR}/src/Engine2D)
 
 add_executable(Sandbox src/Sandbox/main.cpp src/Sandbox/Sandbox.hpp src/Sandbox/Sandbox.cpp)
-add_executable(Viped src/Viped/Main.cpp src/Viped/Viped.hpp src/Viped/Viped.cpp src/Viped/VipedProject.hpp src/Viped/FourWayVariantSelector.hpp src/Viped/Utility.cpp src/Viped/Utility.hpp)
+add_executable(Viped src/Viped/Main.cpp src/Viped/Viped.hpp src/Viped/Viped.cpp src/Viped/VipedProject.hpp src/Viped/FourWayVariantSelector.hpp src/Viped/Utility.cpp src/Viped/Utility.hpp src/Viped/TwoWayVariantSelector.hpp)
 add_executable(Pong src/Pong/Main.cpp src/Pong/Pong.cpp src/Pong/Pong.hpp)
 add_executable(FlappyBird src/FlappyBird/Main.cpp)
 

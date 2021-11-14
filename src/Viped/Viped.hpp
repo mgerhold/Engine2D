@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "TwoWayVariantSelector.hpp"
 #include "FourWayVariantSelector.hpp"
 #include <Application.hpp>
 #include <GUID.hpp>
@@ -11,6 +12,7 @@
 #include <imgui.h>
 #include <tl/expected.hpp>
 #include <variant>
+#include <limits>
 
 class Viped : public c2k::Application {
 private:
@@ -46,4 +48,5 @@ private:
     c2k::ParticleSystem* mParticleSystem{ nullptr };
 
     FourWayVariantSelector<double> mStartLifeTimeSelector{ "Start Lifetime", 0.05, 0.0, 60.0 };
+    TwoWayVariantSelector<double> mStartDelaySelector{ "Start Delay", 0.05, 0.0, std::numeric_limits<double>::max() };
 };
