@@ -37,18 +37,18 @@ public:
                 mCurrentlySelected = gsl::narrow_cast<int>(variant.index());
             }
             if (ImGui::RadioButton("Constant", &mCurrentlySelected, 0)) {
-                if (holds_alternative<Range<double>>(variant)) {
-                    variant = get<Range<double>>(variant).min;
-                } else if (!holds_alternative<double>(variant)) {
-                    variant = 1.0;
+                if (holds_alternative<Range<T>>(variant)) {
+                    variant = get<Range<T>>(variant).min;
+                } else if (!holds_alternative<T>(variant)) {
+                    variant = T{ 1 };
                 }
             }
             ImGui::SameLine();
             if (ImGui::RadioButton("Range", &mCurrentlySelected, 1)) {
-                if (holds_alternative<double>(variant)) {
-                    variant = Range<double>{ .min{ get<double>(variant) }, .max{ get<double>(variant) } };
-                } else if (!holds_alternative<Range<double>>(variant)) {
-                    variant = Range<double>{ .min{ 1.0 }, .max{ 1.0 } };
+                if (holds_alternative<T>(variant)) {
+                    variant = Range<T>{ .min{ get<T>(variant) }, .max{ get<T>(variant) } };
+                } else if (!holds_alternative<Range<T>>(variant)) {
+                    variant = Range<T>{ .min{ 1.0 }, .max{ 1.0 } };
                 }
             }
             if (ImGui::RadioButton("Curve", &mCurrentlySelected, 2)) {
@@ -66,13 +66,13 @@ public:
             switch (mCurrentlySelected) {
                 case 0:
                     // constant
-                    dragDouble("value", &get<double>(variant), mSpeed, mMin, mMax);
+                    drag("value", &get<T>(variant), mSpeed, mMin, mMax);
                     break;
                 case 1:
                     // range
-                    dragDouble("min", &(get<Range<double>>(variant).min), mSpeed, mMin,
-                               get<Range<double>>(variant).max);
-                    dragDouble("max", &(get<Range<double>>(variant).max), mSpeed, get<Range<double>>(variant).min,
+                    drag("min", &(get<Range<T>>(variant).min), mSpeed, mMin,
+                               get<Range<T>>(variant).max);
+                    drag("max", &(get<Range<T>>(variant).max), mSpeed, get<Range<T>>(variant).min,
                                mMax);
                     break;
                 case 2:
@@ -89,8 +89,8 @@ private:
     const std::string mHeader;
     const std::string mID;
     int mCurrentlySelected;
-    const double mSpeed;
-    const double mMin;
-    const double mMax;
+    const T mSpeed;
+    const T mMin;
+    const T mMax;
     int mActiveCurveHandle0{ -1 };
 };

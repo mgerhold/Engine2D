@@ -3,6 +3,7 @@
 //
 
 #include "FileUtils.hpp"
+#include <spdlog/spdlog.h>
 
 namespace c2k::FileUtils {
 
@@ -23,6 +24,20 @@ namespace c2k::FileUtils {
         outputFileStream << text;
         outputFileStream.close();
         return std::monostate{};
+    }
+
+    tl::expected<std::filesystem::path, std::string> findFileInParent(const std::filesystem::path& parentPath,
+                                                                      std::string_view filename) noexcept {
+        const auto currentFile = std::filesystem::weakly_canonical(parentPath) / filename;
+        if (exists(currentFile)) {
+            return currentFile;
+        }
+        const auto nextParent = parentPath.parent_path();
+        if (nextParent == parentPath) {
+            return tl::unexpected{ fmt::format("Unable to find file {}, last search location was {}", filename,
+                                               parentPath.string()) };
+        }
+        return findFileInParent(nextParent, filename);
     }
 
 }// namespace c2k::FileUtils

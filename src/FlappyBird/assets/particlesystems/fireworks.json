@@ -2,9 +2,12 @@
   "duration": 5,
   "looping": true,
   "prewarm": false,
-  "startDelay": 1,
+  "startDelay": 0,
   "startLifetime": 1,
-  "startSpeed": 2,
+  "startSpeed": {
+    "min": 100,
+    "max": 300
+  },
   "startSize": {
     "x": 10,
     "y": 10

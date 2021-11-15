@@ -40,6 +40,8 @@ namespace c2k {
         void animateSprites() noexcept;
         void runScripts() noexcept;
         void renderDynamicSprites() noexcept;
+        void collectSpawningParticleEmitters() noexcept;
+        void spawnParticles() noexcept;
         void handleParticleEmitters() noexcept;
         void handleParticles() noexcept;
         void refreshWindowTitle() noexcept;

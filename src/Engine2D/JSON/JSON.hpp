@@ -277,6 +277,15 @@ namespace c2k::JSON {
         return value.as(std::type_identity<T>{});
     }
 
+    template<typename T>
+    [[nodiscard]] tl::expected<T, std::string> fromFileAs(const std::filesystem::path& filename) noexcept {
+        const auto parseResult = fromFile(filename);
+        if (!parseResult) {
+            return tl::unexpected{ parseResult.error() };
+        }
+        return as<T>(parseResult.value());
+    }
+
 #include "MacroDefinitions.hpp"
 
 }// namespace c2k::JSON

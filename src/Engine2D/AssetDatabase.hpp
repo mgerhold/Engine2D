@@ -137,8 +137,20 @@ namespace c2k {
             return get<Animation>(guid, mDebugFallbackAnimation);
         }
 
+        static void setAssetPath(std::filesystem::path path) noexcept {
+            sAssetPath = std::move(path);
+        }
+
         [[nodiscard]] static auto assetPath() noexcept {
-            return std::filesystem::current_path() / "assets/";
+            return sAssetPath;
+        }
+
+        static void setWorkingDirectory(const std::filesystem::path& path) noexcept {
+            std::filesystem::current_path(path);
+        }
+
+        [[nodiscard]] static auto workingDirectory() noexcept {
+            return std::filesystem::current_path();
         }
 
         [[nodiscard]] static auto directoryIterator(const std::filesystem::path& path) noexcept {
@@ -189,6 +201,8 @@ namespace c2k {
         }
 
     private:
+        static inline std::filesystem::path sAssetPath{ std::filesystem::current_path() / "assets" };
+
         std::unordered_map<GUID, Asset> mAssets;
         Texture mDebugFallbackTexture;
         ShaderProgram mDebugFallbackShaderProgram;

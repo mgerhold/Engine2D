@@ -194,35 +194,48 @@ namespace c2k {
         mRegistry.registerType<ParticleComponent>();
     }
 
-    void Application::handleParticleEmitters() noexcept {
+    template<typename T>
+    T getTwoWaySelectorValue(const auto& variant, Random& random) noexcept {
         using namespace c2k::ParticleSystemImpl;
-        const auto getTwoWaySelectorValue = [&](const auto& variant) {
-            if (holds_alternative<double>(variant)) {
-                return get<double>(variant);
-            }
-            const auto& range = get<Range<double>>(variant);
-            return mRandom.range(range.min, range.max);
-        };
-        const auto getFourWaySelectorValue = [&](const auto& variant, const double particleSystemDuration,
-                                                 const double particleSystemCurrentDuration) {
-            if (holds_alternative<double>(variant)) {
-                return get<double>(variant);
-            } else if (holds_alternative<Range<double>>(variant)) {
-                return mRandom.range(get<Range<double>>(variant).min, get<Range<double>>(variant).max);
-            } else if (holds_alternative<BezierCurve>(variant)) {
-                const auto interpolationParameter =
-                        gsl::narrow_cast<float>(particleSystemCurrentDuration / particleSystemDuration);
-                const auto& curve = get<BezierCurve>(variant);
-                return static_cast<double>(ImGui::BezierValue(interpolationParameter, curve));
-            } else {
-                assert(false);
-                return 0.0;
-            }
-        };
+        if (holds_alternative<T>(variant)) {
+            return get<T>(variant);
+        }
+        const auto& range = get<Range<T>>(variant);
+        return random.range(std::min(range.min, range.max), std::max(range.min, range.max));
+    }
+
+    template<typename T>
+    T getFourWaySelectorValue(const auto& variant,
+                              Random& random,
+                              double particleSystemDuration,
+                              double particleSystemCurrentDuration) noexcept {
+        using namespace c2k::ParticleSystemImpl;
+        if (holds_alternative<T>(variant)) {
+            return get<T>(variant);
+        } else if (holds_alternative<Range<T>>(variant)) {
+            const auto min = get<Range<T>>(variant).min;
+            const auto max = get<Range<T>>(variant).max;
+            return random.range(std::min(min, max), std::max(min, max));
+        } else if (holds_alternative<BezierCurve>(variant)) {
+            const auto interpolationParameter =
+                    gsl::narrow_cast<float>(particleSystemCurrentDuration / particleSystemDuration);
+            const auto& curve = get<BezierCurve>(variant);
+            return gsl::narrow_cast<T>(ImGui::BezierValue(interpolationParameter, curve));
+        } else {
+            assert(false);
+            return T{ 0 };
+        }
+    }
+
+    void Application::collectSpawningParticleEmitters() noexcept {
+        using namespace c2k::ParticleSystemImpl;
+        /* find all the particle emitters that should spawn at least one particle within the
+           current frame and save them into mSpawningEmitters (they are saved multiple times
+           if they should spawn more than one particle */
         for (auto&& [entity, particleEmitter, transform, root] :
              mRegistry.componentsMutable<ParticleEmitterComponent, TransformComponent, RootComponent>()) {
             auto& particleSystem = particleEmitter.particleSystem;
-            const double startDelay = getTwoWaySelectorValue(particleSystem.startDelay);
+            const double startDelay = getTwoWaySelectorValue<double>(particleSystem.startDelay, mRandom);
             bool shouldSpawnParticle = particleSystem.currentDuration >= startDelay;
             if ((particleSystem.currentDuration += mTime.delta) >= particleSystem.duration) {
                 if (particleSystem.looping) {
@@ -238,18 +251,22 @@ namespace c2k {
                 particleEmitter.lastSpawnTime += particleSystem.spawnInterval();
             }
         }
+    }
+
+    void Application::spawnParticles() noexcept {
+        // iterate mSpawningEmitters to spawn all new particles for the current frame
         for (auto emitterEntity : mSpawningEmitters) {
             const ParticleSystem& particleSystem =
                     mRegistry.component<ParticleEmitterComponent>(emitterEntity).value().particleSystem;
             const glm::vec2 baseScale{ particleSystem.sprite.texture->widthToHeightRatio(), 1.0f };
             const auto startScale = baseScale * get<glm::vec2>(particleSystem.startSize);
             const auto endScale = baseScale * get<glm::vec2>(particleSystem.startSize);
-            const double totalLifeTime = getFourWaySelectorValue(particleSystem.startLifetime, particleSystem.duration,
-                                                                 particleSystem.currentDuration);
+            const double totalLifeTime = getFourWaySelectorValue<double>(
+                    particleSystem.startLifetime, mRandom, particleSystem.duration, particleSystem.currentDuration);
             const float startRotationSpeed = 0.0f;
             const float endRotationSpeed = 0.0f;
-            const auto linearVelocity = glm::vec3{ get<glm::vec2>(particleSystem.linearVelocityOverLifetime).x,
-                                                   get<glm::vec2>(particleSystem.linearVelocityOverLifetime).y, 0.0f };
+            const auto startSpeed = getFourWaySelectorValue<float>(
+                    particleSystem.startSpeed, mRandom, particleSystem.duration, particleSystem.currentDuration);
             mRegistry.createEntity(
                     TransformComponent{
                             .position{ mRegistry.component<TransformComponent>(emitterEntity).value().position },
@@ -262,7 +279,7 @@ namespace c2k {
                     ParticleComponent{
                             .remainingLifeTime{ totalLifeTime },
                             .totalLifeTime{ totalLifeTime },
-                            .velocity{ mRandom.unitDirection() * mRandom.range(30.0f, 300.0f) + linearVelocity },
+                            .velocity{ mRandom.unitDirection() * startSpeed },
                             // TODO: handle gravity correctly
                             .gravity{ glm::vec3{ 0.0f, -9.81f, 0.0f } * get<float>(particleSystem.gravityModifier) },
                             .startScale{ startScale },
@@ -270,6 +287,11 @@ namespace c2k {
                             .startRotationSpeed{ startRotationSpeed },
                             .endRotationSpeed{ endRotationSpeed } });
         }
+    }
+
+    void Application::handleParticleEmitters() noexcept {
+        collectSpawningParticleEmitters();
+        spawnParticles();
         mSpawningEmitters.clear();
     }
 

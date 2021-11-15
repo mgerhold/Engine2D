@@ -3,6 +3,8 @@
 //
 
 #include "Viped.hpp"
+#include "Config.hpp"
+#include "FileUtils/FileUtils.hpp"
 #include <ImGuiUtils/Bezier.hpp>
 #include <AssetDatabase.hpp>
 #include <Component.hpp>
@@ -19,7 +21,6 @@
 #include <cinttypes>
 
 using namespace c2k;
-
 
 void Viped::setup() noexcept {
     mTextureGUID = GUID::create();      // initialize to a yet unknown GUID
@@ -41,7 +42,30 @@ tl::expected<std::monostate, std::string> Viped::onNewProjectClicked() noexcept 
     const auto result = openFileDialog("Select Asset List", c2k::AssetDatabase::assetPath(),
                                        std::vector<std::string>{ "*.json" }, "Asset list JSON files", false);
     if (result) {
-        auto assetList = AssetList::fromFile(result.value());
+        const auto& filename = result.value();
+        const auto searchResult = FileUtils::findFileInParent(filename.parent_path(), engineConfigurationFileFilename);
+        if (searchResult) {
+            const auto& configFilename = searchResult.value();
+            spdlog::info("Found configuration file: {}", configFilename.string());
+            const auto deserializationResult = JSON::fromFileAs<Config>(configFilename);
+            if (!deserializationResult) {
+                return tl::unexpected(
+                        fmt::format("Unable to deserialize configuration file: {}", deserializationResult.error()));
+            }
+            auto config = deserializationResult.value();
+            if (!config.assetDirectory) {
+                spdlog::info("No asset directory specified, defaulting to 'assets'");
+                config.assetDirectory = std::string{ "assets" };
+            }
+            AssetDatabase::setWorkingDirectory(configFilename.parent_path());
+            spdlog::info("Setting working directory to {}", AssetDatabase::workingDirectory().string());;
+            AssetDatabase::setAssetPath(AssetDatabase::workingDirectory() / config.assetDirectory.value());
+            spdlog::info("Setting asset path to {}", AssetDatabase::assetPath().string());
+        } else {
+            spdlog::error("Unable to find configuration file: {}", searchResult.error());
+            return tl::unexpected(searchResult.error());
+        }
+        auto assetList = AssetList::fromFile(filename);
         if (!assetList) {
             return tl::unexpected(fmt::format("Failed to read asset list: {}", assetList.error()));
         }
@@ -241,6 +265,7 @@ void Viped::renderInspectorWindow() noexcept {
         }
         mStartLifeTimeSelector(mParticleSystem->startLifetime);
         mStartDelaySelector(mParticleSystem->startDelay);
+        mStartSpeedSelector(mParticleSystem->startSpeed);
     }
     ImGui::End();
 }
