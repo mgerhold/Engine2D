@@ -6,6 +6,7 @@
 
 #include "TwoWayVariantSelector.hpp"
 #include "FourWayVariantSelector.hpp"
+#include "FourWayVariantSelectorVec2.hpp"
 #include <Application.hpp>
 #include <GUID.hpp>
 #include <AssetList.hpp>
@@ -51,4 +52,5 @@ private:
     TwoWayVariantSelector<double> mStartDelaySelector{ "Start Delay", 0.05, 0.0, std::numeric_limits<double>::max() };
     FourWayVariantSelector<float> mStartSpeedSelector{ "Start Speed", 0.05f, std::numeric_limits<float>::min(),
                                                        std::numeric_limits<float>::max() };
+    FourWayVariantSelectorVec2 mStartSizeSelector{ "Start Size", 0.05f, 0.0f, std::numeric_limits<float>::max() };
 };

@@ -58,7 +58,8 @@ tl::expected<std::monostate, std::string> Viped::onNewProjectClicked() noexcept 
                 config.assetDirectory = std::string{ "assets" };
             }
             AssetDatabase::setWorkingDirectory(configFilename.parent_path());
-            spdlog::info("Setting working directory to {}", AssetDatabase::workingDirectory().string());;
+            spdlog::info("Setting working directory to {}", AssetDatabase::workingDirectory().string());
+            ;
             AssetDatabase::setAssetPath(AssetDatabase::workingDirectory() / config.assetDirectory.value());
             spdlog::info("Setting asset path to {}", AssetDatabase::assetPath().string());
         } else {
@@ -266,6 +267,7 @@ void Viped::renderInspectorWindow() noexcept {
         mStartLifeTimeSelector(mParticleSystem->startLifetime);
         mStartDelaySelector(mParticleSystem->startDelay);
         mStartSpeedSelector(mParticleSystem->startSpeed);
+        mStartSizeSelector(mParticleSystem->startSize);
     }
     ImGui::End();
 }

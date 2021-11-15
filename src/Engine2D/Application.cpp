@@ -6,6 +6,7 @@
 #include "MathUtils/MathUtils.hpp"
 #include "Animation.hpp"
 #include "ImGuiUtils/Bezier.hpp"
+#include "MathUtils/MathUtils.hpp"
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -227,6 +228,30 @@ namespace c2k {
         }
     }
 
+    glm::vec2 getFourWaySelectorValueVec2(const auto& variant,
+                                          Random& random,
+                                          double particleSystemDuration,
+                                          double particleSystemCurrentDuration) noexcept {
+        using namespace c2k::ParticleSystemImpl;
+        if (holds_alternative<glm::vec2>(variant)) {
+            return get<glm::vec2>(variant);
+        } else if (holds_alternative<Range<glm::vec2>>(variant)) {
+            const auto interpolationParameter = random.get<float>();
+            const auto min = get<Range<glm::vec2>>(variant).min;
+            const auto max = get<Range<glm::vec2>>(variant).max;
+            return MathUtils::lerp(min, max, interpolationParameter);
+        } else if (holds_alternative<BezierCurves2D>(variant)) {
+            const auto interpolationParameter =
+                    gsl::narrow_cast<float>(particleSystemCurrentDuration / particleSystemDuration);
+            const auto& curves = get<BezierCurves2D>(variant);
+            return glm::vec2{ ImGui::BezierValue(interpolationParameter, curves.x),
+                              ImGui::BezierValue(interpolationParameter, curves.y) };
+        } else {
+            assert(false);
+            return glm::vec2{ 0.0f };
+        }
+    }
+
     void Application::collectSpawningParticleEmitters() noexcept {
         using namespace c2k::ParticleSystemImpl;
         /* find all the particle emitters that should spawn at least one particle within the
@@ -253,14 +278,17 @@ namespace c2k {
         }
     }
 
+
     void Application::spawnParticles() noexcept {
         // iterate mSpawningEmitters to spawn all new particles for the current frame
         for (auto emitterEntity : mSpawningEmitters) {
             const ParticleSystem& particleSystem =
                     mRegistry.component<ParticleEmitterComponent>(emitterEntity).value().particleSystem;
             const glm::vec2 baseScale{ particleSystem.sprite.texture->widthToHeightRatio(), 1.0f };
-            const auto startScale = baseScale * get<glm::vec2>(particleSystem.startSize);
-            const auto endScale = baseScale * get<glm::vec2>(particleSystem.startSize);
+            const auto startScale =
+                    baseScale * getFourWaySelectorValueVec2(particleSystem.startSize, mRandom, particleSystem.duration,
+                                                            particleSystem.currentDuration);
+            const auto endScale = startScale;
             const double totalLifeTime = getFourWaySelectorValue<double>(
                     particleSystem.startLifetime, mRandom, particleSystem.duration, particleSystem.currentDuration);
             const float startRotationSpeed = 0.0f;
