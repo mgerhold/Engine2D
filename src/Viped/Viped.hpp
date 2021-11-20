@@ -64,4 +64,5 @@ private:
     ParticleEmitterMovementPattern mParticleEmitterMovementPattern{ ParticleEmitterMovementPattern::None };
     float mParticleEmitterMovementRadius{ 200.0f };
     double mParticleEmitterMovementSpeedFactor{ 1.0 };
+    FourWayVariantSelector<float> mStartRotationSelector{ "Start Rotation", 0.05f, 0.0f, 360.0f };
 };

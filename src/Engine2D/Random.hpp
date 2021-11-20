@@ -56,6 +56,16 @@ namespace c2k {
             return static_cast<T>(range(0, 1) * 2 - 1);
         }
 
+        template<std::integral T>
+        [[nodiscard]] T sign(const double probability) noexcept {
+            return static_cast<T>(sign<double>(probability));
+        }
+
+        template<std::floating_point T>
+        [[nodiscard]] T sign(const T probability) noexcept {
+            return static_cast<T>(static_cast<int>(get<T>() <= probability) * 2 - 1);
+        }
+
     private:
         std::random_device mRandomDevice;
         std::mt19937_64 mRandomEngine;

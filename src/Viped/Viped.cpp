@@ -307,6 +307,10 @@ void Viped::renderInspectorWindow() noexcept {
         if (ImGui::CollapsingHeader("Simulation Space")) {
             ImGui::Checkbox("Simulate in World Space", &mParticleSystem->simulateInWorldSpace);
         }
+        mStartRotationSelector(mParticleSystem->startRotation);
+        if (ImGui::CollapsingHeader("Flip Rotation")) {
+            ImGui::SliderFloat("Flip Probability", &mParticleSystem->flipRotation, 0.0f, 1.0f);
+        }
     }
     ImGui::End();
 }

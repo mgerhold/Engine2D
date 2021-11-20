@@ -287,21 +287,27 @@ namespace c2k {
                     (particleSystem.simulateInWorldSpace
                              ? mRegistry.component<TransformComponent>(emitterEntity).value().position
                              : glm::vec3{ 0.0f });
-            const auto particleEntity = mRegistry.createEntity(
-                    TransformComponent{ .position{ particlePosition }, .rotation{ 0.0f }, .scale{ startScale } },
-                    DynamicSpriteComponent{ .shaderProgram{ particleSystem.shaderProgram },
-                                            .sprite{ particleSystem.sprite },
-                                            .color{ Color::white() } },
-                    ParticleComponent{
-                            .remainingLifeTime{ totalLifeTime },
-                            .totalLifeTime{ totalLifeTime },
-                            .velocity{ mRandom.unitDirection() * startSpeed },
-                            // TODO: handle gravity correctly
-                            .gravity{ glm::vec3{ 0.0f, -9.81f, 0.0f } * get<float>(particleSystem.gravityModifier) },
-                            .startScale{ startScale },
-                            .endScale{ endScale },
-                            .startRotationSpeed{ startRotationSpeed },
-                            .endRotationSpeed{ endRotationSpeed } });
+            const auto particleRotation = glm::radians(getFourWaySelectorValue<float>(particleSystem.startRotation,
+                                                                                      mRandom, particleSystem.duration,
+                                                                                      particleSystem.currentDuration)) *
+                                          mRandom.sign<float>(1.0f - particleSystem.flipRotation);
+            const auto particleEntity =
+                    mRegistry.createEntity(TransformComponent{ .position{ particlePosition },
+                                                               .rotation{ particleRotation },
+                                                               .scale{ startScale } },
+                                           DynamicSpriteComponent{ .shaderProgram{ particleSystem.shaderProgram },
+                                                                   .sprite{ particleSystem.sprite },
+                                                                   .color{ Color::white() } },
+                                           ParticleComponent{ .remainingLifeTime{ totalLifeTime },
+                                                              .totalLifeTime{ totalLifeTime },
+                                                              .velocity{ mRandom.unitDirection() * startSpeed },
+                                                              // TODO: handle gravity correctly
+                                                              .gravity{ glm::vec3{ 0.0f, -9.81f, 0.0f } *
+                                                                        get<float>(particleSystem.gravityModifier) },
+                                                              .startScale{ startScale },
+                                                              .endScale{ endScale },
+                                                              .startRotationSpeed{ startRotationSpeed },
+                                                              .endRotationSpeed{ endRotationSpeed } });
             if (particleSystem.simulateInWorldSpace) {
                 mRegistry.attachComponent(particleEntity, RootComponent{});
             } else {

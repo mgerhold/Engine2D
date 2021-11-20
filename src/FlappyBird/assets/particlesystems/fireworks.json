@@ -12,7 +12,10 @@
     "x": 10,
     "y": 10
   },
-  "startRotation": 0,
+  "startRotation": {
+    "min": 0,
+    "max": 360
+  },
   "flipRotation": 0,
   "color": {
     "r": 1,

@@ -9,37 +9,11 @@
     "max": 300
   },
   "startSize": {
-    "x": {
-      "p0": {
-        "x": 0.4765625,
-        "y": 0.84375
-      },
-      "p1": {
-        "x": 0.7734375,
-        "y": 0.6875
-      },
-      "minVal": 0,
-      "maxVal": 2,
-      "leftY": 1,
-      "rightY": 0
-    },
-    "y": {
-      "p0": {
-        "x": 0.4765625,
-        "y": 0.84375
-      },
-      "p1": {
-        "x": 0.7734375,
-        "y": 0.6875
-      },
-      "minVal": 0,
-      "maxVal": 2,
-      "leftY": 1,
-      "rightY": 0
-    }
+    "x": 8,
+    "y": 8
   },
-  "startRotation": 0,
-  "flipRotation": 0,
+  "startRotation": 45,
+  "flipRotation": 0.49000000953674316,
   "color": {
     "r": 1,
     "g": 1,
