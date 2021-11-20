@@ -43,6 +43,11 @@ namespace c2k {
         }
 
         template<typename Component>
+        void removeComponent(Entity entity) noexcept {
+            mComponentHolder.template remove<Component>(getIdentifierBitsFromEntity(entity));
+        }
+
+        template<typename Component>
         [[nodiscard]] tl::optional<const Component&> component(Entity entity) const noexcept {
             if (!hasComponent<Component>(entity)) {
                 return {};
@@ -123,14 +128,9 @@ namespace c2k {
             return entity;
         }
 
-        void destroyEntity(Entity entity) noexcept {
-            assert(isEntityAlive(entity) && "The entity to remove must be alive.");
-            const auto index = getIndexFromEntity(entity);
-            deleteComponentsByEntityIndex(index);
-            increaseGeneration(mEntities[index]);
-            swapIdentifiers(mNextRecyclableEntity, mEntities[index]);
-            ++mNumRecyclableEntities;
-        }
+        void destroyEntity(Entity entity) noexcept;
+
+        void unparentEntitiesByParent(Entity parent) noexcept;
 
         template<typename... Components>
         std::size_t destroyEntitiesWithComponents() noexcept {
@@ -144,22 +144,10 @@ namespace c2k {
             return entitiesToDelete.size();
         }
 
-        [[nodiscard]] bool isEntityAlive(Entity entity) const noexcept {
-            const auto index = getIndexFromEntity(entity);
-            if (index >= mEntities.size()) {
-                return false;
-            }
-            return mEntities[index] == entity;
-        }
-        [[nodiscard]] std::size_t numEntities() const noexcept {
-            return mEntities.size();
-        }
-        [[nodiscard]] std::size_t numEntitiesAlive() const noexcept {
-            return numEntities() - numEntitiesDead();
-        }
-        [[nodiscard]] std::size_t numEntitiesDead() const noexcept {
-            return mNumRecyclableEntities;
-        }
+        [[nodiscard]] bool isEntityAlive(Entity entity) const noexcept;
+        [[nodiscard]] std::size_t numEntities() const noexcept;
+        [[nodiscard]] std::size_t numEntitiesAlive() const noexcept;
+        [[nodiscard]] std::size_t numEntitiesDead() const noexcept;
 
         [[nodiscard]] const auto& entities() const noexcept {
             using ranges::views::all;
@@ -186,41 +174,17 @@ namespace c2k {
             mComponentHolder.template registerType<T>();
         }
 
-        [[nodiscard]] static Identifier getIdentifierBitsFromEntity(Entity entity) noexcept {
-            return Identifier{ (entity & identifierMask) >> generationBits };
-        }
-        [[nodiscard]] static Generation getGenerationBitsFromEntity(Entity entity) noexcept {
-            return Generation{ entity & generationMask };
-        }
+        [[nodiscard]] static Identifier getIdentifierBitsFromEntity(Entity entity) noexcept;
+        [[nodiscard]] static Generation getGenerationBitsFromEntity(Entity entity) noexcept;
 
     private:
         [[nodiscard]] static Entity entityFromIdentifierAndGeneration(Identifier identifier,
-                                                                      Generation generation) noexcept {
-            return Entity{ (identifier << generationBits) | generation };
-        }
-        static void swapIdentifiers(Entity& entity1, Entity& entity2) noexcept {
-            const auto temp = entityFromIdentifierAndGeneration(getIdentifierBitsFromEntity(entity1),
-                                                                getGenerationBitsFromEntity(entity2));
-            entity1 = entityFromIdentifierAndGeneration(getIdentifierBitsFromEntity(entity2),
-                                                        getGenerationBitsFromEntity(entity1));
-            entity2 = temp;
-        }
-        static void increaseGeneration(Entity& entity) noexcept {
-            entity = entityFromIdentifierAndGeneration(getIdentifierBitsFromEntity(entity),
-                                                       getGenerationBitsFromEntity(entity) + 1);
-        }
-        [[nodiscard]] static std::size_t getIndexFromEntity(Entity entity) noexcept {
-            return static_cast<std::size_t>(getIdentifierBitsFromEntity(entity));
-        }
+                                                                      Generation generation) noexcept;
+        static void swapIdentifiers(Entity& entity1, Entity& entity2) noexcept;
+        static void increaseGeneration(Entity& entity) noexcept;
+        [[nodiscard]] static std::size_t getIndexFromEntity(Entity entity) noexcept;
 
-        void deleteComponentsByEntityIndex(std::size_t index) noexcept {
-            const auto entityIndex = gsl::narrow_cast<Entity>(index);
-            for (auto sparseSet : mComponentHolder.sparseSets()) {
-                if (sparseSet->has(entityIndex)) {
-                    sparseSet->remove(entityIndex);
-                }
-            }
-        }
+        void deleteComponentsByEntityIndex(std::size_t index) noexcept;
 
     private:
         static constexpr std::size_t identifierBits = sizeof(Entity) * 8 * 20 / 32;
@@ -232,5 +196,6 @@ namespace c2k {
         std::size_t mNumRecyclableEntities{ 0 };
         Entity mNextRecyclableEntity{ invalidEntity };
     };
+
 
 }// namespace c2k

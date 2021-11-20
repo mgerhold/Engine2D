@@ -15,6 +15,8 @@
 #include <gsl/gsl>
 #include <algorithm>
 #include <array>
+#include <cmath>
+#include <limits>
 #include <filesystem>
 #include <iostream>
 #include <string>
@@ -27,7 +29,33 @@ void Viped::setup() noexcept {
     mShaderProgramGUID = GUID::create();// same
 }
 
-void Viped::update() noexcept { }
+void Viped::update() noexcept {
+    if (mParticleEmitterEntity == invalidEntity) {
+        return;
+    }
+    auto& emitterTransform = mRegistry.componentMutable<TransformComponent>(mParticleEmitterEntity).value();
+    const auto elapsed = mTime.elapsed * mParticleEmitterMovementSpeedFactor;
+    switch (mParticleEmitterMovementPattern) {
+        case ParticleEmitterMovementPattern::None:
+            emitterTransform.position = glm::vec3{ 0.0f };
+            break;
+        case ParticleEmitterMovementPattern::HorizontalBounce:
+            emitterTransform.position =
+                    glm::vec3{ gsl::narrow_cast<float>(std::sin(elapsed)) * mParticleEmitterMovementRadius, 0.0f,
+                               0.0f };
+            break;
+        case ParticleEmitterMovementPattern::VerticalBounce:
+            emitterTransform.position =
+                    glm::vec3{ 0.0f, gsl::narrow_cast<float>(std::sin(elapsed)) * mParticleEmitterMovementRadius,
+                               0.0f };
+            break;
+        case ParticleEmitterMovementPattern::Circle:
+            emitterTransform.position = glm::vec3{ gsl::narrow_cast<float>(std::cos(elapsed)),
+                                                   gsl::narrow_cast<float>(std::sin(elapsed)), 0.0f } *
+                                        mParticleEmitterMovementRadius;
+            break;
+    }
+}
 
 void Viped::renderImGui() noexcept {
     renderMainMenu();
@@ -35,6 +63,7 @@ void Viped::renderImGui() noexcept {
     renderParticleSystemList();
     renderStatsWindow();
     renderInspectorWindow();
+    renderParticleEmitterWindow();
     ImGui::ShowDemoWindow();
 }
 
@@ -238,7 +267,14 @@ void Viped::renderStatsWindow() const noexcept {
             components += "camera, ";
         }
         if (mRegistry.hasComponent<ParticleComponent>(entity)) {
-            components += "particle";
+            components += "particle, ";
+        }
+        if (mRegistry.hasComponent<RootComponent>(entity)) {
+            components += "root, ";
+        }
+        if (mRegistry.hasComponent<RelationshipComponent>(entity)) {
+            components +=
+                    fmt::format("relationship {}, ", mRegistry.component<RelationshipComponent>(entity).value().parent);
         }
         ImGui::Text("%u|%u (%s)", Registry::getIdentifierBitsFromEntity(entity),
                     Registry::getGenerationBitsFromEntity(entity), components.c_str());
@@ -268,6 +304,9 @@ void Viped::renderInspectorWindow() noexcept {
         mStartDelaySelector(mParticleSystem->startDelay);
         mStartSpeedSelector(mParticleSystem->startSpeed);
         mStartSizeSelector(mParticleSystem->startSize);
+        if (ImGui::CollapsingHeader("Simulation Space")) {
+            ImGui::Checkbox("Simulate in World Space", &mParticleSystem->simulateInWorldSpace);
+        }
     }
     ImGui::End();
 }
@@ -315,4 +354,20 @@ void Viped::saveParticleSystem() noexcept {
         return;
     }
     // TODO: write texture/shader into asset list
+}
+
+void Viped::renderParticleEmitterWindow() noexcept {
+    ImGui::Begin("Particle Emitter Settings");
+    if (mParticleEmitterEntity != invalidEntity) {
+        const char* patternStrings[] = { "None", "Horizontal Bounce", "Vertical Bounce", "Circle" };
+        auto selectedPattern = static_cast<int>(mParticleEmitterMovementPattern);
+        ImGui::Combo("Movement Pattern", &selectedPattern, patternStrings,
+                     gsl::narrow_cast<int>(std::size(patternStrings)));
+        mParticleEmitterMovementPattern = static_cast<ParticleEmitterMovementPattern>(selectedPattern);
+        ImGui::DragFloat("Movement Radius", &mParticleEmitterMovementRadius, 0.05f, 0.0f,
+                         std::numeric_limits<float>::max());
+        dragDouble("Movement Speed Factor", &mParticleEmitterMovementSpeedFactor, 0.05, 0.0,
+                   std::numeric_limits<double>::max());
+    }
+    ImGui::End();
 }

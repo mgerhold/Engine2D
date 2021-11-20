@@ -30,6 +30,10 @@ namespace c2k {
         void attach(SparseIndex entity, const Component& component) noexcept {
             getComponentMutable<Component>().add(entity, std::move(component));
         }
+        template<typename Component>
+        void remove(SparseIndex entity) noexcept {
+            getComponentMutable<Component>().remove(entity);
+        }
         void resize(std::size_t size) noexcept {
             using ranges::views::zip;
             assert(size >= mSetSize);

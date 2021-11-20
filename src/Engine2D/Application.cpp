@@ -7,6 +7,7 @@
 #include "Animation.hpp"
 #include "ImGuiUtils/Bezier.hpp"
 #include "MathUtils/MathUtils.hpp"
+#include "EntityUtils/EntityUtils.hpp"
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -153,22 +154,10 @@ namespace c2k {
                 mRegistry.component<TransformComponent>(mAppContext.mainCameraEntity).value().matrix();
         mRenderer.clear(true, true);
         mRenderer.beginFrame(cameraTransformMatrix);
-        for (auto&& [entity, root, dynamicSprite, transform] :
-             mRegistry.components<RootComponent, DynamicSpriteComponent, TransformComponent>()) {
-            mRenderer.drawQuad(transform.position, transform.rotation, transform.scale, *(dynamicSprite.shaderProgram),
-                               *(dynamicSprite.sprite.texture), dynamicSprite.sprite.textureRect, dynamicSprite.color);
-        }
-        for (auto&& [entity, relationship, dynamicSprite, transform] :
-             mRegistry.components<RelationshipComponent, DynamicSpriteComponent, TransformComponent>()) {
-            auto transformMatrix = transform.matrix();
-            Entity current = relationship.parent;
-            transformMatrix = mRegistry.component<TransformComponent>(current).value().matrix() * transformMatrix;
-            while (mRegistry.hasComponent<RelationshipComponent>(current)) {
-                current = mRegistry.component<RelationshipComponent>(current)->parent;
-                transformMatrix = mRegistry.component<TransformComponent>(current).value().matrix() * transformMatrix;
-            }
-            mRenderer.drawQuad(transformMatrix, *dynamicSprite.shaderProgram, *dynamicSprite.sprite.texture,
-                               dynamicSprite.sprite.textureRect, dynamicSprite.color);
+        for (auto&& [entity, dynamicSprite, transform] :
+             mRegistry.components<DynamicSpriteComponent, TransformComponent>()) {
+            mRenderer.drawQuad(EntityUtils::getGlobalTransform(mRegistry, entity), *dynamicSprite.shaderProgram,
+                               *dynamicSprite.sprite.texture, dynamicSprite.sprite.textureRect, dynamicSprite.color);
         }
         mRenderer.endFrame();
     }
@@ -278,7 +267,6 @@ namespace c2k {
         }
     }
 
-
     void Application::spawnParticles() noexcept {
         // iterate mSpawningEmitters to spawn all new particles for the current frame
         for (auto emitterEntity : mSpawningEmitters) {
@@ -295,15 +283,15 @@ namespace c2k {
             const float endRotationSpeed = 0.0f;
             const auto startSpeed = getFourWaySelectorValue<float>(
                     particleSystem.startSpeed, mRandom, particleSystem.duration, particleSystem.currentDuration);
-            mRegistry.createEntity(
-                    TransformComponent{
-                            .position{ mRegistry.component<TransformComponent>(emitterEntity).value().position },
-                            .rotation{ 0.0f },
-                            .scale{ startScale } },
+            const auto particlePosition =
+                    (particleSystem.simulateInWorldSpace
+                             ? mRegistry.component<TransformComponent>(emitterEntity).value().position
+                             : glm::vec3{ 0.0f });
+            const auto particleEntity = mRegistry.createEntity(
+                    TransformComponent{ .position{ particlePosition }, .rotation{ 0.0f }, .scale{ startScale } },
                     DynamicSpriteComponent{ .shaderProgram{ particleSystem.shaderProgram },
                                             .sprite{ particleSystem.sprite },
                                             .color{ Color::white() } },
-                    RootComponent{},
                     ParticleComponent{
                             .remainingLifeTime{ totalLifeTime },
                             .totalLifeTime{ totalLifeTime },
@@ -314,6 +302,11 @@ namespace c2k {
                             .endScale{ endScale },
                             .startRotationSpeed{ startRotationSpeed },
                             .endRotationSpeed{ endRotationSpeed } });
+            if (particleSystem.simulateInWorldSpace) {
+                mRegistry.attachComponent(particleEntity, RootComponent{});
+            } else {
+                mRegistry.attachComponent(particleEntity, RelationshipComponent{ .parent{ emitterEntity } });
+            }
         }
     }
 

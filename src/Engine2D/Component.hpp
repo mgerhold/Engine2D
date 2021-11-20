@@ -15,8 +15,12 @@
 #include "ParticleSystem.hpp"
 #include "Sprite.hpp"
 #include "Animation.hpp"
+#pragma warning(push)
+#pragma warning(disable: 4201)
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
+#pragma warning(pop)
 
 namespace c2k {
 
@@ -39,6 +43,18 @@ namespace c2k {
         [[nodiscard]] static const TransformComponent& identity() noexcept {
             static auto result{ TransformComponent{} };
             return result;
+        }
+        [[nodiscard]] static TransformComponent fromMatrix(const glm::mat4& matrix) noexcept {
+            glm::vec3 scale, translation, skew;
+            glm::vec4 perspective;
+            glm::quat orientation;
+            glm::decompose(matrix, scale, orientation, translation, skew, perspective);
+            auto eulerAngles = glm::eulerAngles(orientation);
+            return TransformComponent{
+                .position{ translation },
+                .rotation{ eulerAngles.z },
+                .scale{ glm::vec2{ scale.x, scale.y } }
+            };
         }
     };
 

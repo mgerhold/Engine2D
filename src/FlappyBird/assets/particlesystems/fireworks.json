@@ -21,7 +21,7 @@
     "a": 1
   },
   "gravityModifier": 200,
-  "simulateInWorldSpace": true,
+  "simulateInWorldSpace": false,
   "maxParticles": 1000,
   "rateOverTime": 200,
   "rateOverDistance": 0,

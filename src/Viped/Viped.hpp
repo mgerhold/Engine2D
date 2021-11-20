@@ -17,6 +17,14 @@
 
 class Viped : public c2k::Application {
 private:
+    enum class ParticleEmitterMovementPattern {
+        None,
+        HorizontalBounce,
+        VerticalBounce,
+        Circle,
+    };
+
+private:
     using c2k::Application::Application;
 
     void setup() noexcept override;
@@ -29,11 +37,11 @@ private:
     void renderParticleSystemList() noexcept;
     void renderStatsWindow() const noexcept;
     void renderInspectorWindow() noexcept;
+    void renderParticleEmitterWindow() noexcept;
 
     void refreshParticleSystem(
             const c2k::AssetDescriptions::ParticleSystemDescription& particleSystemDescription) noexcept;
 
-private:
     void changeTexture(const c2k::AssetDescriptions::TextureDescription& textureDescription) noexcept;
     void closeParticleSystem() noexcept;
     void saveParticleSystem() noexcept;
@@ -53,4 +61,7 @@ private:
     FourWayVariantSelector<float> mStartSpeedSelector{ "Start Speed", 0.05f, std::numeric_limits<float>::min(),
                                                        std::numeric_limits<float>::max() };
     FourWayVariantSelectorVec2 mStartSizeSelector{ "Start Size", 0.05f, 0.0f, std::numeric_limits<float>::max() };
+    ParticleEmitterMovementPattern mParticleEmitterMovementPattern{ ParticleEmitterMovementPattern::None };
+    float mParticleEmitterMovementRadius{ 200.0f };
+    double mParticleEmitterMovementSpeedFactor{ 1.0 };
 };
