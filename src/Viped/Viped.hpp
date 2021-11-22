@@ -7,6 +7,7 @@
 #include "TwoWayVariantSelector.hpp"
 #include "FourWayVariantSelector.hpp"
 #include "FourWayVariantSelectorVec2.hpp"
+#include "ColorVariantSelector.hpp"
 #include <Application.hpp>
 #include <GUID.hpp>
 #include <AssetList.hpp>
@@ -65,4 +66,5 @@ private:
     float mParticleEmitterMovementRadius{ 200.0f };
     double mParticleEmitterMovementSpeedFactor{ 1.0 };
     FourWayVariantSelector<float> mStartRotationSelector{ "Start Rotation", 0.05f, 0.0f, 360.0f };
+    ColorVariantSelector mColorSelector{ "Color" };
 };

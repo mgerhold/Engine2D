@@ -27,7 +27,6 @@ namespace ParticleSystemImpl {
     };
 
     C2K_JSON_DEFINE_TYPE(BezierCurves2D, x, y);
-    C2K_JSON_DEFINE_TYPE(Color, r, g, b, a);
 
     struct RGBPivotPoint {
         float r;
@@ -37,18 +36,18 @@ namespace ParticleSystemImpl {
 
     C2K_JSON_DEFINE_TYPE(RGBPivotPoint, r, g, b);
 
-    struct ColorGradient {
-        std::vector<float> rgbInterpolationParameters;
-        std::vector<RGBPivotPoint> rgbPivotPoints;
-        std::vector<float> alphaInterpolationParameters;
-        std::vector<float> alphaPivotValues;
+    struct ColorGradientMark {
+        c2k::Color color;
+        float position;
     };
 
-    C2K_JSON_DEFINE_TYPE(ColorGradient,
-                         rgbInterpolationParameters,
-                         rgbPivotPoints,
-                         alphaInterpolationParameters,
-                         alphaPivotValues);
+    C2K_JSON_DEFINE_TYPE(ColorGradientMark, color, position);
+
+    struct ColorGradient {
+        std::vector<ColorGradientMark> colorGradient;
+    };
+
+    C2K_JSON_DEFINE_TYPE(ColorGradient, colorGradient);
 
     struct ParticleBurst {
         double time;

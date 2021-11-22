@@ -311,6 +311,7 @@ void Viped::renderInspectorWindow() noexcept {
         if (ImGui::CollapsingHeader("Flip Rotation")) {
             ImGui::SliderFloat("Flip Probability", &mParticleSystem->flipRotation, 0.0f, 1.0f);
         }
+        mColorSelector(mParticleSystem->color);
     }
     ImGui::End();
 }

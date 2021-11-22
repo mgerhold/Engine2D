@@ -3,7 +3,7 @@
   "looping": true,
   "prewarm": false,
   "startDelay": 0,
-  "startLifetime": 2,
+  "startLifetime": 1.2000000476837158,
   "startSpeed": {
     "min": 184,
     "max": 300
@@ -15,10 +15,35 @@
   "startRotation": 45,
   "flipRotation": 0.49000000953674316,
   "color": {
-    "r": 1,
-    "g": 1,
-    "b": 1,
-    "a": 1
+    "colorGradient": [
+      {
+        "color": {
+          "r": 1,
+          "g": 0,
+          "b": 0,
+          "a": 1
+        },
+        "position": 0
+      },
+      {
+        "color": {
+          "r": 1,
+          "g": 0.9999899864196777,
+          "b": 0.9999899864196777,
+          "a": 1
+        },
+        "position": 0.5020747184753418
+      },
+      {
+        "color": {
+          "r": 0,
+          "g": 7.295608520507812e-05,
+          "b": 1,
+          "a": 1
+        },
+        "position": 1
+      }
+    ]
   },
   "gravityModifier": 0,
   "simulateInWorldSpace": true,

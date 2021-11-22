@@ -241,6 +241,32 @@ namespace c2k {
         }
     }
 
+    Color getGradientColor(const ParticleSystemImpl::ColorGradient& gradient, float interpolationParameter) {
+        const auto& marks = gradient.colorGradient;
+        if (marks.empty()) {
+            return Color{ 0.0f, 0.0f, 0.0f, 1.0f };
+        }
+        interpolationParameter = std::clamp(interpolationParameter, 0.0f, 1.0f);
+
+        auto upper = std::upper_bound(marks.begin(), marks.end(), interpolationParameter,
+                                      [](const float value, const auto& mark) { return value < mark.position; });
+        if (upper == marks.end()) {
+            --upper;
+        }
+        auto lower = upper;
+        if (lower != marks.begin() && upper != marks.end() - 1) {
+            --lower;
+        }
+
+        if (upper == lower) {
+            return upper->color;
+        } else {
+            const float distance = upper->position - lower->position;
+            const float t = (interpolationParameter - lower->position) / distance;
+            return MathUtils::lerp(lower->color, upper->color, t);
+        }
+    }
+
     void Application::collectSpawningParticleEmitters() noexcept {
         using namespace c2k::ParticleSystemImpl;
         /* find all the particle emitters that should spawn at least one particle within the
@@ -272,6 +298,8 @@ namespace c2k {
         for (auto emitterEntity : mSpawningEmitters) {
             const ParticleSystem& particleSystem =
                     mRegistry.component<ParticleEmitterComponent>(emitterEntity).value().particleSystem;
+            const auto interpolationParameter =
+                    static_cast<float>(particleSystem.currentDuration / particleSystem.duration);
             const glm::vec2 baseScale{ particleSystem.sprite.texture->widthToHeightRatio(), 1.0f };
             const auto startScale =
                     baseScale * getFourWaySelectorValueVec2(particleSystem.startSize, mRandom, particleSystem.duration,
@@ -291,13 +319,18 @@ namespace c2k {
                                                                                       mRandom, particleSystem.duration,
                                                                                       particleSystem.currentDuration)) *
                                           mRandom.sign<float>(1.0f - particleSystem.flipRotation);
+            const auto particleColor =
+                    (holds_alternative<Color>(particleSystem.color)
+                             ? get<Color>(particleSystem.color)
+                             : getGradientColor(get<ParticleSystemImpl::ColorGradient>(particleSystem.color),
+                                                interpolationParameter));
             const auto particleEntity =
                     mRegistry.createEntity(TransformComponent{ .position{ particlePosition },
                                                                .rotation{ particleRotation },
                                                                .scale{ startScale } },
                                            DynamicSpriteComponent{ .shaderProgram{ particleSystem.shaderProgram },
                                                                    .sprite{ particleSystem.sprite },
-                                                                   .color{ Color::white() } },
+                                                                   .color{ particleColor } },
                                            ParticleComponent{ .remainingLifeTime{ totalLifeTime },
                                                               .totalLifeTime{ totalLifeTime },
                                                               .velocity{ mRandom.unitDirection() * startSpeed },
