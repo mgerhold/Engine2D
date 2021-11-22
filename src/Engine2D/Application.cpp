@@ -151,7 +151,7 @@ namespace c2k {
 
     void Application::renderDynamicSprites() noexcept {
         const auto cameraTransformMatrix =
-                mRegistry.component<TransformComponent>(mAppContext.mainCameraEntity).value().matrix();
+                mRegistry.component<TransformComponent>(mAppContext.mainCameraEntity)->matrix();
         mRenderer.clear(true, true);
         mRenderer.beginFrame(cameraTransformMatrix);
         for (auto&& [entity, dynamicSprite, transform] :
@@ -293,54 +293,64 @@ namespace c2k {
         }
     }
 
+    [[nodiscard]] TransformComponent Application::createParticleTransform(
+            const Entity emitterEntity,
+            const ParticleSystem& particleSystem) noexcept {
+        const auto emitterPosition = mRegistry.component<TransformComponent>(emitterEntity)->position;
+        const auto position = (particleSystem.simulateInWorldSpace ? emitterPosition : glm::vec3{ 0.0f });
+        const auto rotationSign = mRandom.sign<float>(1.0f - particleSystem.flipRotation);
+        const auto rotationDegrees = getFourWaySelectorValue<float>(
+                particleSystem.startRotation, mRandom, particleSystem.duration, particleSystem.currentDuration);
+        const auto rotation = glm::radians(rotationDegrees) * rotationSign;
+        const auto baseScale = glm::vec2{ particleSystem.sprite.texture->widthToHeightRatio(), 1.0f };
+        const auto size = getFourWaySelectorValueVec2(particleSystem.startSize, mRandom, particleSystem.duration,
+                                                      particleSystem.currentDuration);
+        const auto scale = baseScale * size;
+        return TransformComponent{ position, rotation, scale };
+    }
+
+    [[nodiscard]] DynamicSpriteComponent Application::createParticleSprite(
+            const ParticleSystem& particleSystem) noexcept {
+        using namespace c2k::ParticleSystemImpl;// ColorGradient
+        const auto color = [&]() {
+            if (holds_alternative<Color>(particleSystem.color)) {
+                return get<Color>(particleSystem.color);
+            } else {
+                const auto t = static_cast<float>(particleSystem.currentDuration / particleSystem.duration);
+                return getGradientColor(get<ColorGradient>(particleSystem.color), t);
+            }
+        }();
+        return DynamicSpriteComponent{ .shaderProgram{ particleSystem.shaderProgram },
+                                       .sprite{ particleSystem.sprite },
+                                       .color{ color } };
+    }
+
+    [[nodiscard]] ParticleComponent Application::createParticle(const TransformComponent& transform,
+                                                                const ParticleSystem& particleSystem) noexcept {
+        const auto totalLifeTime = getFourWaySelectorValue<double>(
+                particleSystem.startLifetime, mRandom, particleSystem.duration, particleSystem.currentDuration);
+        const auto remainingLifeTime = totalLifeTime;
+        const auto startSpeed = getFourWaySelectorValue<float>(particleSystem.startSpeed, mRandom,
+                                                               particleSystem.duration, particleSystem.currentDuration);
+        const auto velocity = mRandom.unitDirection() * startSpeed;
+        // TODO: handle gravity correctly
+        const auto gravity = glm::vec3{ 0.0f, -9.81f, 0.0f } * get<float>(particleSystem.gravityModifier);
+        const auto startScale = transform.scale;
+        const auto endScale = transform.scale;
+        const float startRotationSpeed = 0.0f;
+        const float endRotationSpeed = 0.0f;
+        return ParticleComponent{ remainingLifeTime, totalLifeTime, velocity,           gravity,
+                                  startScale,        endScale,      startRotationSpeed, endRotationSpeed };
+    }
+
     void Application::spawnParticles() noexcept {
-        // iterate mSpawningEmitters to spawn all new particles for the current frame
         for (auto emitterEntity : mSpawningEmitters) {
             const ParticleSystem& particleSystem =
-                    mRegistry.component<ParticleEmitterComponent>(emitterEntity).value().particleSystem;
-            const auto interpolationParameter =
-                    static_cast<float>(particleSystem.currentDuration / particleSystem.duration);
-            const glm::vec2 baseScale{ particleSystem.sprite.texture->widthToHeightRatio(), 1.0f };
-            const auto startScale =
-                    baseScale * getFourWaySelectorValueVec2(particleSystem.startSize, mRandom, particleSystem.duration,
-                                                            particleSystem.currentDuration);
-            const auto endScale = startScale;
-            const double totalLifeTime = getFourWaySelectorValue<double>(
-                    particleSystem.startLifetime, mRandom, particleSystem.duration, particleSystem.currentDuration);
-            const float startRotationSpeed = 0.0f;
-            const float endRotationSpeed = 0.0f;
-            const auto startSpeed = getFourWaySelectorValue<float>(
-                    particleSystem.startSpeed, mRandom, particleSystem.duration, particleSystem.currentDuration);
-            const auto particlePosition =
-                    (particleSystem.simulateInWorldSpace
-                             ? mRegistry.component<TransformComponent>(emitterEntity).value().position
-                             : glm::vec3{ 0.0f });
-            const auto particleRotation = glm::radians(getFourWaySelectorValue<float>(particleSystem.startRotation,
-                                                                                      mRandom, particleSystem.duration,
-                                                                                      particleSystem.currentDuration)) *
-                                          mRandom.sign<float>(1.0f - particleSystem.flipRotation);
-            const auto particleColor =
-                    (holds_alternative<Color>(particleSystem.color)
-                             ? get<Color>(particleSystem.color)
-                             : getGradientColor(get<ParticleSystemImpl::ColorGradient>(particleSystem.color),
-                                                interpolationParameter));
-            const auto particleEntity =
-                    mRegistry.createEntity(TransformComponent{ .position{ particlePosition },
-                                                               .rotation{ particleRotation },
-                                                               .scale{ startScale } },
-                                           DynamicSpriteComponent{ .shaderProgram{ particleSystem.shaderProgram },
-                                                                   .sprite{ particleSystem.sprite },
-                                                                   .color{ particleColor } },
-                                           ParticleComponent{ .remainingLifeTime{ totalLifeTime },
-                                                              .totalLifeTime{ totalLifeTime },
-                                                              .velocity{ mRandom.unitDirection() * startSpeed },
-                                                              // TODO: handle gravity correctly
-                                                              .gravity{ glm::vec3{ 0.0f, -9.81f, 0.0f } *
-                                                                        get<float>(particleSystem.gravityModifier) },
-                                                              .startScale{ startScale },
-                                                              .endScale{ endScale },
-                                                              .startRotationSpeed{ startRotationSpeed },
-                                                              .endRotationSpeed{ endRotationSpeed } });
+                    mRegistry.component<ParticleEmitterComponent>(emitterEntity)->particleSystem;
+            const auto transform = createParticleTransform(emitterEntity, particleSystem);
+            const auto dynamicSprite = createParticleSprite(particleSystem);
+            const auto particle = createParticle(transform, particleSystem);
+            const auto particleEntity = mRegistry.createEntity(transform, dynamicSprite, particle);
             if (particleSystem.simulateInWorldSpace) {
                 mRegistry.attachComponent(particleEntity, RootComponent{});
             } else {

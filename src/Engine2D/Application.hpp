@@ -41,6 +41,11 @@ namespace c2k {
         void runScripts() noexcept;
         void renderDynamicSprites() noexcept;
         void collectSpawningParticleEmitters() noexcept;
+        [[nodiscard]] TransformComponent createParticleTransform(Entity emitterEntity,
+                                                                 const ParticleSystem& particleSystem) noexcept;
+        [[nodiscard]] DynamicSpriteComponent createParticleSprite(const ParticleSystem& particleSystem) noexcept;
+        [[nodiscard]] ParticleComponent createParticle(const TransformComponent& transform,
+                                                       const ParticleSystem& particleSystem) noexcept;
         void spawnParticles() noexcept;
         void handleParticleEmitters() noexcept;
         void handleParticles() noexcept;
