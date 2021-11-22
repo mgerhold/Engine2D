@@ -320,9 +320,7 @@ namespace c2k {
                 return getGradientColor(get<ColorGradient>(particleSystem.color), t);
             }
         }();
-        return DynamicSpriteComponent{ .shaderProgram{ particleSystem.shaderProgram },
-                                       .sprite{ particleSystem.sprite },
-                                       .color{ color } };
+        return DynamicSpriteComponent{ particleSystem.shaderProgram, particleSystem.sprite, color };
     }
 
     [[nodiscard]] ParticleComponent Application::createParticle(const TransformComponent& transform,
