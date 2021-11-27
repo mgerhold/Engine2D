@@ -107,6 +107,7 @@ namespace c2k {
     };
 
     struct ParticleComponent {
+        Entity particleEmitterEntity{ invalidEntity };
         double remainingLifeTime{ 0.0 };
         double totalLifeTime{ 0.0 };
         glm::vec3 velocity{ 0.0f };

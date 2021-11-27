@@ -23,7 +23,7 @@ public:
 public:
     FourWayVariantSelector(std::string header, T speed, T min, T max) noexcept
         : mHeader{ std::move(header) },
-          mID { c2k::GUID::create().string() },
+          mID{ c2k::GUID::create().string() },
           mCurrentlySelected{ 0 },
           mSpeed{ speed },
           mMin{ min },
@@ -70,15 +70,14 @@ public:
                     break;
                 case 1:
                     // range
-                    drag("min", &(get<Range<T>>(variant).min), mSpeed, mMin,
-                               get<Range<T>>(variant).max);
-                    drag("max", &(get<Range<T>>(variant).max), mSpeed, get<Range<T>>(variant).min,
-                               mMax);
+                    drag("min", &(get<Range<T>>(variant).min), mSpeed, mMin, get<Range<T>>(variant).max);
+                    drag("max", &(get<Range<T>>(variant).max), mSpeed, get<Range<T>>(variant).min, mMax);
                     break;
                 case 2:
                     // curve
                     auto& curve = get<BezierCurve>(variant);
-                    ImGui::Bezier("curve", &curve, &mActiveCurveHandle0, gsl::narrow_cast<float>(mSpeed));
+                    ImGui::Bezier("curve", &curve, &mActiveCurveHandle0, gsl::narrow_cast<float>(mSpeed),
+                                  gsl::narrow_cast<float>(mMin), gsl::narrow_cast<float>(mMax));
                     break;
             }
         }

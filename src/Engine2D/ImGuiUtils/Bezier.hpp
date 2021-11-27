@@ -13,12 +13,13 @@
 
 namespace ImGui {
 
-    float BezierValue(float dt01,
-                      const c2k::ParticleSystemImpl::BezierCurve& curve);
+    float BezierValue(float dt01, const c2k::ParticleSystemImpl::BezierCurve& curve);
 
     int Bezier(const char* label,
                c2k::ParticleSystemImpl::BezierCurve* curve,
                int* activeHandle,
-               float speed);
+               float speed,
+               float min = 0.0f,
+               float max = 0.0f);
 
 }// namespace ImGui

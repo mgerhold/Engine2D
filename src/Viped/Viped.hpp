@@ -59,7 +59,7 @@ private:
 
     FourWayVariantSelector<double> mStartLifeTimeSelector{ "Start Lifetime", 0.05, 0.0, 60.0 };
     TwoWayVariantSelector<double> mStartDelaySelector{ "Start Delay", 0.05, 0.0, std::numeric_limits<double>::max() };
-    FourWayVariantSelector<float> mStartSpeedSelector{ "Start Speed", 0.05f, std::numeric_limits<float>::min(),
+    FourWayVariantSelector<float> mStartSpeedSelector{ "Start Speed", 0.05f, std::numeric_limits<float>::lowest(),
                                                        std::numeric_limits<float>::max() };
     FourWayVariantSelectorVec2 mStartSizeSelector{ "Start Size", 0.05f, 0.0f, std::numeric_limits<float>::max() };
     ParticleEmitterMovementPattern mParticleEmitterMovementPattern{ ParticleEmitterMovementPattern::None };
@@ -67,4 +67,7 @@ private:
     double mParticleEmitterMovementSpeedFactor{ 1.0 };
     FourWayVariantSelector<float> mStartRotationSelector{ "Start Rotation", 0.05f, 0.0f, 360.0f };
     ColorVariantSelector mColorSelector{ "Color" };
+    FourWayVariantSelector<float> mGravityModifierSelector{ "Gravity Modifier", 0.05f,
+                                                            std::numeric_limits<float>::lowest(),
+                                                            std::numeric_limits<float>::max() };
 };

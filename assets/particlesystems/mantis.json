@@ -12,8 +12,11 @@
     "x": 8,
     "y": 8
   },
-  "startRotation": 45,
-  "flipRotation": 0.49000000953674316,
+  "startRotation": {
+    "min": 0,
+    "max": 360
+  },
+  "flipRotation": 0,
   "color": {
     "colorGradient": [
       {
@@ -45,7 +48,20 @@
       }
     ]
   },
-  "gravityModifier": 0,
+  "gravityModifier": {
+    "p0": {
+      "x": 0.7734375,
+      "y": 0.078125
+    },
+    "p1": {
+      "x": 0.953125,
+      "y": 0.5390625
+    },
+    "minVal": -100,
+    "maxVal": 100,
+    "leftY": 0,
+    "rightY": 1
+  },
   "simulateInWorldSpace": true,
   "maxParticles": 1000,
   "rateOverTime": 200,

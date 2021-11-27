@@ -294,6 +294,7 @@ void Viped::renderInspectorWindow() noexcept {
     ImGui::Begin("Inspector");
     if (mParticleSystem) {
         ImGui::Text("Duration: %0.2f s / %0.2f s", mParticleSystem->currentDuration, mParticleSystem->duration);
+        ImGui::Text("Particle Count: %zu / %zu", mParticleSystem->numParticles, mParticleSystem->maxParticles);
         if (ImGui::CollapsingHeader("Duration & Looping")) {
             ImGui::PushID("Duration & Looping");
             dragDouble("Duration", &mParticleSystem->duration, 0.05, 0.0, std::numeric_limits<double>::max());
@@ -312,6 +313,12 @@ void Viped::renderInspectorWindow() noexcept {
             ImGui::SliderFloat("Flip Probability", &mParticleSystem->flipRotation, 0.0f, 1.0f);
         }
         mColorSelector(mParticleSystem->color);
+        mGravityModifierSelector(mParticleSystem->gravityModifier);
+        if (ImGui::CollapsingHeader("Max Particles")) {
+            auto maxParticles = gsl::narrow_cast<int>(mParticleSystem->maxParticles);
+            ImGui::DragInt("Amount", &maxParticles, 1, 1);
+            mParticleSystem->maxParticles = static_cast<std::size_t>(maxParticles);
+        }
     }
     ImGui::End();
 }

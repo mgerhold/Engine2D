@@ -24,6 +24,7 @@ namespace c2k {
         GUID guid;
 
         double currentDuration{ 0.0 };
+        std::size_t numParticles{ 0 };
 
     public:
         double spawnInterval() const {

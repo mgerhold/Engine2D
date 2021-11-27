@@ -56,7 +56,7 @@ namespace ImGui {
                curve.minVal;
     }
 
-    int Bezier(const char* label, BezierCurve* curve, int* activeHandle, float speed) {
+    int Bezier(const char* label, BezierCurve* curve, int* activeHandle, float speed, float min, float max) {
         // bezier widget
         const ImGuiStyle& Style = GetStyle();
         ImDrawList* DrawList = GetWindowDrawList();
@@ -68,8 +68,8 @@ namespace ImGui {
         bool changed = false;
 
         ImGui::Text("(%0.2f, %0.2f), (%0.2f, %0.2f)", curve->p0.x, curve->p0.y, curve->p1.x, curve->p1.y);
-        ImGui::DragFloat("min", &curve->minVal, speed, 0.0f, std::numeric_limits<float>::max());
-        ImGui::DragFloat("max", &curve->maxVal, speed, 0.0f, std::numeric_limits<float>::max());
+        ImGui::DragFloat("min", &curve->minVal, speed, min, max);
+        ImGui::DragFloat("max", &curve->maxVal, speed, min, max);
 
         bool hovered = IsItemActive() || IsItemHovered();
         Dummy(ImVec2(0, 3));
