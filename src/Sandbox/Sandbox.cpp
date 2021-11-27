@@ -45,7 +45,7 @@ namespace c2k {
             textureHeight * mAssetDatabase.spriteSheet(spriteSheetGUID).frames[0].getWidthToHeightRatio(), textureHeight
         };
         mRegistry.createEntity(TransformComponent{ .position{ 0.0f, 0.0f, 0.7f } }, RootComponent{},
-                               ParticleEmitterComponent{ .particleSystem{ &mAssetDatabase.particleSystem(
+                               ParticleEmitterComponent{ .particleSystem{ mAssetDatabase.particleSystem(
                                        GUID::fromString("bd59709a-cc71-4bed-bb46-dc7624686ef6")) } });
         /*mRegistry.createEntity(TransformComponent{ .position{ 100.0f, 0.0f, 0.7f } }, RootComponent{},
                                ParticleEmitterComponent{ .particleSystem{ &mAssetDatabase.particleSystem(

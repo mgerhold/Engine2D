@@ -6,6 +6,7 @@
 
 #include <imgui.h>
 #include <type_traits>
+#include <cassert>
 
 void dragDouble(const char* label,
                 double* v,
@@ -23,6 +24,6 @@ void drag(const char* label, T* v, T vSpeed = T{ 1 }, T vMin = T{ 0 }, T vMax ={
     } else if constexpr (std::is_same_v<T, double>) {
         dragDouble(label, v, vSpeed, vMin, vMax, format, flags);
     } else {
-        static_assert(false);
+        assert(false);
     }
 }

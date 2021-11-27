@@ -115,7 +115,9 @@ add_executable(Viped
         src/Viped/FourWayVariantSelectorVec2.hpp
         src/Viped/Utility.cpp
         src/Viped/Utility.hpp
-        src/Viped/TwoWayVariantSelector.hpp src/Viped/ColorVariantSelector.hpp)
+        src/Viped/TwoWayVariantSelector.hpp
+        src/Viped/ColorVariantSelector.hpp
+        src/Viped/OptionalColorGradientSelector.hpp)
 add_executable(Pong src/Pong/Main.cpp src/Pong/Pong.cpp src/Pong/Pong.hpp)
 add_executable(FlappyBird src/FlappyBird/Main.cpp)
 

@@ -1,4 +1,10 @@
 //
+// Created by coder2k on 27.11.2021.
+//
+
+#pragma once
+
+//
 // Created by coder2k on 22.11.2021.
 //
 
@@ -13,40 +19,36 @@
 #include <glm/gtc/type_ptr.hpp>
 #pragma warning(pop)
 #include <string>
-#include <variant>
+#include <optional>
 
-class ColorVariantSelector {
-private:
-    using ColorVariant = std::variant<c2k::Color, c2k::ParticleSystemImpl::ColorGradient>;
+class OptionalColorGradientSelector {
+public:
+    using OptionalGradient = std::optional<c2k::ParticleSystemImpl::ColorGradient>;
 
 public:
-    ColorVariantSelector(std::string header) : mHeader{ std::move(header) } { }
+    OptionalColorGradientSelector(std::string header) : mHeader{ std::move(header) } { }
 
-    void operator()(ColorVariant& variant) {
+    void operator()(OptionalGradient& optionalGradient) {
         using namespace c2k;
         using namespace c2k::ParticleSystemImpl;
         if (ImGui::CollapsingHeader(mHeader.c_str())) {
-            mCurrentlySelected =
-                    static_cast<int>(mCurrentlySelected == variant.index() ? mCurrentlySelected : variant.index());
-            if (ImGui::RadioButton("Constant", &mCurrentlySelected, 0) && holds_alternative<ColorGradient>(variant)) {
-                variant = Color::white();
-            }
-            ImGui::SameLine();
-            if (ImGui::RadioButton("Gradient", &mCurrentlySelected, 1) && holds_alternative<Color>(variant)) {
-                variant = ColorGradient{};
+            mEnabled = optionalGradient.has_value();
+            auto enabledBefore = mEnabled;
+            ImGui::Checkbox("enabled", &mEnabled);
+            if (mEnabled && !enabledBefore) {
+                optionalGradient = c2k::ParticleSystemImpl::ColorGradient{};
                 mGradient = ImGradient{};
-                auto& gradient = get<ColorGradient>(variant);
+                auto& gradient = optionalGradient.value();
                 gradient.colorGradient.resize(mGradient.getMarks().size());
                 for (std::size_t i = 0; i < mGradient.getMarks().size(); ++i) {
                     gradient.colorGradient[i] = mGradient.getMarks()[i];
                 }
+            } else if (!mEnabled && enabledBefore) {
+                optionalGradient.reset();
             }
 
-            if (holds_alternative<Color>(variant)) {
-                constexpr ImGuiColorEditFlags flags = ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_AlphaBar;
-                ImGui::ColorPicker4("Color", glm::value_ptr(static_cast<glm::vec4&>(get<Color>(variant))), flags);
-            } else if (holds_alternative<ColorGradient>(variant)) {
-                auto& gradient = get<ColorGradient>(variant);
+            if (optionalGradient.has_value()) {
+                auto& gradient = optionalGradient.value();
                 mGradient.getMarks().clear();
                 mGradient.getMarks().reserve(gradient.colorGradient.size());
                 for (const auto& mark : gradient.colorGradient) {
@@ -63,9 +65,9 @@ public:
 
 private:
     std::string mHeader;
-    int mCurrentlySelected{ 0 };
     ImGradientMark* mDraggingMark{ nullptr };
     ImGradientMark* mSelectedMark{ nullptr };
     ImGradient mGradient{};
     ImGradient::Marks mImGradientMarks{};
+    bool mEnabled;
 };

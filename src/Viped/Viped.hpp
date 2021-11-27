@@ -8,6 +8,7 @@
 #include "FourWayVariantSelector.hpp"
 #include "FourWayVariantSelectorVec2.hpp"
 #include "ColorVariantSelector.hpp"
+#include "OptionalColorGradientSelector.hpp"
 #include <Application.hpp>
 #include <GUID.hpp>
 #include <AssetList.hpp>
@@ -78,4 +79,5 @@ private:
     FourWayVariantSelector<float> mRadialVelocityOverLifetimeSelector{ "Radial Velocity Over Lifetime", 0.05f,
                                                                        std::numeric_limits<float>::lowest(),
                                                                        std::numeric_limits<float>::max() };
+    OptionalColorGradientSelector mColorOverLifetimeSelector{ "Color Over Lifetime" };
 };

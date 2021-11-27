@@ -119,6 +119,7 @@ namespace c2k {
                      c2k::ParticleSystemImpl::BezierCurve,
                      c2k::ParticleSystemImpl::Range<c2k::ParticleSystemImpl::BezierCurve>>
                 radialVelocityOverLifetime;
+        std::optional<c2k::ParticleSystemImpl::ColorGradient> colorOverLifetime;// TODO: don't copy std::vector!!!
         glm::vec3 gravity{ 0.0f };
         glm::vec2 startScale{ 1.0f };
         glm::vec2 endScale{ 1.0f };

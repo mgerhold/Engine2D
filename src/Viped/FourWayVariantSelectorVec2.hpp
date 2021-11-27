@@ -52,7 +52,7 @@ public:
                 if (holds_alternative<glm::vec2>(variant)) {
                     variant = Range<glm::vec2>{ .min{ get<glm::vec2>(variant) }, .max{ get<glm::vec2>(variant) } };
                 } else if (!holds_alternative<Range<glm::vec2>>(variant)) {
-                    variant = Range<glm::vec2>{ .min{ 1.0 }, .max{ 1.0 } };
+                    variant = Range<glm::vec2>{ .min{ glm::vec2{ 1.0 } }, .max{ glm::vec2{  1.0 } } };
                 }
             }
             if (ImGui::RadioButton("Curve", &mCurrentlySelected, 2)) {

@@ -255,7 +255,7 @@ namespace c2k {
             --upper;
         }
         auto lower = upper;
-        if (lower != marks.begin() && upper != marks.end() - 1) {
+        if (lower != marks.begin()) {
             --lower;
         }
 
@@ -366,6 +366,7 @@ namespace c2k {
                                   particleSystem.linearVelocityOverLifetime,
                                   velocityFromGravity,
                                   particleSystem.radialVelocityOverLifetime,
+                                  particleSystem.colorOverLifetime,
                                   gravity,
                                   startScale,
                                   endScale };
@@ -393,9 +394,9 @@ namespace c2k {
     }
 
     void Application::handleParticles() noexcept {
-        auto entityRange = mRegistry.componentsMutable<ParticleComponent, TransformComponent>();
+        auto entityRange = mRegistry.componentsMutable<ParticleComponent, DynamicSpriteComponent, TransformComponent>();
         std::for_each(std::execution::par, entityRange.begin(), entityRange.end(), [&](auto&& tuple) {
-            auto&& [entity, particle, transform] = tuple;
+            auto&& [entity, particle, sprite, transform] = tuple;
             const float interpolationParameter =
                     gsl::narrow_cast<float>(1.0 - particle.remainingLifeTime / particle.totalLifeTime);
             const auto delta = gsl::narrow_cast<float>(mTime.delta);
@@ -410,9 +411,12 @@ namespace c2k {
                                           particle.radialVelocityOverLifetime, mRandom, particle.totalLifeTime,
                                           particle.totalLifeTime - particle.remainingLifeTime)) *
                                   delta;
+            if (particle.colorOverLifetime) {
+                sprite.color = getGradientColor(particle.colorOverLifetime.value(), interpolationParameter);
+            }
             particle.remainingLifeTime -= mTime.delta;
         });
-        for (auto&& [entity, particle, transform] : entityRange) {
+        for (auto&& [entity, particle, sprite, transform] : entityRange) {
             if (particle.remainingLifeTime < 0.0) {
                 mParticleEntitiesToDelete.emplace_back(entity);
             }

@@ -14,8 +14,9 @@ namespace c2k::MathUtils {
         return a * (1.0f - t) + b * t;
     }
 
-    Color MathUtils::lerp(const Color& a, const Color& b, float t) noexcept {
-        return a * (1.0f - t) + b * t;
-    }
+    Color lerp(const Color& a, const Color& b, float t) noexcept {
+        const auto result = a * (1.0f - t) + b * t;
+        return Color{ result.x, result.y, result.z, result.w };
+    };
 
 }// namespace c2k::MathUtils

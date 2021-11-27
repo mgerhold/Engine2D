@@ -43,6 +43,7 @@ namespace ImGui {
 
     float BezierValue(float dt01, const BezierCurve& curve) {
         constexpr auto STEPS = 256;
+        dt01 = std::clamp(dt01, 0.0f, 1.0f);
         std::array pivotPoints = { ImVec2{ 0.0f, curve.leftY }, ImVec2{ curve.p0.x, curve.p0.y },
                                    ImVec2{ curve.p1.x, curve.p1.y }, ImVec2{ 1.0f, curve.rightY } };
         std::array<ImVec2, STEPS + 1> results;

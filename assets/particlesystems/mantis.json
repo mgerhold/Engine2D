@@ -1,5 +1,5 @@
 {
-  "duration": 1,
+  "duration": 6,
   "looping": true,
   "prewarm": false,
   "startDelay": 0,
@@ -99,5 +99,27 @@
   "forceOverLifetime": {
     "x": 0,
     "y": 0
+  },
+  "colorOverLifetime": {
+    "colorGradient": [
+      {
+        "color": {
+          "r": 1,
+          "g": 0.4060148596763611,
+          "b": 0,
+          "a": 1
+        },
+        "position": 0
+      },
+      {
+        "color": {
+          "r": 0,
+          "g": 0.7969925403594971,
+          "b": 1,
+          "a": 1
+        },
+        "position": 0.9691635370254517
+      }
+    ]
   }
 }
