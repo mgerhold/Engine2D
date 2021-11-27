@@ -16,7 +16,7 @@
 #include "Sprite.hpp"
 #include "Animation.hpp"
 #pragma warning(push)
-#pragma warning(disable: 4201)
+#pragma warning(disable : 4201)
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
@@ -50,11 +50,9 @@ namespace c2k {
             glm::quat orientation;
             glm::decompose(matrix, scale, orientation, translation, skew, perspective);
             auto eulerAngles = glm::eulerAngles(orientation);
-            return TransformComponent{
-                .position{ translation },
-                .rotation{ eulerAngles.z },
-                .scale{ glm::vec2{ scale.x, scale.y } }
-            };
+            return TransformComponent{ .position{ translation },
+                                       .rotation{ eulerAngles.z },
+                                       .scale{ glm::vec2{ scale.x, scale.y } } };
         }
     };
 
@@ -110,7 +108,12 @@ namespace c2k {
         Entity particleEmitterEntity{ invalidEntity };
         double remainingLifeTime{ 0.0 };
         double totalLifeTime{ 0.0 };
-        glm::vec3 velocity{ 0.0f };
+        std::variant<glm::vec2,
+                     c2k::ParticleSystemImpl::Range<glm::vec2>,
+                     c2k::ParticleSystemImpl::BezierCurves2D,
+                     c2k::ParticleSystemImpl::Range<c2k::ParticleSystemImpl::BezierCurves2D>>
+                linearVelocityOverLifetime;
+        glm::vec3 velocityFromGravity{ 0.0f };
         glm::vec3 gravity{ 0.0f };
         glm::vec2 startScale{ 1.0f };
         glm::vec2 endScale{ 1.0f };

@@ -324,6 +324,7 @@ void Viped::renderInspectorWindow() noexcept {
             ImGui::DragFloat("Radius", &mParticleSystem->emitterRadius, 0.05f, 0.0f, std::numeric_limits<float>::max());
             ImGui::SliderFloat("Arc Angle", &mParticleSystem->emitterArc, 0.0f, 360.0f);
         }
+        mLinearVelocityOverLifetimeSelector(mParticleSystem->linearVelocityOverLifetime);
     }
     ImGui::End();
 }

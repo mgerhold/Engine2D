@@ -108,8 +108,12 @@ public:
                         curves.y = curves.x;
                     } else {
                         auto& curves = get<BezierCurves2D>(variant);
+                        ImGui::PushID("_curveX_");
                         ImGui::Bezier("curve", &curves.x, &mActiveCurveHandle0, mSpeed);
+                        ImGui::PopID();
+                        ImGui::PushID("_curveY_");
                         ImGui::Bezier("curve", &curves.y, &mActiveCurveHandle0, mSpeed);
+                        ImGui::PopID();
                     }
                     break;
             }

@@ -48,13 +48,39 @@
   "gravityModifier": 0,
   "simulateInWorldSpace": true,
   "maxParticles": 10000,
-  "rateOverTime": 1000,
+  "rateOverTime": 200,
   "rateOverDistance": 0,
   "emitterRadius": 600,
   "emitterArc": 360,
   "linearVelocityOverLifetime": {
-    "x": 1,
-    "y": 1
+    "x": {
+      "p0": {
+        "x": 0.25,
+        "y": 0.25
+      },
+      "p1": {
+        "x": 0.75,
+        "y": 0.75
+      },
+      "minVal": 100,
+      "maxVal": -200,
+      "leftY": 0,
+      "rightY": 1
+    },
+    "y": {
+      "p0": {
+        "x": 0.25,
+        "y": 0.25
+      },
+      "p1": {
+        "x": 0.75,
+        "y": 0.75
+      },
+      "minVal": 0,
+      "maxVal": 200,
+      "leftY": 0,
+      "rightY": 1
+    }
   },
   "radialVelocityOverLifetime": 0,
   "forceOverLifetime": {

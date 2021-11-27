@@ -351,16 +351,17 @@ namespace c2k {
         const auto remainingLifeTime = totalLifeTime;
         const auto startSpeed = getFourWaySelectorValue<float>(particleSystem.startSpeed, mRandom,
                                                                particleSystem.duration, particleSystem.currentDuration);
-        const auto velocity = mRandom.unitDirection() * startSpeed;
         const auto gravity = glm::vec3{ 0.0f, -9.81f, 0.0f } *
                              getFourWaySelectorValue<float>(particleSystem.gravityModifier, mRandom,
                                                             particleSystem.duration, particleSystem.currentDuration);
+        const auto velocityFromGravity = glm::vec3{ 0.0f };
         const auto startScale = transform.scale;
         const auto endScale = transform.scale;
         const float startRotationSpeed = 0.0f;
         const float endRotationSpeed = 0.0f;
         return ParticleComponent{
-            particleEmitterEntity, remainingLifeTime, totalLifeTime, velocity, gravity, startScale, endScale,
+            particleEmitterEntity, remainingLifeTime, totalLifeTime, particleSystem.linearVelocityOverLifetime,
+            velocityFromGravity,   gravity,           startScale,    endScale,
             startRotationSpeed,    endRotationSpeed
         };
     }
@@ -392,8 +393,12 @@ namespace c2k {
             const float interpolationParameter =
                     gsl::narrow_cast<float>(1.0 - particle.remainingLifeTime / particle.totalLifeTime);
             const auto delta = gsl::narrow_cast<float>(mTime.delta);
-            particle.velocity += particle.gravity * delta;
-            transform.position += particle.velocity * delta;
+            const auto velocityValue =
+                    getFourWaySelectorValueVec2(particle.linearVelocityOverLifetime, mRandom, particle.totalLifeTime,
+                                                particle.totalLifeTime - particle.remainingLifeTime);
+            const auto velocity = glm::vec3{ velocityValue.x, velocityValue.y, 0.0f };
+            particle.velocityFromGravity += particle.gravity * delta;
+            transform.position += delta * (velocity + particle.velocityFromGravity);
             transform.scale = MathUtils::lerp(particle.startScale, particle.endScale, interpolationParameter);
             transform.rotation +=
                     MathUtils::lerp(particle.startRotationSpeed, particle.endRotationSpeed, interpolationParameter) *
