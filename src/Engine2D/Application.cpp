@@ -277,7 +277,9 @@ namespace c2k {
             auto& particleSystem = particleEmitter.particleSystem;
             const double startDelay = getTwoWaySelectorValue<double>(particleSystem.startDelay, mRandom);
             bool shouldSpawnParticle = particleSystem.currentDuration >= startDelay;
-            const auto spawnInterval = particleSystem.spawnInterval();
+            const auto spawnInterval = 1.0 / static_cast<double>(getFourWaySelectorValue<float>(
+                                                     particleSystem.rateOverTime, mRandom, particleSystem.duration,
+                                                     particleSystem.currentDuration));
             if ((particleSystem.currentDuration += mTime.delta) >= particleSystem.duration) {
                 if (particleSystem.looping) {
                     particleSystem.currentDuration = std::fmod(particleSystem.currentDuration, particleSystem.duration);
@@ -296,8 +298,7 @@ namespace c2k {
             }
             if (foundAny && particleSystem.numParticles >= particleSystem.maxParticles) {
                 // stopped spawning because limit was reached
-                const auto timeDistance =
-                        mTime.elapsed - particleEmitter.lastSpawnTime - spawnInterval;
+                const auto timeDistance = mTime.elapsed - particleEmitter.lastSpawnTime - spawnInterval;
                 if (timeDistance > 0.0) {
                     const auto steps = std::ceil(timeDistance / spawnInterval);
                     particleEmitter.lastSpawnTime += spawnInterval * steps;

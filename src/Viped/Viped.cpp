@@ -319,6 +319,7 @@ void Viped::renderInspectorWindow() noexcept {
             ImGui::DragInt("Amount", &maxParticles, 1, 1);
             mParticleSystem->maxParticles = static_cast<std::size_t>(maxParticles);
         }
+        mRateOverTimeSelector(mParticleSystem->rateOverTime);
     }
     ImGui::End();
 }

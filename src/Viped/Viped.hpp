@@ -70,4 +70,6 @@ private:
     FourWayVariantSelector<float> mGravityModifierSelector{ "Gravity Modifier", 0.05f,
                                                             std::numeric_limits<float>::lowest(),
                                                             std::numeric_limits<float>::max() };
+    FourWayVariantSelector<float> mRateOverTimeSelector{ "Rate Over Time", 0.05f, std::numeric_limits<float>::min(),
+                                                         std::numeric_limits<float>::max() };
 };

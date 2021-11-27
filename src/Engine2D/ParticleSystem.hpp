@@ -27,11 +27,6 @@ namespace c2k {
         std::size_t numParticles{ 0 };
 
     public:
-        double spawnInterval() const {
-            // TODO: handle different variants
-            return 1.0 / get<float>(rateOverTime);
-        }
-
         ParticleSystem& operator<<(const ParticleSystemImpl::ParticleSystemJSON& base) noexcept {
             ParticleSystemImpl::ParticleSystemJSON::operator=(base);
             return *this;
