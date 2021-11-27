@@ -320,6 +320,10 @@ void Viped::renderInspectorWindow() noexcept {
             mParticleSystem->maxParticles = static_cast<std::size_t>(maxParticles);
         }
         mRateOverTimeSelector(mParticleSystem->rateOverTime);
+        if (ImGui::CollapsingHeader("Emitter Shape")) {
+            ImGui::DragFloat("Radius", &mParticleSystem->emitterRadius, 0.05f, 0.0f, std::numeric_limits<float>::max());
+            ImGui::SliderFloat("Arc Angle", &mParticleSystem->emitterArc, 0.0f, 360.0f);
+        }
     }
     ImGui::End();
 }

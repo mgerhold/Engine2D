@@ -308,11 +308,16 @@ namespace c2k {
         }
     }
 
-    [[nodiscard]] TransformComponent Application::createParticleTransform(
-            const Entity emitterEntity,
-            const ParticleSystem& particleSystem) noexcept {
+    [[nodiscard]] TransformComponent Application::createParticleTransform(const Entity emitterEntity,
+                                                                          const ParticleSystem& particleSystem,
+                                                                          Random& random) noexcept {
         const auto emitterPosition = mRegistry.component<TransformComponent>(emitterEntity)->position;
-        const auto position = (particleSystem.simulateInWorldSpace ? emitterPosition : glm::vec3{ 0.0f });
+        const auto offsetAngle = glm::radians(random.range(0.0f, particleSystem.emitterArc));
+        const auto offsetRadius =
+                glm::sqrt(random.range(0.0f, particleSystem.emitterRadius * particleSystem.emitterRadius));
+        const auto positionOffset = glm::vec3{ glm::cos(offsetAngle), glm::sin(offsetAngle), 0.0f } * offsetRadius;
+        const auto position =
+                (particleSystem.simulateInWorldSpace ? emitterPosition : glm::vec3{ 0.0f }) + positionOffset;
         const auto rotationSign = mRandom.sign<float>(1.0f - particleSystem.flipRotation);
         const auto rotationDegrees = getFourWaySelectorValue<float>(
                 particleSystem.startRotation, mRandom, particleSystem.duration, particleSystem.currentDuration);
@@ -363,7 +368,7 @@ namespace c2k {
     void Application::spawnParticles() noexcept {
         for (auto emitterEntity : mSpawningEmitters) {
             const auto& particleSystem = mRegistry.component<ParticleEmitterComponent>(emitterEntity)->particleSystem;
-            const auto transform = createParticleTransform(emitterEntity, particleSystem);
+            const auto transform = createParticleTransform(emitterEntity, particleSystem, mRandom);
             const auto dynamicSprite = createParticleSprite(particleSystem);
             const auto particle = createParticle(emitterEntity, transform, particleSystem);
             const auto particleEntity = mRegistry.createEntity(transform, dynamicSprite, particle);

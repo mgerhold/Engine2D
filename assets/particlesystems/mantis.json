@@ -4,10 +4,7 @@
   "prewarm": false,
   "startDelay": 0,
   "startLifetime": 1.2000000476837158,
-  "startSpeed": {
-    "min": 184,
-    "max": 300
-  },
+  "startSpeed": 0,
   "startSize": {
     "x": 8,
     "y": 8
@@ -48,25 +45,12 @@
       }
     ]
   },
-  "gravityModifier": {
-    "p0": {
-      "x": 0.7734375,
-      "y": 0.078125
-    },
-    "p1": {
-      "x": 0.953125,
-      "y": 0.5390625
-    },
-    "minVal": -100,
-    "maxVal": 100,
-    "leftY": 0,
-    "rightY": 1
-  },
+  "gravityModifier": 0,
   "simulateInWorldSpace": true,
-  "maxParticles": 1000,
-  "rateOverTime": 200,
+  "maxParticles": 10000,
+  "rateOverTime": 1000,
   "rateOverDistance": 0,
-  "emitterRadius": 3,
+  "emitterRadius": 600,
   "emitterArc": 360,
   "linearVelocityOverLifetime": {
     "x": 1,
