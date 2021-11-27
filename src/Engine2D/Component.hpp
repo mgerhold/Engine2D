@@ -114,11 +114,14 @@ namespace c2k {
                      c2k::ParticleSystemImpl::Range<c2k::ParticleSystemImpl::BezierCurves2D>>
                 linearVelocityOverLifetime;
         glm::vec3 velocityFromGravity{ 0.0f };
+        std::variant<float,
+                     c2k::ParticleSystemImpl::Range<float>,
+                     c2k::ParticleSystemImpl::BezierCurve,
+                     c2k::ParticleSystemImpl::Range<c2k::ParticleSystemImpl::BezierCurve>>
+                radialVelocityOverLifetime;
         glm::vec3 gravity{ 0.0f };
         glm::vec2 startScale{ 1.0f };
         glm::vec2 endScale{ 1.0f };
-        float startRotationSpeed{ 0.0f };
-        float endRotationSpeed{ 0.0f };
     };
 
 }// namespace c2k

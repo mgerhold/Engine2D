@@ -11,6 +11,7 @@
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+#include <algorithm>
 #include <cmath>
 #include <variant>
 
@@ -359,11 +360,15 @@ namespace c2k {
         const auto endScale = transform.scale;
         const float startRotationSpeed = 0.0f;
         const float endRotationSpeed = 0.0f;
-        return ParticleComponent{
-            particleEmitterEntity, remainingLifeTime, totalLifeTime, particleSystem.linearVelocityOverLifetime,
-            velocityFromGravity,   gravity,           startScale,    endScale,
-            startRotationSpeed,    endRotationSpeed
-        };
+        return ParticleComponent{ particleEmitterEntity,
+                                  remainingLifeTime,
+                                  totalLifeTime,
+                                  particleSystem.linearVelocityOverLifetime,
+                                  velocityFromGravity,
+                                  particleSystem.radialVelocityOverLifetime,
+                                  gravity,
+                                  startScale,
+                                  endScale };
     }
 
     void Application::spawnParticles() noexcept {
@@ -388,8 +393,9 @@ namespace c2k {
     }
 
     void Application::handleParticles() noexcept {
-        for (auto&& [entity, particle, transform] :
-             mRegistry.componentsMutable<ParticleComponent, TransformComponent>()) {
+        auto entityRange = mRegistry.componentsMutable<ParticleComponent, TransformComponent>();
+        std::for_each(std::execution::par, entityRange.begin(), entityRange.end(), [&](auto&& tuple) {
+            auto&& [entity, particle, transform] = tuple;
             const float interpolationParameter =
                     gsl::narrow_cast<float>(1.0 - particle.remainingLifeTime / particle.totalLifeTime);
             const auto delta = gsl::narrow_cast<float>(mTime.delta);
@@ -400,10 +406,13 @@ namespace c2k {
             particle.velocityFromGravity += particle.gravity * delta;
             transform.position += delta * (velocity + particle.velocityFromGravity);
             transform.scale = MathUtils::lerp(particle.startScale, particle.endScale, interpolationParameter);
-            transform.rotation +=
-                    MathUtils::lerp(particle.startRotationSpeed, particle.endRotationSpeed, interpolationParameter) *
-                    delta;
+            transform.rotation += glm::radians(getFourWaySelectorValue<float>(
+                                          particle.radialVelocityOverLifetime, mRandom, particle.totalLifeTime,
+                                          particle.totalLifeTime - particle.remainingLifeTime)) *
+                                  delta;
             particle.remainingLifeTime -= mTime.delta;
+        });
+        for (auto&& [entity, particle, transform] : entityRange) {
             if (particle.remainingLifeTime < 0.0) {
                 mParticleEntitiesToDelete.emplace_back(entity);
             }

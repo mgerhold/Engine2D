@@ -3,7 +3,7 @@
   "looping": true,
   "prewarm": false,
   "startDelay": 0,
-  "startLifetime": 1.2000000476837158,
+  "startLifetime": 2,
   "startSpeed": 0,
   "startSize": {
     "x": 8,
@@ -63,7 +63,7 @@
         "y": 0.75
       },
       "minVal": 100,
-      "maxVal": -200,
+      "maxVal": 150,
       "leftY": 0,
       "rightY": 1
     },
@@ -77,12 +77,25 @@
         "y": 0.75
       },
       "minVal": 0,
-      "maxVal": 200,
+      "maxVal": 50,
       "leftY": 0,
       "rightY": 1
     }
   },
-  "radialVelocityOverLifetime": 0,
+  "radialVelocityOverLifetime": {
+    "p0": {
+      "x": 0.25,
+      "y": 0.25
+    },
+    "p1": {
+      "x": 0.75,
+      "y": 0.75
+    },
+    "minVal": -360,
+    "maxVal": 360,
+    "leftY": 0,
+    "rightY": 1
+  },
   "forceOverLifetime": {
     "x": 0,
     "y": 0

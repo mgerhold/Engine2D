@@ -75,4 +75,7 @@ private:
     FourWayVariantSelectorVec2 mLinearVelocityOverLifetimeSelector{ "Linear Velocity Over Lifetime", 0.05f,
                                                                     std::numeric_limits<float>::lowest(),
                                                                     std::numeric_limits<float>::max() };
+    FourWayVariantSelector<float> mRadialVelocityOverLifetimeSelector{ "Radial Velocity Over Lifetime", 0.05f,
+                                                                       std::numeric_limits<float>::lowest(),
+                                                                       std::numeric_limits<float>::max() };
 };
