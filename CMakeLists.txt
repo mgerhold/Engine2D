@@ -128,6 +128,9 @@ endif ()
 
 add_definitions(-DBOOST_UUID_FORCE_AUTO_LINK)
 
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    find_package(TBB CONFIG REQUIRED)
+endif()
 foreach (target ${TARGET_LIST})
     # set warning levels
     if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
@@ -135,7 +138,8 @@ foreach (target ${TARGET_LIST})
         target_compile_options(${target} PUBLIC /W4 /permissive- /bigobj)
     elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         message("GCC build")
-        target_compile_options(${target} PUBLIC -Wall -Wextra -pedantic -Wconversion -pthread -ltbb)
+        target_compile_options(${target} PUBLIC -Wall -Wextra -pedantic -Wconversion -pthread)
+        target_link_libraries(${target} PRIVATE TBB::tbb)
     endif ()
 
     # define DEBUG_BUILD
