@@ -1,0 +1,41 @@
+{
+  "name": "coder2k-engine2d",
+  "version-string": "0.1.0",
+  "dependencies": [
+    "glad",
+    "glfw3",
+    "gtest",
+    "tbb",
+    "ms-gsl",
+    "tl-expected",
+    "tl-optional",
+    "spdlog",
+    "nlohmann-json",
+    "range-v3",
+    "glm",
+    "boost",
+    "lua",
+    "sol2",
+    "magic-enum",
+    {
+      "name": "imgui",
+      "platform": "windows",
+      "features": [
+        "docking-experimental",
+        "glfw-binding",
+        "opengl3-glad-binding"
+      ]
+    },
+    {
+      "name": "imgui",
+      "platform": "!windows",
+      "features": [
+        "docking-experimental",
+        "glfw-binding",
+        "opengl3-binding"
+      ]
+    },
+    "tinyfiledialogs",
+    "stb"
+  ]
+}
