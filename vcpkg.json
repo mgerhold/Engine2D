@@ -4,6 +4,7 @@
   "dependencies": [
     "glad",
     "glfw3",
+    "gtest",
     "tbb",
     "ms-gsl",
     "tl-expected",
@@ -18,6 +19,16 @@
     "magic-enum",
     {
       "name": "imgui",
+      "platform": "windows",
+      "features": [
+        "docking-experimental",
+        "glfw-binding",
+        "opengl3-glad-binding"
+      ]
+    },
+    {
+      "name": "imgui",
+      "platform": "!windows",
       "features": [
         "docking-experimental",
         "glfw-binding",
