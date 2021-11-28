@@ -75,7 +75,7 @@ namespace ParticleSystemImpl {
         std::variant<float, Range<float>, BezierCurve, Range<BezierCurve>> gravityModifier;
         bool simulateInWorldSpace;
         // maybe add: scaling mode? (local/hierarchy)
-        std::uint32_t maxParticles;
+        std::size_t maxParticles;
         std::variant<float, Range<float>, BezierCurve, Range<BezierCurve>> rateOverTime;
         std::variant<float, Range<float>, BezierCurve, Range<BezierCurve>> rateOverDistance;
         std::optional<std::vector<ParticleBurst>> particleBursts;

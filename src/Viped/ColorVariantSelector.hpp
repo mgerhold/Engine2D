@@ -7,11 +7,7 @@
 #include "Color.hpp"
 #include "ImGuiUtils/ColorGradient.hpp"
 #include <imgui.h>
-#pragma warning(push)
-#pragma warning(disable : 4201)
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#pragma warning(pop)
+#include <IncludeGLM.hpp>
 #include <string>
 #include <variant>
 
@@ -27,7 +23,8 @@ public:
         using namespace c2k::ParticleSystemImpl;
         if (ImGui::CollapsingHeader(mHeader.c_str())) {
             mCurrentlySelected =
-                    static_cast<int>(mCurrentlySelected == variant.index() ? mCurrentlySelected : variant.index());
+                    (mCurrentlySelected == static_cast<int>(variant.index()) ? mCurrentlySelected
+                                                                             : static_cast<int>(variant.index()));
             if (ImGui::RadioButton("Constant", &mCurrentlySelected, 0) && holds_alternative<ColorGradient>(variant)) {
                 variant = Color::white();
             }

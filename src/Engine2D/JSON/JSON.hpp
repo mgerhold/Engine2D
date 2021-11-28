@@ -123,6 +123,15 @@ namespace c2k::JSON {
             return std::monostate{};
         }
 
+        [[nodiscard]] inline DeserializationResult fromJSON(const JSONValue& json, std::size_t& out) noexcept {
+            const auto result = json.asNumber();
+            if (!result || result.value() < 0.0) {
+                return tl::unexpected{ DeserializationError::UnsignedIntExpected };
+            }
+            out = gsl::narrow_cast<std::size_t>(result.value());
+            return std::monostate{};
+        }
+
         [[nodiscard]] inline DeserializationResult fromJSON(const JSONValue& json, glm::vec2& out) noexcept {
             if (!json.isObject()) {
                 return tl::unexpected{ DeserializationError::ObjectExpected };

@@ -15,12 +15,7 @@
 #include "ParticleSystem.hpp"
 #include "Sprite.hpp"
 #include "Animation.hpp"
-#pragma warning(push)
-#pragma warning(disable : 4201)
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/matrix_decompose.hpp>
-#pragma warning(pop)
+#include "IncludeGLM.hpp"
 
 namespace c2k {
 

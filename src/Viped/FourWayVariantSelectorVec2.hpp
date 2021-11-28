@@ -8,11 +8,7 @@
 #include "GUID.hpp"
 #include "ImGuiUtils/Bezier.hpp"
 #include <ParticleSystem.hpp>
-#pragma warning(push)
-#pragma warning(disable: 4201)
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#pragma warning(pop)
+#include <IncludeGLM.hpp>
 #include <imgui.h>
 #include <variant>
 #include <string>

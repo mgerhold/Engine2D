@@ -5,10 +5,7 @@
 #include "ParticleSystem.hpp"
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
-#pragma warning(push)
-#pragma warning(disable : 5054)
-#include <imgui_internal.h>
-#pragma warning(pop)
+#include <IncludeImGuiInternal.hpp>
 #include <glm/glm.hpp>
 
 namespace ImGui {

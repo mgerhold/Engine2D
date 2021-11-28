@@ -5,12 +5,8 @@
 #pragma once
 
 #include "GUID.hpp"
+#include "IncludeGLM.hpp"
 #include <glad/glad.h>
-#pragma warning(push)
-#pragma warning(disable: 4201)
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#pragma warning(pop)
 #include <unordered_map>
 
 namespace c2k {
