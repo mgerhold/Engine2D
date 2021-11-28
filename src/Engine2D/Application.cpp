@@ -358,8 +358,6 @@ namespace c2k {
         const auto velocityFromGravity = glm::vec3{ 0.0f };
         const auto startScale = transform.scale;
         const auto endScale = transform.scale;
-        const float startRotationSpeed = 0.0f;
-        const float endRotationSpeed = 0.0f;
         return ParticleComponent{ particleEmitterEntity,
                                   remainingLifeTime,
                                   totalLifeTime,

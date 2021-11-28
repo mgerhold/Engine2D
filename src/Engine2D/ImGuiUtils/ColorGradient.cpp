@@ -10,10 +10,7 @@
 //
 //  Created by David Gallardo on 11/06/16.
 
-#pragma warning(push)
-#pragma warning(disable : 5054)
-#include "imgui_internal.h"
-#pragma warning(pop)
+#include "IncludeImGuiInternal.hpp"
 #include <gsl/gsl>
 #include <algorithm>
 #include <utility>
@@ -138,7 +135,6 @@ namespace ImGui {
         float barBottom = bar_pos.y + height;
         ImGradientMark* prevMark = nullptr;
         ImDrawList* draw_list = ImGui::GetWindowDrawList();
-        ImU32 colorAU32 = 0;
         ImU32 colorBU32 = 0;
 
         for (auto& mark : gradient->getMarks()) {
@@ -150,8 +146,6 @@ namespace ImGui {
 
             const auto colorA = (prevMark == nullptr ? mark.color : prevMark->color);
             const auto colorB = mark.color;
-
-            colorAU32 = ImGui::ColorConvertFloat4ToU32(colorA);
             colorBU32 = ImGui::ColorConvertFloat4ToU32(colorB);
 
             draw_list->AddTriangleFilled(ImVec2(to, bar_pos.y + (height - 6)), ImVec2(to - 6, barBottom),

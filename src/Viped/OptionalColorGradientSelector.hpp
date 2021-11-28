@@ -13,11 +13,7 @@
 #include "Color.hpp"
 #include "ImGuiUtils/ColorGradient.hpp"
 #include <imgui.h>
-#pragma warning(push)
-#pragma warning(disable : 4201)
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#pragma warning(pop)
+#include <IncludeGLM.hpp>
 #include <string>
 #include <optional>
 
