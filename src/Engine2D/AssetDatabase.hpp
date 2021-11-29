@@ -129,8 +129,12 @@ namespace c2k {
             return getMutable<Script>(guid, mDebugFallbackScript);
         }
 
-        [[nodiscard]] const ParticleSystem& particleSystem(GUID guid) noexcept {
+        [[nodiscard]] const ParticleSystem& particleSystem(GUID guid) const noexcept {
             return get<ParticleSystem>(guid, mDebugFallbackParticleSystem);
+        }
+
+        [[nodiscard]] ParticleSystem& particleSystemMutable(GUID guid) noexcept {
+            return getMutable<ParticleSystem>(guid, mDebugFallbackParticleSystem);
         }
 
         [[nodiscard]] const Animation& animation(GUID guid) noexcept {

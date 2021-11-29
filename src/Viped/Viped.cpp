@@ -238,8 +238,8 @@ void Viped::refreshParticleSystem(
     mRegistry.template destroyEntitiesWithComponents<ParticleComponent>();
     mParticleEmitterEntity = mRegistry.createEntity(
             TransformComponent{}, RootComponent{},
-            ParticleEmitterComponent{ .particleSystem{ particleSystem }, .lastSpawnTime{ mTime.elapsed } });
-    mParticleSystem = &mRegistry.componentMutable<ParticleEmitterComponent>(mParticleEmitterEntity)->particleSystem;
+            ParticleEmitterComponent{ .particleSystem{ &particleSystem }, .lastSpawnTime{ mTime.elapsed } });
+    mParticleSystem = mRegistry.componentMutable<ParticleEmitterComponent>(mParticleEmitterEntity)->particleSystem;
 }
 
 void Viped::renderStatsWindow() const noexcept {
@@ -293,8 +293,9 @@ void Viped::renderStatsWindow() const noexcept {
 void Viped::renderInspectorWindow() noexcept {
     ImGui::Begin("Inspector");
     if (mParticleSystem) {
-        ImGui::Text("Duration: %0.2f s / %0.2f s", mParticleSystem->currentDuration, mParticleSystem->duration);
-        ImGui::Text("Particle Count: %zu / %zu", mParticleSystem->numParticles, mParticleSystem->maxParticles);
+        const auto& particleEmitter = mRegistry.component<ParticleEmitterComponent>(mParticleEmitterEntity).value();
+        ImGui::Text("Duration: %0.2f s / %0.2f s", particleEmitter.currentDuration, mParticleSystem->duration);
+        ImGui::Text("Particle Count: %zu / %zu", particleEmitter.numParticles, mParticleSystem->maxParticles);
         if (ImGui::CollapsingHeader("Duration & Looping")) {
             ImGui::PushID("Duration & Looping");
             dragDouble("Duration", &mParticleSystem->duration, 0.05, 0.0, std::numeric_limits<double>::max());

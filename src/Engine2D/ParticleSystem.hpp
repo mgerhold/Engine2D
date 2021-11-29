@@ -23,9 +23,6 @@ namespace c2k {
         ShaderProgram* shaderProgram{ nullptr };
         GUID guid;
 
-        double currentDuration{ 0.0 };
-        std::size_t numParticles{ 0 };
-
     public:
         ParticleSystem& operator<<(const ParticleSystemImpl::ParticleSystemJSON& base) noexcept {
             ParticleSystemImpl::ParticleSystemJSON::operator=(base);

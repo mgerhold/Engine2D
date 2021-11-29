@@ -327,10 +327,11 @@ namespace c2k::ScriptUtils {
                         spdlog::error("Entity {} already has a particle emitter component.", entity);
                     } else {
                         applicationContext.registry.attachComponent<ParticleEmitterComponent>(
-                                entity, ParticleEmitterComponent{
-                                                .particleSystem{ applicationContext.assetDatabase.particleSystem(
-                                                        GUID::fromString(particleSystem.guid)) },
-                                                .lastSpawnTime{ applicationContext.time.elapsed } });
+                                entity,
+                                ParticleEmitterComponent{
+                                        .particleSystem{ &applicationContext.assetDatabase.particleSystemMutable(
+                                                GUID::fromString(particleSystem.guid)) },
+                                        .lastSpawnTime{ applicationContext.time.elapsed } });
                     }
                     return LuaParticleEmitter{ .owningEntity{ entity } };
                 };

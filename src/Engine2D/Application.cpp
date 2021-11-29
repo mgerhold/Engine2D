@@ -275,29 +275,30 @@ namespace c2k {
            if they should spawn more than one particle */
         for (auto&& [entity, particleEmitter, transform, root] :
              mRegistry.componentsMutable<ParticleEmitterComponent, TransformComponent, RootComponent>()) {
-            auto& particleSystem = particleEmitter.particleSystem;
-            const double startDelay = getTwoWaySelectorValue<double>(particleSystem.startDelay, mRandom);
-            bool shouldSpawnParticle = particleSystem.currentDuration >= startDelay;
+            const auto particleSystem = particleEmitter.particleSystem;
+            const double startDelay = getTwoWaySelectorValue<double>(particleSystem->startDelay, mRandom);
+            bool shouldSpawnParticle = particleEmitter.currentDuration >= startDelay;
             const auto spawnInterval = 1.0 / static_cast<double>(getFourWaySelectorValue<float>(
-                                                     particleSystem.rateOverTime, mRandom, particleSystem.duration,
-                                                     particleSystem.currentDuration));
-            if ((particleSystem.currentDuration += mTime.delta) >= particleSystem.duration) {
-                if (particleSystem.looping) {
-                    particleSystem.currentDuration = std::fmod(particleSystem.currentDuration, particleSystem.duration);
+                                                     particleSystem->rateOverTime, mRandom, particleSystem->duration,
+                                                     particleEmitter.currentDuration));
+            if ((particleEmitter.currentDuration += mTime.delta) >= particleSystem->duration) {
+                if (particleSystem->looping) {
+                    particleEmitter.currentDuration =
+                            std::fmod(particleEmitter.currentDuration, particleSystem->duration);
                     particleEmitter.lastSpawnTime = mTime.elapsed - spawnInterval;
                 } else {
                     shouldSpawnParticle = false;
                 }
             }
             bool foundAny = false;
-            while (shouldSpawnParticle && particleSystem.numParticles < particleSystem.maxParticles &&
+            while (shouldSpawnParticle && particleEmitter.numParticles < particleSystem->maxParticles &&
                    mTime.elapsed >= particleEmitter.lastSpawnTime + spawnInterval) {
-                ++particleSystem.numParticles;
+                ++particleEmitter.numParticles;
                 mSpawningEmitters.emplace_back(entity);
                 particleEmitter.lastSpawnTime += spawnInterval;
                 foundAny = true;
             }
-            if (foundAny && particleSystem.numParticles >= particleSystem.maxParticles) {
+            if (foundAny && particleEmitter.numParticles >= particleSystem->maxParticles) {
                 // stopped spawning because limit was reached
                 const auto timeDistance = mTime.elapsed - particleEmitter.lastSpawnTime - spawnInterval;
                 if (timeDistance > 0.0) {
@@ -312,6 +313,7 @@ namespace c2k {
     [[nodiscard]] TransformComponent Application::createParticleTransform(const Entity emitterEntity,
                                                                           const ParticleSystem& particleSystem,
                                                                           Random& random) noexcept {
+        const auto& particleEmitter = mRegistry.component<ParticleEmitterComponent>(emitterEntity).value();
         const auto emitterPosition = mRegistry.component<TransformComponent>(emitterEntity)->position;
         const auto offsetAngle = glm::radians(random.range(0.0f, particleSystem.emitterArc));
         const auto offsetRadius =
@@ -321,23 +323,24 @@ namespace c2k {
                 (particleSystem.simulateInWorldSpace ? emitterPosition : glm::vec3{ 0.0f }) + positionOffset;
         const auto rotationSign = mRandom.sign<float>(1.0f - particleSystem.flipRotation);
         const auto rotationDegrees = getFourWaySelectorValue<float>(
-                particleSystem.startRotation, mRandom, particleSystem.duration, particleSystem.currentDuration);
+                particleSystem.startRotation, mRandom, particleSystem.duration, particleEmitter.currentDuration);
         const auto rotation = glm::radians(rotationDegrees) * rotationSign;
         const auto baseScale = glm::vec2{ particleSystem.sprite.texture->widthToHeightRatio(), 1.0f };
         const auto size = getFourWaySelectorValueVec2(particleSystem.startSize, mRandom, particleSystem.duration,
-                                                      particleSystem.currentDuration);
+                                                      particleEmitter.currentDuration);
         const auto scale = baseScale * size;
         return TransformComponent{ position, rotation, scale };
     }
 
     [[nodiscard]] DynamicSpriteComponent Application::createParticleSprite(
+            const ParticleEmitterComponent& particleEmitter,
             const ParticleSystem& particleSystem) noexcept {
         using namespace c2k::ParticleSystemImpl;// ColorGradient
         const auto color = [&]() {
             if (holds_alternative<Color>(particleSystem.color)) {
                 return get<Color>(particleSystem.color);
             } else {
-                const auto t = static_cast<float>(particleSystem.currentDuration / particleSystem.duration);
+                const auto t = static_cast<float>(particleEmitter.currentDuration / particleSystem.duration);
                 return getGradientColor(get<ColorGradient>(particleSystem.color), t);
             }
         }();
@@ -345,37 +348,31 @@ namespace c2k {
     }
 
     [[nodiscard]] ParticleComponent Application::createParticle(const Entity particleEmitterEntity,
+                                                                const ParticleEmitterComponent& particleEmitter,
                                                                 const TransformComponent& transform,
                                                                 const ParticleSystem& particleSystem) noexcept {
         const auto totalLifeTime = getFourWaySelectorValue<double>(
-                particleSystem.startLifetime, mRandom, particleSystem.duration, particleSystem.currentDuration);
+                particleSystem.startLifetime, mRandom, particleSystem.duration, particleEmitter.currentDuration);
         const auto remainingLifeTime = totalLifeTime;
-        const auto startSpeed = getFourWaySelectorValue<float>(particleSystem.startSpeed, mRandom,
-                                                               particleSystem.duration, particleSystem.currentDuration);
+        const auto startSpeed = getFourWaySelectorValue<float>(
+                particleSystem.startSpeed, mRandom, particleSystem.duration, particleEmitter.currentDuration);
         const auto gravity = glm::vec3{ 0.0f, -9.81f, 0.0f } *
                              getFourWaySelectorValue<float>(particleSystem.gravityModifier, mRandom,
-                                                            particleSystem.duration, particleSystem.currentDuration);
-        const auto velocityFromGravity = glm::vec3{ 0.0f };
+                                                            particleSystem.duration, particleEmitter.currentDuration);
+        constexpr auto velocityFromGravity = glm::vec3{ 0.0f };
         const auto startScale = transform.scale;
         const auto endScale = transform.scale;
-        return ParticleComponent{ particleEmitterEntity,
-                                  remainingLifeTime,
-                                  totalLifeTime,
-                                  particleSystem.linearVelocityOverLifetime,
-                                  velocityFromGravity,
-                                  particleSystem.radialVelocityOverLifetime,
-                                  particleSystem.colorOverLifetime,
-                                  gravity,
-                                  startScale,
-                                  endScale };
+        return ParticleComponent{ particleEmitter.particleSystem, remainingLifeTime,   totalLifeTime,
+                                  particleEmitterEntity,          velocityFromGravity, gravity };
     }
 
     void Application::spawnParticles() noexcept {
         for (auto emitterEntity : mSpawningEmitters) {
-            const auto& particleSystem = mRegistry.component<ParticleEmitterComponent>(emitterEntity)->particleSystem;
+            const auto& particleEmitter = mRegistry.component<ParticleEmitterComponent>(emitterEntity).value();
+            const auto& particleSystem = *particleEmitter.particleSystem;
             const auto transform = createParticleTransform(emitterEntity, particleSystem, mRandom);
-            const auto dynamicSprite = createParticleSprite(particleSystem);
-            const auto particle = createParticle(emitterEntity, transform, particleSystem);
+            const auto dynamicSprite = createParticleSprite(particleEmitter, particleSystem);
+            const auto particle = createParticle(emitterEntity, particleEmitter, transform, particleSystem);
             const auto particleEntity = mRegistry.createEntity(transform, dynamicSprite, particle);
             if (particleSystem.simulateInWorldSpace) {
                 mRegistry.attachComponent(particleEntity, RootComponent{});
@@ -395,22 +392,24 @@ namespace c2k {
         auto entityRange = mRegistry.componentsMutable<ParticleComponent, DynamicSpriteComponent, TransformComponent>();
         std::for_each(std::execution::par, entityRange.begin(), entityRange.end(), [&](auto&& tuple) {
             auto&& [entity, particle, sprite, transform] = tuple;
+            const auto& particleSystem = *particle.particleSystem;
             const float interpolationParameter =
                     gsl::narrow_cast<float>(1.0 - particle.remainingLifeTime / particle.totalLifeTime);
             const auto delta = gsl::narrow_cast<float>(mTime.delta);
-            const auto velocityValue =
-                    getFourWaySelectorValueVec2(particle.linearVelocityOverLifetime, mRandom, particle.totalLifeTime,
-                                                particle.totalLifeTime - particle.remainingLifeTime);
+            const auto velocityValue = getFourWaySelectorValueVec2(
+                    particleSystem.linearVelocityOverLifetime, mRandom, particle.totalLifeTime,
+                    particle.totalLifeTime - particle.remainingLifeTime);
             const auto velocity = glm::vec3{ velocityValue.x, velocityValue.y, 0.0f };
             particle.velocityFromGravity += particle.gravity * delta;
             transform.position += delta * (velocity + particle.velocityFromGravity);
-            transform.scale = MathUtils::lerp(particle.startScale, particle.endScale, interpolationParameter);
-            transform.rotation += glm::radians(getFourWaySelectorValue<float>(
-                                          particle.radialVelocityOverLifetime, mRandom, particle.totalLifeTime,
-                                          particle.totalLifeTime - particle.remainingLifeTime)) *
-                                  delta;
-            if (particle.colorOverLifetime) {
-                sprite.color = getGradientColor(particle.colorOverLifetime.value(), interpolationParameter);
+            // TODO: set scale according to size over lifetime if enabled
+            transform.rotation +=
+                    glm::radians(getFourWaySelectorValue<float>(
+                            particleSystem.radialVelocityOverLifetime, mRandom, particle.totalLifeTime,
+                            particle.totalLifeTime - particle.remainingLifeTime)) *
+                    delta;
+            if (particleSystem.colorOverLifetime) {
+                sprite.color = getGradientColor(particleSystem.colorOverLifetime.value(), interpolationParameter);
             }
             particle.remainingLifeTime -= mTime.delta;
         });
@@ -420,12 +419,10 @@ namespace c2k {
             }
         }
         for (auto entityToDelete : mParticleEntitiesToDelete) {
-            const auto emitterEntity =
-                    mRegistry.componentMutable<ParticleComponent>(entityToDelete)->particleEmitterEntity;
+            const auto emitterEntity = mRegistry.component<ParticleComponent>(entityToDelete)->particleEmitterEntity;
             if (mRegistry.isEntityAlive(emitterEntity)) {
-                auto& particleSystem =
-                        mRegistry.componentMutable<ParticleEmitterComponent>(emitterEntity)->particleSystem;
-                --particleSystem.numParticles;
+                auto& emitter = mRegistry.componentMutable<ParticleEmitterComponent>(emitterEntity).value();
+                --emitter.numParticles;
             }
             mRegistry.destroyEntity(entityToDelete);
         }

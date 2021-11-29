@@ -95,29 +95,19 @@ namespace c2k {
     };
 
     struct ParticleEmitterComponent {
-        ParticleSystem particleSystem;
+        ParticleSystem* particleSystem;
+        double currentDuration{ 0.0 };
+        std::size_t numParticles{ 0 };
         double lastSpawnTime{ 0.0 };
     };
 
     struct ParticleComponent {
-        Entity particleEmitterEntity{ invalidEntity };
+        const ParticleSystem* particleSystem;
         double remainingLifeTime{ 0.0 };
         double totalLifeTime{ 0.0 };
-        std::variant<glm::vec2,
-                     c2k::ParticleSystemImpl::Range<glm::vec2>,
-                     c2k::ParticleSystemImpl::BezierCurves2D,
-                     c2k::ParticleSystemImpl::Range<c2k::ParticleSystemImpl::BezierCurves2D>>
-                linearVelocityOverLifetime;
+        Entity particleEmitterEntity{ invalidEntity };
         glm::vec3 velocityFromGravity{ 0.0f };
-        std::variant<float,
-                     c2k::ParticleSystemImpl::Range<float>,
-                     c2k::ParticleSystemImpl::BezierCurve,
-                     c2k::ParticleSystemImpl::Range<c2k::ParticleSystemImpl::BezierCurve>>
-                radialVelocityOverLifetime;
-        std::optional<c2k::ParticleSystemImpl::ColorGradient> colorOverLifetime;// TODO: don't copy std::vector!!!
         glm::vec3 gravity{ 0.0f };
-        glm::vec2 startScale{ 1.0f };
-        glm::vec2 endScale{ 1.0f };
     };
 
 }// namespace c2k
