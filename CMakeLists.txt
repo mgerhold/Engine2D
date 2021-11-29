@@ -133,8 +133,6 @@ if (ENABLE_PROFILING)
     add_definitions(-DENABLE_PROFILING=1)
 endif ()
 
-add_definitions(-DBOOST_UUID_FORCE_AUTO_LINK)
-
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     find_package(TBB CONFIG REQUIRED)
 endif()
@@ -203,10 +201,6 @@ target_link_libraries(Engine2D PRIVATE range-v3 range-v3-meta range-v3::meta ran
 
 find_path(STB_INCLUDE_DIRS "stb.h")
 target_include_directories(Engine2D PRIVATE ${STB_INCLUDE_DIRS})
-
-find_package(Boost REQUIRED COMPONENTS random)
-target_link_libraries(Engine2D PUBLIC ${Boost_LIBRARIES})
-target_include_directories(Engine2D PUBLIC ${Boost_INCLUDE_DIRS})
 
 include(FindLua)
 find_package(Lua REQUIRED)

@@ -13,7 +13,6 @@
     "nlohmann-json",
     "range-v3",
     "glm",
-    "boost",
     "lua",
     "sol2",
     "magic-enum",
