@@ -396,18 +396,17 @@ namespace c2k {
             const float interpolationParameter =
                     gsl::narrow_cast<float>(1.0 - particle.remainingLifeTime / particle.totalLifeTime);
             const auto delta = gsl::narrow_cast<float>(mTime.delta);
-            const auto velocityValue = getFourWaySelectorValueVec2(
-                    particleSystem.linearVelocityOverLifetime, mRandom, particle.totalLifeTime,
-                    particle.totalLifeTime - particle.remainingLifeTime);
+            const auto velocityValue = getFourWaySelectorValueVec2(particleSystem.linearVelocityOverLifetime, mRandom,
+                                                                   particle.totalLifeTime,
+                                                                   particle.totalLifeTime - particle.remainingLifeTime);
             const auto velocity = glm::vec3{ velocityValue.x, velocityValue.y, 0.0f };
             particle.velocityFromGravity += particle.gravity * delta;
             transform.position += delta * (velocity + particle.velocityFromGravity);
             // TODO: set scale according to size over lifetime if enabled
-            transform.rotation +=
-                    glm::radians(getFourWaySelectorValue<float>(
-                            particleSystem.radialVelocityOverLifetime, mRandom, particle.totalLifeTime,
-                            particle.totalLifeTime - particle.remainingLifeTime)) *
-                    delta;
+            transform.rotation += glm::radians(getFourWaySelectorValue<float>(
+                                          particleSystem.radialVelocityOverLifetime, mRandom, particle.totalLifeTime,
+                                          particle.totalLifeTime - particle.remainingLifeTime)) *
+                                  delta;
             if (particleSystem.colorOverLifetime) {
                 sprite.color = getGradientColor(particleSystem.colorOverLifetime.value(), interpolationParameter);
             }
