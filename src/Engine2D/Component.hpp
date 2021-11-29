@@ -108,6 +108,7 @@ namespace c2k {
         Entity particleEmitterEntity{ invalidEntity };
         glm::vec3 velocityFromGravity{ 0.0f };
         glm::vec3 gravity{ 0.0f };
+        glm::vec2 baseScale{ 1.0f };
     };
 
 }// namespace c2k

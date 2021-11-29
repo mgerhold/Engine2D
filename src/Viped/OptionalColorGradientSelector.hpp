@@ -29,7 +29,7 @@ public:
         using namespace c2k::ParticleSystemImpl;
         if (ImGui::CollapsingHeader(mHeader.c_str())) {
             mEnabled = optionalGradient.has_value();
-            auto enabledBefore = mEnabled;
+            const auto enabledBefore = mEnabled;
             ImGui::Checkbox("enabled", &mEnabled);
             if (mEnabled && !enabledBefore) {
                 optionalGradient = c2k::ParticleSystemImpl::ColorGradient{};

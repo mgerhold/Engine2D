@@ -48,7 +48,6 @@ namespace c2k {
                                                                   const ParticleSystem& particleSystem) noexcept;
         [[nodiscard]] ParticleComponent createParticle(Entity particleEmitterEntity,
                                                        const ParticleEmitterComponent& particleEmitter,
-                                                       const TransformComponent& transform,
                                                        const ParticleSystem& particleSystem) noexcept;
         void spawnParticles() noexcept;
         void handleParticleEmitters() noexcept;

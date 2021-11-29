@@ -50,7 +50,7 @@
   "maxParticles": 10000,
   "rateOverTime": 200,
   "rateOverDistance": 0,
-  "emitterRadius": 600,
+  "emitterRadius": 40,
   "emitterArc": 360,
   "linearVelocityOverLifetime": {
     "x": {
@@ -121,5 +121,19 @@
         "position": 0.9691635370254517
       }
     ]
+  },
+  "sizeOverLifetime": {
+    "p0": {
+      "x": 0.25,
+      "y": 0.25
+    },
+    "p1": {
+      "x": 0.3515625,
+      "y": 0.4375
+    },
+    "minVal": 0,
+    "maxVal": 15,
+    "leftY": 1,
+    "rightY": 0
   }
 }

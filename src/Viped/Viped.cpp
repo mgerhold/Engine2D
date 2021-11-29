@@ -328,6 +328,7 @@ void Viped::renderInspectorWindow() noexcept {
         mLinearVelocityOverLifetimeSelector(mParticleSystem->linearVelocityOverLifetime);
         mRadialVelocityOverLifetimeSelector(mParticleSystem->radialVelocityOverLifetime);
         mColorOverLifetimeSelector(mParticleSystem->colorOverLifetime);
+        mSizeOverLifetimeSelector(mParticleSystem->sizeOverLifetime);
     }
     ImGui::End();
 }

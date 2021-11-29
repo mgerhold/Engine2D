@@ -9,6 +9,7 @@
 #include "FourWayVariantSelectorVec2.hpp"
 #include "ColorVariantSelector.hpp"
 #include "OptionalColorGradientSelector.hpp"
+#include "OptionalBezierCurveSelector.hpp"
 #include <Application.hpp>
 #include <GUID.hpp>
 #include <AssetList.hpp>
@@ -80,4 +81,7 @@ private:
                                                                        std::numeric_limits<float>::lowest(),
                                                                        std::numeric_limits<float>::max() };
     OptionalColorGradientSelector mColorOverLifetimeSelector{ "Color Over Lifetime" };
+    OptionalBezierCurveSelector mSizeOverLifetimeSelector{ "Size Over Lifetime", 0.05f,
+                                                           std::numeric_limits<float>::lowest(),
+                                                           std::numeric_limits<float>::max() };
 };

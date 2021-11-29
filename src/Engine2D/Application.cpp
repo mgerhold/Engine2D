@@ -349,7 +349,6 @@ namespace c2k {
 
     [[nodiscard]] ParticleComponent Application::createParticle(const Entity particleEmitterEntity,
                                                                 const ParticleEmitterComponent& particleEmitter,
-                                                                const TransformComponent& transform,
                                                                 const ParticleSystem& particleSystem) noexcept {
         const auto totalLifeTime = getFourWaySelectorValue<double>(
                 particleSystem.startLifetime, mRandom, particleSystem.duration, particleEmitter.currentDuration);
@@ -360,10 +359,14 @@ namespace c2k {
                              getFourWaySelectorValue<float>(particleSystem.gravityModifier, mRandom,
                                                             particleSystem.duration, particleEmitter.currentDuration);
         constexpr auto velocityFromGravity = glm::vec3{ 0.0f };
-        const auto startScale = transform.scale;
-        const auto endScale = transform.scale;
-        return ParticleComponent{ particleEmitter.particleSystem, remainingLifeTime,   totalLifeTime,
-                                  particleEmitterEntity,          velocityFromGravity, gravity };
+        const auto baseScale = glm::vec2{ particleSystem.sprite.texture->widthToHeightRatio(), 1.0f };
+        return ParticleComponent{ particleEmitter.particleSystem,
+                                  remainingLifeTime,
+                                  totalLifeTime,
+                                  particleEmitterEntity,
+                                  velocityFromGravity,
+                                  gravity,
+                                  baseScale };
     }
 
     void Application::spawnParticles() noexcept {
@@ -372,7 +375,7 @@ namespace c2k {
             const auto& particleSystem = *particleEmitter.particleSystem;
             const auto transform = createParticleTransform(emitterEntity, particleSystem, mRandom);
             const auto dynamicSprite = createParticleSprite(particleEmitter, particleSystem);
-            const auto particle = createParticle(emitterEntity, particleEmitter, transform, particleSystem);
+            const auto particle = createParticle(emitterEntity, particleEmitter, particleSystem);
             const auto particleEntity = mRegistry.createEntity(transform, dynamicSprite, particle);
             if (particleSystem.simulateInWorldSpace) {
                 mRegistry.attachComponent(particleEntity, RootComponent{});
@@ -402,7 +405,10 @@ namespace c2k {
             const auto velocity = glm::vec3{ velocityValue.x, velocityValue.y, 0.0f };
             particle.velocityFromGravity += particle.gravity * delta;
             transform.position += delta * (velocity + particle.velocityFromGravity);
-            // TODO: set scale according to size over lifetime if enabled
+            if (particleSystem.sizeOverLifetime.has_value()) {
+                transform.scale = particle.baseScale *
+                                  ImGui::BezierValue(interpolationParameter, particleSystem.sizeOverLifetime.value());
+            }
             transform.rotation += glm::radians(getFourWaySelectorValue<float>(
                                           particleSystem.radialVelocityOverLifetime, mRandom, particle.totalLifeTime,
                                           particle.totalLifeTime - particle.remainingLifeTime)) *

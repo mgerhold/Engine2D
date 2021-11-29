@@ -82,6 +82,8 @@ namespace c2k::JSON::Implementation_ {
         JSONValue(int number) noexcept : mData{ JSONVariant{ JSONNumber{ gsl::narrow_cast<double>(number) } } } { }
         JSONValue(unsigned int number) noexcept
             : mData{ JSONVariant{ JSONNumber{ gsl::narrow_cast<double>(number) } } } { }
+        JSONValue(std::size_t number) noexcept
+            : mData{ JSONVariant{ JSONNumber{ gsl::narrow_cast<double>(number) } } } { }
         JSONValue(glm::vec2 vec) noexcept
             : mData{ JSONVariant{ JSONObject{ { JSONString{ "x" }, JSONValue{ vec.x } },
                                               { JSONString{ "y" }, JSONValue{ vec.y } } } } } { }
