@@ -355,6 +355,7 @@ namespace c2k {
         const auto remainingLifeTime = totalLifeTime;
         const auto startSpeed = getFourWaySelectorValue<float>(
                 particleSystem.startSpeed, mRandom, particleSystem.duration, particleEmitter.currentDuration);
+        const auto startVelocity = mRandom.unitDirection() * startSpeed;
         const auto gravity = glm::vec3{ 0.0f, -9.81f, 0.0f } *
                              getFourWaySelectorValue<float>(particleSystem.gravityModifier, mRandom,
                                                             particleSystem.duration, particleEmitter.currentDuration);
@@ -365,6 +366,7 @@ namespace c2k {
                                   totalLifeTime,
                                   particleEmitterEntity,
                                   velocityFromGravity,
+                                  startVelocity,
                                   gravity,
                                   baseScale };
     }
@@ -404,7 +406,7 @@ namespace c2k {
                                                                    particle.totalLifeTime - particle.remainingLifeTime);
             const auto velocity = glm::vec3{ velocityValue.x, velocityValue.y, 0.0f };
             particle.velocityFromGravity += particle.gravity * delta;
-            transform.position += delta * (velocity + particle.velocityFromGravity);
+            transform.position += delta * (velocity + particle.velocityFromGravity + particle.startVelocity);
             if (particleSystem.sizeOverLifetime.has_value()) {
                 transform.scale = particle.baseScale *
                                   ImGui::BezierValue(interpolationParameter, particleSystem.sizeOverLifetime.value());

@@ -48,7 +48,7 @@ public:
                 if (holds_alternative<glm::vec2>(variant)) {
                     variant = Range<glm::vec2>{ .min{ get<glm::vec2>(variant) }, .max{ get<glm::vec2>(variant) } };
                 } else if (!holds_alternative<Range<glm::vec2>>(variant)) {
-                    variant = Range<glm::vec2>{ .min{ glm::vec2{ 1.0 } }, .max{ glm::vec2{  1.0 } } };
+                    variant = Range<glm::vec2>{ .min{ glm::vec2{ 1.0 } }, .max{ glm::vec2{ 1.0 } } };
                 }
             }
             if (ImGui::RadioButton("Curve", &mCurrentlySelected, 2)) {
@@ -72,46 +72,22 @@ public:
             switch (mCurrentlySelected) {
                 case 0:
                     // constant
-                    ImGui::Checkbox("Uniform", &mConstantUniform);
-                    if (mConstantUniform) {
-                        ImGui::DragFloat("value", &get<glm::vec2>(variant).x, mSpeed, mMin, mMax);
-                        get<glm::vec2>(variant).y = get<glm::vec2>(variant).x;
-                    } else {
-                        ImGui::DragFloat2("value", glm::value_ptr(get<glm::vec2>(variant)), mSpeed, mMin, mMax);
-                    }
+                    ImGui::DragFloat2("value", glm::value_ptr(get<glm::vec2>(variant)), mSpeed, mMin, mMax);
                     break;
                 case 1:
                     // range
-                    ImGui::Checkbox("Uniform", &mRangeUniform);
-                    if (mRangeUniform) {
-                        ImGui::DragFloat("min", &get<Range<glm::vec2>>(variant).min.x, mSpeed, mMin, mMax);
-                        get<Range<glm::vec2>>(variant).min.y = get<Range<glm::vec2>>(variant).min.x;
-                        ImGui::DragFloat("max", &get<Range<glm::vec2>>(variant).max.x, mSpeed, mMin, mMax);
-                        get<Range<glm::vec2>>(variant).max.y = get<Range<glm::vec2>>(variant).max.x;
-                    } else {
-                        ImGui::DragFloat2("min", glm::value_ptr(get<Range<glm::vec2>>(variant).min), mSpeed, mMin,
-                                          mMax);
-                        ImGui::DragFloat2("max", glm::value_ptr(get<Range<glm::vec2>>(variant).max), mSpeed, mMin,
-                                          mMax);
-                    }
+                    ImGui::DragFloat2("min", glm::value_ptr(get<Range<glm::vec2>>(variant).min), mSpeed, mMin, mMax);
+                    ImGui::DragFloat2("max", glm::value_ptr(get<Range<glm::vec2>>(variant).max), mSpeed, mMin, mMax);
                     break;
                 case 2:
                     // curve
-                    ImGui::Checkbox("Uniform", &mCurveUniform);
-                    if (mCurveUniform) {
-                        auto& curves = get<BezierCurves2D>(variant);
-                        ImGui::Bezier("curve", &curves.x, &mActiveCurveHandle0, mSpeed);
-                        curves.y = curves.x;
-                    } else {
-                        auto& curves = get<BezierCurves2D>(variant);
-                        ImGui::PushID("_curveX_");
-                        ImGui::Bezier("curve", &curves.x, &mActiveCurveHandle0, mSpeed);
-                        ImGui::PopID();
-                        ImGui::PushID("_curveY_");
-                        ImGui::Bezier("curve", &curves.y, &mActiveCurveHandle0, mSpeed);
-                        ImGui::PopID();
-                    }
-                    break;
+                    auto& curves = get<BezierCurves2D>(variant);
+                    ImGui::PushID("_curveX_");
+                    ImGui::Bezier("curve x", &curves.x, &mActiveCurveHandle0, mSpeed);
+                    ImGui::PopID();
+                    ImGui::PushID("_curveY_");
+                    ImGui::Bezier("curve y", &curves.y, &mActiveCurveHandle0, mSpeed);
+                    ImGui::PopID();
             }
         }
         ImGui::PopID();
@@ -125,7 +101,4 @@ private:
     const float mMin;
     const float mMax;
     int mActiveCurveHandle0{ -1 };
-    bool mConstantUniform{ true };
-    bool mRangeUniform{ true };
-    bool mCurveUniform{ true };
 };

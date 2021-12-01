@@ -107,6 +107,7 @@ namespace c2k {
         double totalLifeTime{ 0.0 };
         Entity particleEmitterEntity{ invalidEntity };
         glm::vec3 velocityFromGravity{ 0.0f };
+        glm::vec3 startVelocity{ 0.0f };
         glm::vec3 gravity{ 0.0f };
         glm::vec2 baseScale{ 1.0f };
     };

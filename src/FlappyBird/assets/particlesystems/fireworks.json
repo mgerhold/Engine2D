@@ -4,7 +4,7 @@
   "prewarm": false,
   "startDelay": 0,
   "startLifetime": 0.5,
-  "startSpeed": 20,
+  "startSpeed": 140,
   "startSize": {
     "x": 10,
     "y": 10
@@ -20,7 +20,7 @@
     "b": 1,
     "a": 1
   },
-  "gravityModifier": 194.85000610351562,
+  "gravityModifier": 210,
   "simulateInWorldSpace": false,
   "maxParticles": 1000,
   "rateOverTime": 183.35000610351562,

@@ -4,7 +4,20 @@
   "prewarm": false,
   "startDelay": 0,
   "startLifetime": 2,
-  "startSpeed": 0,
+  "startSpeed": {
+    "p0": {
+      "x": 0.25,
+      "y": 0.25
+    },
+    "p1": {
+      "x": 0.75,
+      "y": 0.75
+    },
+    "minVal": 0,
+    "maxVal": 200,
+    "leftY": 1,
+    "rightY": 0
+  },
   "startSize": {
     "x": 8,
     "y": 8
@@ -53,34 +66,8 @@
   "emitterRadius": 40,
   "emitterArc": 360,
   "linearVelocityOverLifetime": {
-    "x": {
-      "p0": {
-        "x": 0.25,
-        "y": 0.25
-      },
-      "p1": {
-        "x": 0.75,
-        "y": 0.75
-      },
-      "minVal": 100,
-      "maxVal": 150,
-      "leftY": 0,
-      "rightY": 1
-    },
-    "y": {
-      "p0": {
-        "x": 0.25,
-        "y": 0.25
-      },
-      "p1": {
-        "x": 0.75,
-        "y": 0.75
-      },
-      "minVal": 0,
-      "maxVal": 50,
-      "leftY": 0,
-      "rightY": 1
-    }
+    "x": 100,
+    "y": 0
   },
   "radialVelocityOverLifetime": {
     "p0": {
@@ -133,7 +120,7 @@
     },
     "minVal": 0,
     "maxVal": 15,
-    "leftY": 1,
-    "rightY": 0
+    "leftY": 0,
+    "rightY": 1
   }
 }
