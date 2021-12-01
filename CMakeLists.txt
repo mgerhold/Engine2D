@@ -190,8 +190,6 @@ target_link_libraries(Engine2D PRIVATE tl::optional)
 find_package(spdlog CONFIG REQUIRED)
 target_link_libraries(Engine2D PUBLIC spdlog::spdlog spdlog::spdlog_header_only)
 
-find_package(nlohmann_json CONFIG REQUIRED)
-target_link_libraries(Engine2D PRIVATE nlohmann_json nlohmann_json::nlohmann_json)
 
 find_package(glm CONFIG REQUIRED)
 target_link_libraries(Engine2D PRIVATE glm::glm)

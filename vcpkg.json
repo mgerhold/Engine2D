@@ -10,7 +10,6 @@
     "tl-expected",
     "tl-optional",
     "spdlog",
-    "nlohmann-json",
     "range-v3",
     "glm",
     "lua",

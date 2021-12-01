@@ -4,7 +4,6 @@
 
 #include <GUID.hpp>
 #include <gtest/gtest.h>
-#include <boost/uuid/uuid.hpp>
 #include <range/v3/all.hpp>
 #include <algorithm>
 #include <utility>
